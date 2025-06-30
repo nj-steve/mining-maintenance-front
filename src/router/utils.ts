@@ -336,8 +336,6 @@ function getHistoryMode(routerHistory): RouterHistory {
     return createWebHashHistory("");
   }
 
-
-
   const historyMode = routerHistory.split(",");
   const leftMode = historyMode[0];
   const rightMode = historyMode[1];

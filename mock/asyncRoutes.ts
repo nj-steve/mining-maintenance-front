@@ -1,5 +1,6 @@
 // 模拟后端动态生成路由
 import { defineFakeRoute } from "vite-plugin-fake-server/client";
+import { system } from "@/router/enums";
 // import { system, monitor, permission, frame, tabs } from "@/router/enums";
 
 /**

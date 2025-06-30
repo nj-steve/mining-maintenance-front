@@ -6,7 +6,7 @@ export default {
   redirect: "/list/card",
   meta: {
     icon: "ri/list-check",
-    title: $t("menus.pureList"),
+    title: "故障列表",
     rank: list
   },
   children: [

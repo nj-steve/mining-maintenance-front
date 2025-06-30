@@ -2,11 +2,11 @@ import { $t } from "@/plugins/i18n";
 import { list } from "@/router/enums";
 
 export default {
-  path: "/faulty",
+  path: "/repair",
   redirect: "/list/card",
   meta: {
     icon: "ri/list-check",
-    title: $t("menus.pureList"),
+    title: "维修站管理",
     rank: list
   }
 //   children: [
