@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { tableData, options } from "../data";
-import { clone, delObjectProperty } from "@pureadmin/utils";
+import { clone, delObjectProperty } from "@PureAdmin/utils";
 
 export function useColumns() {
   const editMap = ref({});

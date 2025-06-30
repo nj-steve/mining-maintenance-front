@@ -34,9 +34,9 @@
       "node",
       "vite/client",
       "element-plus/global",
-      "@pureadmin/table/volar",
+      "@PureAdmin/table/volar",
       "unplugin-icons/types/vue",
-      "@pureadmin/descriptions/volar"
+      "@PureAdmin/descriptions/volar"
     ]
   },
   "include": [

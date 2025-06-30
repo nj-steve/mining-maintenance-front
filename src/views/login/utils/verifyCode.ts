@@ -1,5 +1,5 @@
 import type { FormInstance, FormItemProp } from "element-plus";
-import { clone } from "@pureadmin/utils";
+import { clone } from "@PureAdmin/utils";
 import { ref } from "vue";
 
 const isDisabled = ref(false);

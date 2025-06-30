@@ -20,7 +20,7 @@ import {
   isArray,
   downloadByBase64,
   useResizeObserver
-} from "@pureadmin/utils";
+} from "@PureAdmin/utils";
 import {
   Reload,
   Upload,

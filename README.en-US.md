@@ -29,7 +29,7 @@ The simplified version is based on the shelf extracted from [vue-pure-admin](htt
 ## Nanny-level documents
 
 [Click me to view vue-pure-admin documentation](https://pure-admin.cn/)  
-[Click me to view @pureadmin/utils documentation](https://pure-admin-utils.netlify.app)
+[Click me to view @PureAdmin/utils documentation](https://pure-admin-utils.netlify.app)
 
 ## Premium service
 
@@ -79,7 +79,7 @@ Open the project in Gitpod (free online dev environment for GitHub) and start co
 
 ### Pull code
 
-#### It is recommended to use `@pureadmin/cli` scaffolding
+#### It is recommended to use `@PureAdmin/cli` scaffolding
 
 <br/>
 <img src="https://xiaoxian521.github.io/hyperlink/gif/pure-admin-cli.gif" alt="pure-admin-cli" />
@@ -87,7 +87,7 @@ Open the project in Gitpod (free online dev environment for GitHub) and start co
 1. Global installation
 
 ```bash
-npm install -g @pureadmin/cli
+npm install -g @PureAdmin/cli
 ```
 
 2. Interactively select templates and create projects
@@ -96,7 +96,7 @@ npm install -g @pureadmin/cli
 pure create
 ```
 
-[Click to view the detailed usage of @pureadmin/cli scaffolding](https://github.com/pure-admin/pure-admin-cli#pureadmincli)
+[Click to view the detailed usage of @PureAdmin/cli scaffolding](https://github.com/pure-admin/pure-admin-cli#PureAdmincli)
 
 #### Pull from `GitHub`
 

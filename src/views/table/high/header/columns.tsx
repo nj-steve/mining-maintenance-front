@@ -1,6 +1,6 @@
 import { tableData } from "../data";
 import { ref, onMounted } from "vue";
-import { clone } from "@pureadmin/utils";
+import { clone } from "@PureAdmin/utils";
 
 export function useColumns() {
   const dataList = ref([]);

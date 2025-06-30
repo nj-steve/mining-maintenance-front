@@ -19,7 +19,7 @@ import {
   storageLocal,
   toggleClass,
   hasClass
-} from "@pureadmin/utils";
+} from "@PureAdmin/utils";
 
 import Fullscreen from "~icons/ri/fullscreen-fill";
 import CloseAllTags from "~icons/ri/subtract-line";

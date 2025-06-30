@@ -31,7 +31,7 @@
 
 ### ✔️Refactor
 
-- Upgrade `vite` to `v6` version, upgrade `sass` to the latest version, reconstruct the theme writing method, and deprecate [@pureadmin/theme](https://www.npmjs.com/package/@pureadmin/theme) , click to view [Related optimization point details](https://github.com/pure-admin/vue-pure-admin/pull/1188#issue-2630095115). For users who have the [Max version](https://pure-admin.cn/pages/service/#max-%E7%89%88%E6%9C%AC), it is strongly recommended to upgrade. Subsequent Max version users will enjoy a more modern, beautiful and highly customized theme color
+- Upgrade `vite` to `v6` version, upgrade `sass` to the latest version, reconstruct the theme writing method, and deprecate [@PureAdmin/theme](https://www.npmjs.com/package/@PureAdmin/theme) , click to view [Related optimization point details](https://github.com/pure-admin/vue-pure-admin/pull/1188#issue-2630095115). For users who have the [Max version](https://pure-admin.cn/pages/service/#max-%E7%89%88%E6%9C%AC), it is strongly recommended to upgrade. Subsequent Max version users will enjoy a more modern, beautiful and highly customized theme color
 - Use [code-inspector-plugin](https://www.npmjs.com/package/code-inspector-plugin) to replace [vite-plugin-vue-inspector](https://www.npmjs.com/package/vite-plugin-vue-inspector)
 
 ### 🎫Feat
@@ -298,7 +298,7 @@ Totally `ESM` version
 - Optimize the `IconSelect` icon selector component to improve user experience
 - Optimize the segmented controller component and add `v-model` support
 - Optimize the method of obtaining platform `logo`
-- Upgraded `@pureadmin/theme`, bringing more friendly `esm` support
+- Upgraded `@PureAdmin/theme`, bringing more friendly `esm` support
 - Optimize some functions in the `build/info.ts` file to make it friendly and support `esm`
 - Optimize the column setting pop-up box of the `PureTableBar` component, set the maximum height, and scroll beyond it
 - Optimize the functional pop-up component `ReDialog` to retain the closing animation
@@ -357,7 +357,7 @@ Totally `ESM` version
 
 - Page switching performance optimization, regardless of the network, the speed of page switching logic is almost `3-4` times faster than before [View optimization details](https://github.com/pure-admin/vue-pure-admin/pull/600#issuecomment-1586094078)
 - Optimized tab page operation-routing parameter transfer mode usage
-- All tables in the system management are changed to adaptive content area height, need to upgrade `@pureadmin/table` to the latest version
+- All tables in the system management are changed to adaptive content area height, need to upgrade `@PureAdmin/table` to the latest version
 - Use the `useResizeObserver` function of `vueuse` to replace the `v-resize` custom directive, and the performance will be better from the performance after testing
 - For unbound public events, unbind when the page is destroyed
 
@@ -494,7 +494,7 @@ Totally `ESM` version
 
 ### 🍏 Perf
 
-- Update [@pureadmin/theme](https://github.com/pure-admin/pure-admin-theme) to the latest version, bringing more friendly type hints
+- Update [@PureAdmin/theme](https://github.com/pure-admin/pure-admin-theme) to the latest version, bringing more friendly type hints
 - Optimize [PureTableBar](https://github.com/pure-admin/vue-pure-admin/tree/main/src/components/RePureTableBar) component
 - Optimize the business code of the system management page to bring better code reference
 
@@ -507,7 +507,7 @@ Totally `ESM` version
 
 ### 🎫 Feat
 
-- Add `@pureadmin/table` table dynamic column example
+- Add `@PureAdmin/table` table dynamic column example
 
 ### 🐞 Bug fixes
 
@@ -527,13 +527,13 @@ Totally `ESM` version
 
 ### 🎫 Feat
 
-- Add `@pureadmin/table` table selector (single select, multiple select) example
+- Add `@PureAdmin/table` table selector (single select, multiple select) example
 
 # 3.9.3 (2022-12-04)
 
 ### 🎫 Feat
 
-- Add `@pureadmin/table` pagination and loading animation example
+- Add `@PureAdmin/table` pagination and loading animation example
 
 ### 🐞 Bug fixes
 
@@ -598,21 +598,21 @@ Totally `ESM` version
 
 ### 🍏 Perf
 
-- Great optimization, remove `@pureadmin/components` and use compatible writing, the package size of the platform is reduced by `0.4` MB before compression is not enabled, and the resource of `2.3` MB is reduced for the first screen request, which is for the [lite version ](https://github.com/pure-admin/pure-admin-thin) is a very big optimization, the streamlined version has synchronized code
+- Great optimization, remove `@PureAdmin/components` and use compatible writing, the package size of the platform is reduced by `0.4` MB before compression is not enabled, and the resource of `2.3` MB is reduced for the first screen request, which is for the [lite version ](https://github.com/pure-admin/pure-admin-thin) is a very big optimization, the streamlined version has synchronized code
 
 # 3.8.0 (2022-11-26)
 
 ### 🎫 Feat
 
-- Add `@pureadmin/table` multiple data format (deep structure) examples
-- Add `@pureadmin/table` image preview example
-- Add `@pureadmin/table` row and column drag example
-- Add `@pureadmin/table` context menu example
-- Add `@pureadmin/table` export `Excel` example
-- Add `@pureadmin/table` edit cell example
-- Add `@pureadmin/table` watermark example
-- Add `@pureadmin/table` print example
-- Add `@pureadmin/table` embedded `echarts` chart example
+- Add `@PureAdmin/table` multiple data format (deep structure) examples
+- Add `@PureAdmin/table` image preview example
+- Add `@PureAdmin/table` row and column drag example
+- Add `@PureAdmin/table` context menu example
+- Add `@PureAdmin/table` export `Excel` example
+- Add `@PureAdmin/table` edit cell example
+- Add `@PureAdmin/table` watermark example
+- Add `@PureAdmin/table` print example
+- Add `@PureAdmin/table` embedded `echarts` chart example
 - Add `svgo` to compress all `svg` files on the platform to reduce the size
 
 ### 🍏 Perf
@@ -636,7 +636,7 @@ Totally `ESM` version
 ### 🎫 Feat
 
 - Add front-end single sign-on, test address https://pure-admin.github.io/vue-pure-admin/#/pure-table/index?username=sso&roles=admin&accessToken=eyJhbGciOiJIUzUxMiJ9.admin
-- Add more examples for [@pureadmin/table](https://github.com/pure-admin/pure-admin-table) and `element-plus` [table](https://element-plus.org /zh-CN/component/table.html) example remains the same
+- Add more examples for [@PureAdmin/table](https://github.com/pure-admin/pure-admin-table) and `element-plus` [table](https://element-plus.org /zh-CN/component/table.html) example remains the same
 - Rich watermark function page (supports customizing various colors, shadows, text, additional attributes, setting undeletable watermarks and setting watermarks for specified elements)
 - Optimize the menu, add `MenuArrowIconNoTransition` global configuration, configure it in `public/platform-config.json`, for the left menu mode, the menu expansion can be set `MenuArrowIconNoTransition: true` to solve
 - Replacement form designer component demo
@@ -772,9 +772,9 @@ Totally `ESM` version
 
 ### 🎫 Feat
 
-- Secondary encapsulation of `Table` of `element-plus` into [@pureadmin/table](https://github.com/pure-admin/pure-admin-table), providing flexible configuration items and integrating into the platform
-- Secondary encapsulation of `Descriptions` of `element-plus` into [@pureadmin/descriptions](https://github.com/pure-admin/pure-admin-descriptions), providing flexible configuration items and integrating into the platform
-- Centralize most of the tools and hooks of the platform to [@pureadmin/utils](https://pure-admin-utils.netlify.app), and delete the code concentrated in this library to reduce the size of the platform
+- Secondary encapsulation of `Table` of `element-plus` into [@PureAdmin/table](https://github.com/pure-admin/pure-admin-table), providing flexible configuration items and integrating into the platform
+- Secondary encapsulation of `Descriptions` of `element-plus` into [@PureAdmin/descriptions](https://github.com/pure-admin/pure-admin-descriptions), providing flexible configuration items and integrating into the platform
+- Centralize most of the tools and hooks of the platform to [@PureAdmin/utils](https://pure-admin-utils.netlify.app), and delete the code concentrated in this library to reduce the size of the platform
 - Add [unplugin-vue-define-options](https://www.npmjs.com/package/unplugin-vue-define-options) plugin, the page can directly write `defineOptions({name: custom name})`
 - Add project files, language analysis tool [cloc](https://www.npmjs.com/package/cloc)
 - Added landing page internationalization

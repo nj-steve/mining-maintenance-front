@@ -6,7 +6,7 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { message } from "@/utils/message";
 import type { UploadFile } from "element-plus";
-import { getKeyList, extractFields, downloadByData } from "@pureadmin/utils";
+import { getKeyList, extractFields, downloadByData } from "@PureAdmin/utils";
 
 import EpPlus from "~icons/ep/plus?width=30&height=30";
 import Eye from "~icons/ri/eye-line";

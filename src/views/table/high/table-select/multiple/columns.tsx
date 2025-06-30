@@ -1,7 +1,7 @@
 import { message } from "@/utils/message";
 import { tableDataEdit } from "../../data";
-import type { PaginationProps } from "@pureadmin/table";
-import { cloneDeep, isAllEmpty } from "@pureadmin/utils";
+import type { PaginationProps } from "@PureAdmin/table";
+import { cloneDeep, isAllEmpty } from "@PureAdmin/utils";
 import { type Ref, ref, reactive, watch, nextTick } from "vue";
 
 export function useColumns(selectRef: Ref, formRef: Ref, tableRef: Ref) {

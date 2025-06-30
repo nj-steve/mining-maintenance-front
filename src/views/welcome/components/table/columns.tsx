@@ -1,7 +1,7 @@
 import { tableData } from "../../data";
-import { delay } from "@pureadmin/utils";
+import { delay } from "@PureAdmin/utils";
 import { ref, onMounted, reactive } from "vue";
-import type { PaginationProps } from "@pureadmin/table";
+import type { PaginationProps } from "@PureAdmin/table";
 import ThumbUp from "~icons/ri/thumb-up-line";
 import Hearts from "~icons/ri/hearts-line";
 import Empty from "./empty.svg?component";

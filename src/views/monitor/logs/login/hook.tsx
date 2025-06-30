@@ -1,9 +1,9 @@
 import dayjs from "dayjs";
 import { message } from "@/utils/message";
-import { getKeyList } from "@pureadmin/utils";
+import { getKeyList } from "@PureAdmin/utils";
 import { getLoginLogsList } from "@/api/system";
 import { usePublicHooks } from "@/views/system/hooks";
-import type { PaginationProps } from "@pureadmin/table";
+import type { PaginationProps } from "@PureAdmin/table";
 import { type Ref, reactive, ref, onMounted, toRaw } from "vue";
 
 export function useRole(tableRef: Ref) {

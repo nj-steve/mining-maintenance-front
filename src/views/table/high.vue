@@ -24,7 +24,7 @@ function tabClick({ index }) {
             target="_blank"
             style="margin: 0 4px 5px; font-size: 16px"
           >
-            @pureadmin/table
+            @PureAdmin/table
           </el-link>
           的灵活性，维护整体表格只需操作 columns 配置即可
         </span>

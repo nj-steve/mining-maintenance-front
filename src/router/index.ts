@@ -13,7 +13,7 @@ import {
   cloneDeep,
   isAllEmpty,
   storageLocal
-} from "@pureadmin/utils";
+} from "@PureAdmin/utils";
 import {
   ascending,
   getTopMenu,

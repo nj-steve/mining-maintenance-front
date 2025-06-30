@@ -2,9 +2,9 @@ import dayjs from "dayjs";
 import Detail from "./detail.vue";
 import { message } from "@/utils/message";
 import { addDialog } from "@/components/ReDialog";
-import type { PaginationProps } from "@pureadmin/table";
+import type { PaginationProps } from "@PureAdmin/table";
 import { type Ref, reactive, ref, onMounted, toRaw } from "vue";
-import { getKeyList, useCopyToClipboard } from "@pureadmin/utils";
+import { getKeyList, useCopyToClipboard } from "@PureAdmin/utils";
 import { getSystemLogsList, getSystemLogsDetail } from "@/api/system";
 import Info from "~icons/ri/question-line";
 

@@ -8,7 +8,7 @@ import { message } from "@/utils/message";
 import userAvatar from "@/assets/user.jpg";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
-import type { PaginationProps } from "@pureadmin/table";
+import type { PaginationProps } from "@PureAdmin/table";
 import ReCropperPreview from "@/components/ReCropperPreview";
 import type { FormItemProps, RoleFormItemProps } from "../utils/types";
 import {
@@ -16,7 +16,7 @@ import {
   isAllEmpty,
   hideTextAtIndex,
   deviceDetection
-} from "@pureadmin/utils";
+} from "@PureAdmin/utils";
 import {
   getRoleIds,
   getDeptList,

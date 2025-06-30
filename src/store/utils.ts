@@ -17,7 +17,7 @@ export {
   getKeyList,
   storageLocal,
   deviceDetection
-} from "@pureadmin/utils";
+} from "@PureAdmin/utils";
 export type {
   setType,
   appType,

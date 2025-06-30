@@ -15,7 +15,7 @@ import {
   intersection,
   storageLocal,
   isIncludeAllChildren
-} from "@pureadmin/utils";
+} from "@PureAdmin/utils";
 import { getConfig } from "@/config";
 import { buildHierarchyTree } from "@/utils/tree";
 import { userKey, type DataInfo } from "@/utils/auth";
@@ -332,6 +332,12 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
 /** 获取路由历史模式 https://next.router.vuejs.org/zh/guide/essentials/history-mode.html */
 function getHistoryMode(routerHistory): RouterHistory {
   // len为1 代表只有历史模式 为2 代表历史模式中存在base参数 https://next.router.vuejs.org/zh/api/#%E5%8F%82%E6%95%B0-1
+  if (!routerHistory) {
+    return createWebHashHistory("");
+  }
+
+
+
   const historyMode = routerHistory.split(",");
   const leftMode = historyMode[0];
   const rightMode = historyMode[1];

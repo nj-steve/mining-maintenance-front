@@ -23,13 +23,13 @@ importers:
       '@logicflow/extension':
         specifier: ^1.2.28
         version: 1.2.28
-      '@pureadmin/descriptions':
+      '@PureAdmin/descriptions':
         specifier: ^1.2.1
         version: 1.2.1(echarts@5.6.0)(element-plus@2.10.1(vue@3.5.16(typescript@5.8.3)))(typescript@5.8.3)
-      '@pureadmin/table':
+      '@PureAdmin/table':
         specifier: ^3.2.1
         version: 3.2.1(element-plus@2.10.1(vue@3.5.16(typescript@5.8.3)))(typescript@5.8.3)
-      '@pureadmin/utils':
+      '@PureAdmin/utils':
         specifier: ^2.6.1
         version: 2.6.1(echarts@5.6.0)(vue@3.5.16(typescript@5.8.3))
       '@vue-flow/background':
@@ -1431,17 +1431,17 @@ packages:
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
-  '@pureadmin/descriptions@1.2.1':
+  '@PureAdmin/descriptions@1.2.1':
     resolution: {integrity: sha512-7jDJuqz8xnhcmwXdWQnBzOYeX2WK27TRFaVgs9AdiRr+DnKb9W+krHByJwQtxo5lg4qyRh4/IWQGEMfhC2ljeQ==}
     peerDependencies:
       element-plus: ^2.0.0
 
-  '@pureadmin/table@3.2.1':
+  '@PureAdmin/table@3.2.1':
     resolution: {integrity: sha512-sqkAQWRDx6X0dADUgrYHvA7QfocF+VB5rPe1yFQWjh7tcHNasthFRDCS5Fmw7JQ0R3h6S7aBK450ye2/TLv4JQ==}
     peerDependencies:
       element-plus: ^2.0.0
 
-  '@pureadmin/utils@2.6.1':
+  '@PureAdmin/utils@2.6.1':
     resolution: {integrity: sha512-ODGPnhf1UmiZ4A95lu88n2VBAw4kEgUBQMPLfx6+JAIp1CHZnV98UyEX6E7twQ35AyjOO9m12i34//S6HN/D1A==}
     peerDependencies:
       echarts: '*'
@@ -6718,24 +6718,24 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
-  '@pureadmin/descriptions@1.2.1(echarts@5.6.0)(element-plus@2.10.1(vue@3.5.16(typescript@5.8.3)))(typescript@5.8.3)':
+  '@PureAdmin/descriptions@1.2.1(echarts@5.6.0)(element-plus@2.10.1(vue@3.5.16(typescript@5.8.3)))(typescript@5.8.3)':
     dependencies:
       '@element-plus/icons-vue': 2.3.1(vue@3.5.16(typescript@5.8.3))
-      '@pureadmin/utils': 2.6.1(echarts@5.6.0)(vue@3.5.16(typescript@5.8.3))
+      '@PureAdmin/utils': 2.6.1(echarts@5.6.0)(vue@3.5.16(typescript@5.8.3))
       element-plus: 2.10.1(vue@3.5.16(typescript@5.8.3))
       vue: 3.5.16(typescript@5.8.3)
     transitivePeerDependencies:
       - echarts
       - typescript
 
-  '@pureadmin/table@3.2.1(element-plus@2.10.1(vue@3.5.16(typescript@5.8.3)))(typescript@5.8.3)':
+  '@PureAdmin/table@3.2.1(element-plus@2.10.1(vue@3.5.16(typescript@5.8.3)))(typescript@5.8.3)':
     dependencies:
       element-plus: 2.10.1(vue@3.5.16(typescript@5.8.3))
       vue: 3.5.16(typescript@5.8.3)
     transitivePeerDependencies:
       - typescript
 
-  '@pureadmin/utils@2.6.1(echarts@5.6.0)(vue@3.5.16(typescript@5.8.3))':
+  '@PureAdmin/utils@2.6.1(echarts@5.6.0)(vue@3.5.16(typescript@5.8.3))':
     optionalDependencies:
       echarts: 5.6.0
       vue: 3.5.16(typescript@5.8.3)

@@ -1,6 +1,6 @@
 import Sortable from "sortablejs";
 import { ref, nextTick } from "vue";
-import { clone } from "@pureadmin/utils";
+import { clone } from "@PureAdmin/utils";
 import { tableDataDrag } from "../../data";
 
 // 行拖拽演示

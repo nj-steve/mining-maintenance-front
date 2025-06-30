@@ -16,7 +16,7 @@ import {
   isBoolean,
   isFunction,
   getKeyList
-} from "@pureadmin/utils";
+} from "@PureAdmin/utils";
 
 import Fullscreen from "~icons/ri/fullscreen-fill";
 import ExitFullscreen from "~icons/ri/fullscreen-exit-fill";

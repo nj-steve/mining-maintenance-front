@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import { utils, writeFile } from "xlsx";
 import { tableDataDrag } from "../data";
-import { clone } from "@pureadmin/utils";
+import { clone } from "@PureAdmin/utils";
 import { message } from "@/utils/message";
 
 export function useColumns() {

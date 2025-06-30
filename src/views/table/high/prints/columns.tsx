@@ -1,7 +1,7 @@
 import Print from "@/utils/print";
 import { ref, type Ref } from "vue";
 import { tableDataEdit } from "../data";
-import { clone } from "@pureadmin/utils";
+import { clone } from "@PureAdmin/utils";
 
 export function useColumns(printRef: Ref) {
   const dataList = ref(clone(tableDataEdit, true));

@@ -31,7 +31,7 @@
 
 ### ✔️ Refactor
 
-- 升级`vite`至`v6`版本，升级`sass`至最新版，重构主题写法，弃用 [@pureadmin/theme](https://www.npmjs.com/package/@pureadmin/theme)，点击查看 [相关优化点细节](https://github.com/pure-admin/vue-pure-admin/pull/1188#issue-2630095115)。对于拥有 [Max版本](https://pure-admin.cn/pages/service/#max-%E7%89%88%E6%9C%AC) 的用户平台强烈建议升级，后续`Max版本用户`会享有一套更现代、美观且自定义程度高的主题色
+- 升级`vite`至`v6`版本，升级`sass`至最新版，重构主题写法，弃用 [@PureAdmin/theme](https://www.npmjs.com/package/@PureAdmin/theme)，点击查看 [相关优化点细节](https://github.com/pure-admin/vue-pure-admin/pull/1188#issue-2630095115)。对于拥有 [Max版本](https://pure-admin.cn/pages/service/#max-%E7%89%88%E6%9C%AC) 的用户平台强烈建议升级，后续`Max版本用户`会享有一套更现代、美观且自定义程度高的主题色
 - 使用 [code-inspector-plugin](https://www.npmjs.com/package/code-inspector-plugin) 替换 [vite-plugin-vue-inspector](https://www.npmjs.com/package/vite-plugin-vue-inspector)
 
 ### 🎫 Feat
@@ -298,7 +298,7 @@
 - 优化`IconSelect`图标选择器组件，提升用户体验
 - 优化分段控制器组件，添加`v-model`支持
 - 优化平台`logo`获取方式
-- 升级`@pureadmin/theme`，带来了更友好的`esm`支持
+- 升级`@PureAdmin/theme`，带来了更友好的`esm`支持
 - 优化`build/info.ts`文件中的一些函数，使其友好支持`esm`
 - 优化`PureTableBar`组件的列设置弹出框，设置最大高度，超出可滚动
 - 优化函数式弹框组件`ReDialog`保留关闭动画
@@ -335,7 +335,7 @@
 ### 🍏 Perf
 
 - 将 `VITE_PUBLIC_PATH` 默认改为 `./` 兼容更多路径场景，
-- 兼容 `VITE_PUBLIC_PATH` 为 `url` 的 `OSS` 场景，需将 `@pureadmin/theme` 升级至最新版
+- 兼容 `VITE_PUBLIC_PATH` 为 `url` 的 `OSS` 场景，需将 `@PureAdmin/theme` 升级至最新版
 
 # 4.4.0 (2023-06-14)
 
@@ -357,7 +357,7 @@
 
 - 页面切换性能优化，不考虑网络的情况下，页面切换逻辑的速度差不多比之前快 `3-4` 倍 [查看优化详情](https://github.com/pure-admin/vue-pure-admin/pull/600#issuecomment-1586094078)
 - 优化标签页操作-路由传参模式用法
-- 系统管理中表格均改为自适应内容区高度，需将 `@pureadmin/table` 升级到最新版
+- 系统管理中表格均改为自适应内容区高度，需将 `@PureAdmin/table` 升级到最新版
 - 使用 `vueuse` 的 `useResizeObserver` 函数替换 `v-resize` 自定义指令，从测试后的表现来看性能会更好
 - 对未解绑的公共事件，在页面销毁时解绑
 
@@ -493,7 +493,7 @@
 
 ### 🍏 Perf
 
-- 更新 [@pureadmin/theme](https://github.com/pure-admin/pure-admin-theme) 至最新版，带来更友好的类型提示
+- 更新 [@PureAdmin/theme](https://github.com/pure-admin/pure-admin-theme) 至最新版，带来更友好的类型提示
 - 优化 [PureTableBar](https://github.com/pure-admin/vue-pure-admin/tree/main/src/components/RePureTableBar) 组件
 - 优化系统管理页面业务代码，带来更好的代码参考
 
@@ -506,7 +506,7 @@
 
 ### 🎫 Feat
 
-- 添加 `@pureadmin/table` 表格动态列示例
+- 添加 `@PureAdmin/table` 表格动态列示例
 
 ### 🐞 Bug fixes
 
@@ -526,13 +526,13 @@
 
 ### 🎫 Feat
 
-- 添加 `@pureadmin/table` 表格选择器（单选、多选）示例
+- 添加 `@PureAdmin/table` 表格选择器（单选、多选）示例
 
 # 3.9.3 (2022-12-04)
 
 ### 🎫 Feat
 
-- 添加 `@pureadmin/table` 分页和加载动画示例
+- 添加 `@PureAdmin/table` 分页和加载动画示例
 
 ### 🐞 Bug fixes
 
@@ -597,21 +597,21 @@
 
 ### 🍏 Perf
 
-- 大优化，移除 `@pureadmin/components` 并采用兼容写法，平台打包大小在未启用压缩前对比优化前减少 `0.4` MB , 首屏请求减少 `2.3` MB 的资源，这对于 [精简版](https://github.com/pure-admin/pure-admin-thin) 来说是非常大的优化，精简版已经同步代码
+- 大优化，移除 `@PureAdmin/components` 并采用兼容写法，平台打包大小在未启用压缩前对比优化前减少 `0.4` MB , 首屏请求减少 `2.3` MB 的资源，这对于 [精简版](https://github.com/pure-admin/pure-admin-thin) 来说是非常大的优化，精简版已经同步代码
 
 # 3.8.0 (2022-11-26)
 
 ### 🎫 Feat
 
-- 添加 `@pureadmin/table` 多种数据格式（深层结构）示例
-- 添加 `@pureadmin/table` 图像预览示例
-- 添加 `@pureadmin/table` 行、列拖拽示例
-- 添加 `@pureadmin/table` 右键菜单示例
-- 添加 `@pureadmin/table` 导出 `Excel` 示例
-- 添加 `@pureadmin/table` 修改单元格示例
-- 添加 `@pureadmin/table` 水印示例
-- 添加 `@pureadmin/table` 打印示例
-- 添加 `@pureadmin/table` 内嵌 `echarts` 图表示例
+- 添加 `@PureAdmin/table` 多种数据格式（深层结构）示例
+- 添加 `@PureAdmin/table` 图像预览示例
+- 添加 `@PureAdmin/table` 行、列拖拽示例
+- 添加 `@PureAdmin/table` 右键菜单示例
+- 添加 `@PureAdmin/table` 导出 `Excel` 示例
+- 添加 `@PureAdmin/table` 修改单元格示例
+- 添加 `@PureAdmin/table` 水印示例
+- 添加 `@PureAdmin/table` 打印示例
+- 添加 `@PureAdmin/table` 内嵌 `echarts` 图表示例
 - 添加 `svgo` 压缩平台所有 `svg` 文件，减少体积
 
 ### 🍏 Perf
@@ -635,7 +635,7 @@
 ### 🎫 Feat
 
 - 添加前端单点登录，测试地址 https://pure-admin.github.io/vue-pure-admin/#/pure-table/index?username=sso&roles=admin&accessToken=eyJhbGciOiJIUzUxMiJ9.admin
-- 为 [@pureadmin/table](https://github.com/pure-admin/pure-admin-table) 添加更多的示例和 `element-plus` 的 [table](https://element-plus.org/zh-CN/component/table.html) 示例保持一致
+- 为 [@PureAdmin/table](https://github.com/pure-admin/pure-admin-table) 添加更多的示例和 `element-plus` 的 [table](https://element-plus.org/zh-CN/component/table.html) 示例保持一致
 - 丰富水印功能页面（支持自定义各种颜色、阴影、文字、额外属性、设置不可删除水印以及给指定元素设置水印）
 - 优化菜单，添加 `MenuArrowIconNoTransition` 全局配置，在 `public/platform-config.json` 中配置即可，对于出现左侧菜单模式，菜单展开卡顿的可设置 `MenuArrowIconNoTransition: true` 即可解决
 - 更换表单设计器组件演示
@@ -771,9 +771,9 @@
 
 ### 🎫 Feat
 
-- 将 `element-plus` 的 `Table` 二次封装到[@pureadmin/table](https://github.com/pure-admin/pure-admin-table)，提供灵活的配置项并集成到平台里
-- 将 `element-plus` 的 `Descriptions` 二次封装到[@pureadmin/descriptions](https://github.com/pure-admin/pure-admin-descriptions)，提供灵活的配置项并集成到平台里
-- 将平台的大部分工具以及 `hooks` 都集中到[@pureadmin/utils](https://pure-admin-utils.netlify.app)，并删除集中到这个库里的代码，减少平台体积
+- 将 `element-plus` 的 `Table` 二次封装到[@PureAdmin/table](https://github.com/pure-admin/pure-admin-table)，提供灵活的配置项并集成到平台里
+- 将 `element-plus` 的 `Descriptions` 二次封装到[@PureAdmin/descriptions](https://github.com/pure-admin/pure-admin-descriptions)，提供灵活的配置项并集成到平台里
+- 将平台的大部分工具以及 `hooks` 都集中到[@PureAdmin/utils](https://pure-admin-utils.netlify.app)，并删除集中到这个库里的代码，减少平台体积
 - 添加[unplugin-vue-define-options](https://www.npmjs.com/package/unplugin-vue-define-options)插件，页面可直接写 `defineOptions({name: 自定义名称})`
 - 添加项目文件、语言分析工具 [cloc](https://www.npmjs.com/package/cloc)
 - 添加登录页国际化

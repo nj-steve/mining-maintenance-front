@@ -7,7 +7,7 @@ import {
   drawerStore
 } from "./index";
 import { computed, ref } from "vue";
-import { isFunction } from "@pureadmin/utils";
+import { isFunction } from "@PureAdmin/utils";
 
 defineOptions({
   name: "ReDrawer"

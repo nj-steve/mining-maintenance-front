@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useDark, useECharts } from "@pureadmin/utils";
+import { useDark, useECharts } from "@PureAdmin/utils";
 import { type PropType, ref, computed, watch, nextTick } from "vue";
 
 const props = defineProps({

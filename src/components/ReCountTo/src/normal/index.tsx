@@ -7,7 +7,7 @@ import {
   defineComponent
 } from "vue";
 import { countToProps } from "./props";
-import { isNumber } from "@pureadmin/utils";
+import { isNumber } from "@PureAdmin/utils";
 
 export default defineComponent({
   name: "ReNormalCountTo",

@@ -1,7 +1,7 @@
 import { tableData } from "../data";
-import { clone, delay } from "@pureadmin/utils";
+import { clone, delay } from "@PureAdmin/utils";
 import { ref, onMounted, reactive, watchEffect } from "vue";
-import type { PaginationProps, LoadingConfig, Align } from "@pureadmin/table";
+import type { PaginationProps, LoadingConfig, Align } from "@PureAdmin/table";
 
 export function useColumns() {
   const dataList = ref([]);

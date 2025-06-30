@@ -30,7 +30,7 @@
 ## 配套保姆级文档
 
 [点我查看 vue-pure-admin 文档](https://pure-admin.cn/)  
-[点我查看 @pureadmin/utils 文档](https://pure-admin-utils.netlify.app)
+[点我查看 @PureAdmin/utils 文档](https://pure-admin-utils.netlify.app)
 
 ## 高级服务
 
@@ -80,7 +80,7 @@
 
 ### 拉取代码
 
-#### 推荐使用 `@pureadmin/cli` 脚手架
+#### 推荐使用 `@PureAdmin/cli` 脚手架
 
 <br/>
 <img src="https://xiaoxian521.github.io/hyperlink/gif/pure-admin-cli.gif" alt="pure-admin-cli" />
@@ -88,7 +88,7 @@
 1. 全局安装
 
 ```bash
-npm install -g @pureadmin/cli
+npm install -g @PureAdmin/cli
 ```
 
 2. 交互式选择模板并创建项目
@@ -97,7 +97,7 @@ npm install -g @pureadmin/cli
 pure create
 ```
 
-[点我查看 @pureadmin/cli 脚手架详细用法](https://github.com/pure-admin/pure-admin-cli#pureadmincli)
+[点我查看 @PureAdmin/cli 脚手架详细用法](https://github.com/pure-admin/pure-admin-cli#PureAdmincli)
 
 #### 从 `GitHub` 上拉取
 

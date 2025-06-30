@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
-import { useWatermark } from "@pureadmin/utils";
+import { useWatermark } from "@PureAdmin/utils";
 
 defineOptions({
   name: "WaterMark"

@@ -2,8 +2,8 @@
 import dayjs from "dayjs";
 import { getMineLogs } from "@/api/user";
 import { reactive, ref, onMounted } from "vue";
-import { deviceDetection } from "@pureadmin/utils";
-import type { PaginationProps } from "@pureadmin/table";
+import { deviceDetection } from "@PureAdmin/utils";
+import type { PaginationProps } from "@PureAdmin/table";
 
 defineOptions({
   name: "SecurityLog"

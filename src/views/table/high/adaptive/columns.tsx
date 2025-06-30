@@ -2,10 +2,10 @@ import type {
   LoadingConfig,
   AdaptiveConfig,
   PaginationProps
-} from "@pureadmin/table";
+} from "@PureAdmin/table";
 import { tableData } from "../data";
 import { ref, onMounted, reactive } from "vue";
-import { clone, delay } from "@pureadmin/utils";
+import { clone, delay } from "@PureAdmin/utils";
 
 export function useColumns() {
   const dataList = ref([]);

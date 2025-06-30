@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import reDrawer from "./index.vue";
 import { useTimeoutFn } from "@vueuse/core";
-import { withInstall } from "@pureadmin/utils";
+import { withInstall } from "@PureAdmin/utils";
 import type {
   EventType,
   ArgsType,

@@ -1,6 +1,6 @@
 import { tableDataEdit } from "../data";
 import { ref, onMounted, type Ref } from "vue";
-import { clone, useWatermark, delay } from "@pureadmin/utils";
+import { clone, useWatermark, delay } from "@PureAdmin/utils";
 
 export function useColumns(waterRef: Ref) {
   const dataList = ref(clone(tableDataEdit, true));

@@ -1,5 +1,5 @@
 import Sortable from "sortablejs";
-import { clone } from "@pureadmin/utils";
+import { clone } from "@PureAdmin/utils";
 import { tableDataDrag } from "../../data";
 import { ref, nextTick, onMounted } from "vue";
 

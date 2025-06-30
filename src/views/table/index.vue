@@ -33,7 +33,7 @@ function tabClick({ index }) {
             target="_blank"
             style="margin: 0 4px 5px; font-size: 16px"
           >
-            @pureadmin/table 源码
+            @PureAdmin/table 源码
           </el-link>
         </span>
       </div>

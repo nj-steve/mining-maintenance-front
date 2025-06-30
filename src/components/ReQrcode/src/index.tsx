@@ -9,7 +9,7 @@ import {
 } from "vue";
 import "./index.scss";
 import propTypes from "@/utils/propTypes";
-import { isString, cloneDeep } from "@pureadmin/utils";
+import { isString, cloneDeep } from "@PureAdmin/utils";
 import QRCode, { type QRCodeRenderersOptions } from "qrcode";
 import RefreshRight from "~icons/ep/refresh-right";
 

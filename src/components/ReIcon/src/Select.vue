@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IconJson } from "@/components/ReIcon/data";
-import { cloneDeep, isAllEmpty } from "@pureadmin/utils";
+import { cloneDeep, isAllEmpty } from "@PureAdmin/utils";
 import { ref, computed, CSSProperties, watch } from "vue";
 import Search from "~icons/ri/search-eye-line";
 

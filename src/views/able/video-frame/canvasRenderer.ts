@@ -1,4 +1,4 @@
-// import { throttle } from "@pureadmin/utils";
+// import { throttle } from "@PureAdmin/utils";
 import { emitter } from "@/utils/mitt";
 
 export class CanvasRenderer {

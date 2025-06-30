@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { tableDataDrag } from "../data";
-import { clone } from "@pureadmin/utils";
+import { clone } from "@PureAdmin/utils";
 import { message } from "@/utils/message";
 import { CustomMouseMenu } from "@howdyjs/mouse-menu";
 

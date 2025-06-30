@@ -2,7 +2,7 @@ import { ref, computed } from "vue";
 import { tableDataDrag } from "../data";
 import { message } from "@/utils/message";
 import { templateRef } from "@vueuse/core";
-import { clone, useDark, useECharts } from "@pureadmin/utils";
+import { clone, useDark, useECharts } from "@PureAdmin/utils";
 
 export function useColumns() {
   const dataList = ref(clone(tableDataDrag, true).splice(0, 4));

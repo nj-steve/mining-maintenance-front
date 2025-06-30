@@ -39,7 +39,7 @@ const include = [
   "china-area-data",
   "vue-json-pretty",
   "@logicflow/core",
-  "@pureadmin/utils",
+  "@PureAdmin/utils",
   "@wangeditor/editor",
   "responsive-storage",
   "plus-pro-components",

@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import SearchHistoryItem from "./SearchHistoryItem.vue";
 import type { optionsItem, dragItem, Props } from "../types";
 import { useEpThemeStoreHook } from "@/store/modules/epTheme";
-import { useResizeObserver, isArray, delay } from "@pureadmin/utils";
+import { useResizeObserver, isArray, delay } from "@PureAdmin/utils";
 import { ref, watch, nextTick, computed, getCurrentInstance } from "vue";
 
 interface Emits {
