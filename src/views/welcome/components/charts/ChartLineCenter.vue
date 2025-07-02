@@ -3,6 +3,10 @@ import { type PropType, ref, computed } from "vue";
 import { useDark, useECharts } from "@PureAdmin/utils";
 
 const props = defineProps({
+  xdata: {
+    type: Array as PropType<Array<string>>,
+    default: () => []
+  },
   data: {
     type: Array as PropType<Array<number>>,
     default: () => []
@@ -25,10 +29,13 @@ const { setOptions } = useECharts(chartRef, {
 
 setOptions({
   container: ".line-card",
+  tooltip: {
+    trigger: 'axis'
+  },
   xAxis: {
     type: "category",
     show: true,
-    data: props.data
+    data: props.xdata
   },
   grid: {
     top: "15px",
@@ -58,5 +65,5 @@ setOptions({
 </script>
 
 <template>
-  <div ref="chartRef" style="width: 100%; height: 60px" />
+  <div ref="chartRef" style="width: 100%; height: 365px" />
 </template>

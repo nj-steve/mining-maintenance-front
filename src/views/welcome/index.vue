@@ -7,7 +7,7 @@ import { ReNormalCountTo } from "@/components/ReCountTo";
 import { useRenderFlicker } from "@/components/ReFlicker";
 import { ChartBar, ChartLine,ChartLineCenter, ChartRound } from "./components/charts";
 import Segmented, { type OptionsType } from "@/components/ReSegmented";
-import { chartData, barChartData, progressData, latestNewsData } from "./data";
+import { chartData, barChartData, lineChartData,progressData, latestNewsData } from "./data";
 
 defineOptions({
   name: "Welcome"
@@ -116,10 +116,11 @@ const optionsBasis: Array<OptionsType> = [
           </div>
           <div class="flex justify-between items-start mt-3">
             <ChartLineCenter
-              v-if="barChartData[curWeek].requireData.length > 1"
-              class="w-1/2!"
+              v-if="lineChartData[curWeek].questionData.length > 1"
+              class="w-full"
               color="green"
-              :data="barChartData[curWeek].requireData"
+              :xdata="lineChartData[curWeek].xData"
+              :data="lineChartData[curWeek].questionData"
             />
             <!-- <ChartBar
               :requireData="barChartData[curWeek].requireData"

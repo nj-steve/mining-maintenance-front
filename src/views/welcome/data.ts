@@ -64,11 +64,11 @@ const barChartData = [
 /** 维修概览 */
 const lineChartData = [
   {
-    requireData: [2101, 5288, 4239, 4962, 6752, 5208, 7450],
-    questionData: [2216, 1148, 1255, 1788, 4821, 1973, 4379]
+    xData: ['2025-06-01', '2025-06-02', '2025-06-03', '2025-06-04', '2025-06-05', '2025-06-06', '2025-06-07'],
+    questionData: [216, 148, 255, 788, 821, 973, 379]
   },
   {
-    requireData: [2101, 3280, 4400, 4962, 5752, 6889, 7600],
+    xData: ['2025-07-01', '2025-07-02', '2025-07-03', '2025-07-04', '2025-07-05', '2025-07-06', '2025-07-07'],
     questionData: [2116, 3148, 3255, 3788, 4821, 4970, 5390]
   }
 ];
@@ -142,4 +142,4 @@ const latestNewsData = cloneDeep(tableData)
     });
   });
 
-export { chartData, barChartData, progressData, tableData, latestNewsData };
+export { chartData, barChartData,lineChartData, progressData, tableData, latestNewsData };
