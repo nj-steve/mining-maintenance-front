@@ -27,7 +27,7 @@ export const request = createFlatRequest<App.Service.Response, RequestInstanceSt
     isBackendSuccess(response) {
       // when the backend response code is "0000"(default), it means the request is success
       // to change this logic by yourself, you can modify the `VITE_SERVICE_SUCCESS_CODE` in `.env` file
-      console.log(response.data.code)
+      console.log(response)
       console.log(import.meta.env.VITE_SERVICE_SUCCESS_CODE)
       console.log("结果",Number(response.data.code) === Number(import.meta.env.VITE_SERVICE_SUCCESS_CODE))
       return Number(response.data.code) === Number(import.meta.env.VITE_SERVICE_SUCCESS_CODE);
@@ -108,6 +108,15 @@ export const request = createFlatRequest<App.Service.Response, RequestInstanceSt
         message = error.response?.data?.msg || message;
         backendErrorCode = String(error.response?.data?.code || '');
       }
+
+       // 如果是 401，跳转到登录页
+    if (error.response?.status === 401) {
+      const authStore = useAuthStore();
+      authStore.resetStore(); // 清理用户信息
+      window.location.href = '/login'; // 跳转登录页
+      return;
+    }
+
 
       // the error message is displayed in the modal
       const modalLogoutCodes = import.meta.env.VITE_SERVICE_MODAL_LOGOUT_CODES?.split(',') || [];

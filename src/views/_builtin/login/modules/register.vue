@@ -42,6 +42,7 @@ async function handleSubmit() {
   await validate();
   // request to register
   window.$message?.success($t('page.login.common.validateSuccess'));
+  window.location.href="/home"
 }
 </script>
 

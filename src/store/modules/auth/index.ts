@@ -106,7 +106,6 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     Object.assign(userInfo, data);
     
     
-
     if (!error) {
       // const pass = await loginByToken(loginToken);
 
