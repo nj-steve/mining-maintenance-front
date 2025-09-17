@@ -125,6 +125,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
           content: $t('page.login.common.welcomeBack', { userName: data?.username??"" }),
           duration: 4500
         });
+        window.location.href="/home"
         
       // }
     } else {
