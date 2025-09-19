@@ -1,5 +1,48 @@
 import { request } from '../request';
 
+// 获取用户列表
+export function fetchUser(params: { page?: number; limit?: number; [key: string]: any }) {
+  return request({
+    // url: '/auth/login',
+    url:'/api/users',
+    method: 'get',
+    params
+  });
+}
+
+// 根据角色 获取公司列表
+// /users/get_users_companies
+export function fetchCompanies(params: { role?: number;}) {
+  return request({
+    // url: '/auth/login',
+    url:'/api/users/get_users_companies',
+    method: 'get',
+    params
+  });
+}
+
+// /repair_stations/post_repair_stations_import_repair_details
+
+// 修改用户
+// /api/faults/:id 
+export function updateUser(id:number,params: {[key: string]: any }) {
+  return request({
+    url: '/api/users/'+id,
+    method: 'put',
+    data:params
+  });
+}
+
+// 创建用户
+// /api/faults/:id 
+export function createUser(params: {[key: string]: any }) {
+  return request({
+    url: '/api/users/',
+    method: 'post',
+    data:params
+  });
+}
+
 /**
  * Login
  *

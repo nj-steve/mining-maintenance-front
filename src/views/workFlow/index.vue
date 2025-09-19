@@ -4,6 +4,7 @@ import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormIt
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchOrders,updateOrders } from '@/service/api/workflow';
 
+
 interface Faults {
   id: number;
   serial_number: string;
@@ -186,10 +187,10 @@ const fetchData = async () => {
   try {
     const {data,error} = await fetchOrders(params);
     if(error==null){
-        tableData.value = data;
-        // pagination.value.itemCount = data.pagination.total;
-        // pagination.value.page =  data.pagination.page;
-        // pagination.value.pageSize =  data.pagination.page_size;
+        tableData.value = data.list;
+        pagination.value.itemCount = data.pagination.total;
+        pagination.value.page =  data.pagination.page;
+        pagination.value.pageSize =  data.pagination.page_size;
     }else{
         message.error(`加载失败: ${error}`);
     }
@@ -242,6 +243,7 @@ watch([searchSerial], () => {
   <div>
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
+      
       <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入机器编号" clearable style="width: 240px" />
     </div>
 

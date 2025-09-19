@@ -2,7 +2,11 @@
 import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchFaults,updateFaults } from '@/service/api/faults';
+import { fetchRepairDetails,updateFaults } from '@/service/api/repair';
+import UploadExcel from "@/components/upload/UploadExcel.vue"
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
 
 interface Faults {
   id: number;
@@ -107,70 +111,146 @@ const handleSaveEdit = async () => {
   }
 };
 
-// ---------------- 表格列 ----------------
-const columns: DataTableColumns<Faults> = [
-  { title: '序号', key: 'id', width: 200 },
-  { title: '日期', key: 'date' },
-  { title: '场地', key: 'site_name'},
-  { title: '型号', key: 'model'},
-  { title: 'SN码', key: 'sn' },
-  { title: '问题描述', key: 'description', 
-  // render: (row: Miner) => row.Status?.name ,
-  render: (row: any ) => {
-    if (row.Status?.name === null || row.Status?.name === undefined) {
-      return null;
-    }
-    const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-      '在架': 'success',
-      '维修': 'warning',
-      '报废': 'error',
-      '下架':'info',
-    };
 
-    const label = row.Status?.name || '未知';
-    // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-    return h(NTag, {type: tagMap[row.Status?.name] }, () => label)
+
+function goDetail(id: number | string) {
+  console.log("跳转到详情页，ID:", id);
+  if (!id) {
+    console.error("ID 为空，无法跳转");
+    return;
   }
+  try {
+    router.push({ name: 'repairrecords-detail', params: { id: String(id) } });
+  } catch (error) {
+    console.error("路由跳转失败:", error);
+  }
+}
+
+// ---------------- 表格列 ----------------
+// const columns: DataTableColumns<Faults> = [
+//   // { title: '序号', key: 'id', width: 200 },
+//   { title: '日期', key: 'date' },
+//   { title: '场地', key: 'site_name'},
+//   { title: '型号', key: 'model'},
+//   { title: 'SN码', key: 'sn' },
+//   { title: '问题描述', key: 'description', 
+//   // render: (row: Miner) => row.Status?.name ,
+//   render: (row: any ) => {
+//     if (row.Status?.name === null || row.Status?.name === undefined) {
+//       return null;
+//     }
+//     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+//       '在架': 'success',
+//       '维修': 'warning',
+//       '报废': 'error',
+//       '下架':'info',
+//     };
+
+//     const label = row.Status?.name || '未知';
+//     // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
+//     return h(NTag, {type: tagMap[row.Status?.name] }, () => label)
+//   }
+//   },
+//   { title: '维修次数', key: 'repair_count' },
+//   { title: '状态', key: 'warranty_status_text' },
+//   {
+//     title: '操作',
+//     key: 'actions',
+//     align:'center',
+//     render: (row: Faults) => {
+//       return [
+//         h(
+//           NButton,
+//           {
+//             type: 'info',
+//             ghost: true,
+//             style: "margin-right: 8px;",
+//             onClick: () => handleOpenEdit(row)
+//           },
+//           { default: () => '修改' }
+//         ),
+//         // h(
+//         //   NButton,
+//         //   {
+//         //     type: 'error',
+//         //     ghost: true,
+//         //     onClick: () => {
+//         //       dialog.warning({
+//         //         title: '确认报废',
+//         //         content: `你确定要报废矿机「${row.serial_number}」吗？`,
+//         //         positiveText: '确定',
+//         //         negativeText: '取消',
+//         //         onPositiveClick: () => message.error("报废操作,暂未启用")
+//         //       })
+//         //     }
+//         //   },
+//         //   { default: () => '报废' }
+//         // )
+//       ]
+//     }
+//   }
+// ];
+// 维修结果映射
+const repairResultMap: Record<number, string> = {
+  0: '未修复',
+  1: '修复成功',
+  2: '修复失败'
+}
+
+const columns: DataTableColumns<any> = [
+  { title: '日期', key: 'Date', width: 120 },
+  { title: '工单号', key: 'WorkOrderNo', width: 180 },
+  { title: '维修站点', key: 'RepairStationName', width: 180,
+    render: (row) => row.RepairStationName || '-' 
+    // ⚠️ 如果需要显示名称，就在 fetchData 里转换
   },
-  { title: '维修次数', key: 'repair_count' },
-  { title: '状态', key: 'warranty_status_text' },
+  { title: '机型', key: 'MachineModel', width: 200 },
+  { title: '整机SN码', key: 'DeviceSN', width: 200 },
+  { title: '损坏部件', key: 'RepairComponent', width: 120 },
+  { title: '初测不良原因', key: 'DefectReason', width: 160 },
+  { title: '查证缺陷', key: 'VerifyDefect', width: 160 },
+  { title: '维修结果', key: 'RepairResult',
+    render: (row) => {
+      const label = repairResultMap[row.RepairResult] || '未知'
+      const type = row.RepairResult === 1 ? 'success' : (row.RepairResult === 2 ? 'error' : 'warning')
+      return h(NTag, { type }, () => label)
+    }
+  },
   {
     title: '操作',
     key: 'actions',
-    align:'center',
-    render: (row: Faults) => {
+    align: 'center',
+    render: (row) => {
+      console.log("表格行数据:", row);
+      const rowId = row.id || row.ID || row.Id || row.workOrderNo || row.WorkOrderNo;
+      console.log("提取的ID:", rowId);
+      
       return [
         h(
           NButton,
-          {
-            type: 'info',
-            ghost: true,
-            style: "margin-right: 8px;",
-            onClick: () => handleOpenEdit(row)
+          { 
+            type: 'primary', 
+            size: 'small', 
+            ghost: true, 
+            style: 'margin-right: 8px;',
+            onClick: () => goDetail(rowId) 
           },
-          { default: () => '修改' }
+          { default: () => '详情' }
         ),
-        // h(
-        //   NButton,
-        //   {
-        //     type: 'error',
-        //     ghost: true,
-        //     onClick: () => {
-        //       dialog.warning({
-        //         title: '确认报废',
-        //         content: `你确定要报废矿机「${row.serial_number}」吗？`,
-        //         positiveText: '确定',
-        //         negativeText: '取消',
-        //         onPositiveClick: () => message.error("报废操作,暂未启用")
-        //       })
-        //     }
-        //   },
-        //   { default: () => '报废' }
-        // )
+        h(
+          NButton,
+          { 
+            type: 'info', 
+            size: 'small', 
+            ghost: true, 
+            onClick: () => console.log('编辑:', row) 
+          },
+          { default: () => '编辑' }
+        )
       ]
     }
   }
-];
+]
 
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
@@ -182,7 +262,7 @@ const fetchData = async () => {
   };
 
   try {
-    const {data,error} = await fetchFaults(params);
+    const {data,error} = await fetchRepairDetails(params);
     if(error==null){
         tableData.value = data.list;
         pagination.value.itemCount = data.pagination.total;
@@ -200,7 +280,7 @@ const fetchData = async () => {
 // async function loadFaultsTypes() {
 //   loading.value = true
 //   try {
-//     const res = await fetchFaultsTypes({})
+//     const res = await fetchRepairDetailsTypes({})
 //     if (res && res.data.length>0) {
 //       // 明确 item 类型
 //       const arr = res.data as { id:number, name: string,hash_rate:string }[]
@@ -239,7 +319,8 @@ watch([searchSerial], () => {
 <template>
   <div>
     <!-- 查询框 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
+    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
+      <UploadExcel uploadUrl="/api/repair_stations/import_repair_details" />
       <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入机器编号" clearable style="width: 240px" />
     </div>
 

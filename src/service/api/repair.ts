@@ -23,6 +23,14 @@ export function fetchRepairStations(params: { page?: number; limit?: number; [ke
     params // 这里会拼接到 URL ?page=1&limit=10
   });
 }
+// 维修明细列表
+export function fetchRepairDetails(params: { page?: number; limit?: number; [key: string]: any }) {
+  return request({
+    url: '/api/repair_details',
+    method: 'get',
+    params // 这里会拼接到 URL ?page=1&limit=10
+  });
+}
 
 // 修改矿机
 // /api/faults/:id 

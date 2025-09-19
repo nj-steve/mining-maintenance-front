@@ -186,10 +186,10 @@ const fetchData = async () => {
   try {
     const {data,error} = await fetchRepairStations(params);
     if(error==null){
-        tableData.value = data;
-        // pagination.value.itemCount = data.pagination.total;
-        // pagination.value.page =  data.pagination.page;
-        // pagination.value.pageSize =  data.pagination.page_size;
+        tableData.value = data.list;
+        pagination.value.itemCount = data.pagination.total;
+        pagination.value.page =  data.pagination.page;
+        pagination.value.pageSize =  data.pagination.page_size;
     }else{
         message.error(`加载失败: ${error}`);
     }

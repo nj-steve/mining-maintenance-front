@@ -1,0 +1,1 @@
+import{I as a}from"./index-DaanpHt7.js";function i(t){return a({url:"/api/repair_stations",method:"get",params:t})}function u(t){return a({url:"/api/repair_details",method:"get",params:t})}function s(t,e){return a({url:"/api/repair_stations/"+t,method:"put",data:e})}export{i as a,u as f,s as u};

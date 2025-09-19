@@ -3,7 +3,8 @@ import { getRgb } from '@sa/color';
 import { DARK_CLASS } from '@/constants/app';
 import { localStg } from '@/utils/storage';
 import { toggleHtmlClass } from '@/utils/common';
-import systemLogo from '@/assets/svg-icon/logo.svg?raw';
+// import systemLogo from '@/assets/svg-icon/logo.svg?raw';
+import systemLogo from '@/assets/imgs/logo.png';
 import { $t } from '@/locales';
 
 export function setupLoading() {
@@ -34,7 +35,7 @@ export function setupLoading() {
 
   const loading = `
 <div class="fixed-center flex-col bg-layout" style="${primaryColor}">
-  ${logoWithClass}
+ 
   <div class="w-56px h-56px my-36px">
     <div class="relative h-full animate-spin">
       ${dot}

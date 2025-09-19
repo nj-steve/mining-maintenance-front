@@ -2,7 +2,8 @@
 import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchFaults,updateFaults } from '@/service/api/faults';
+import { fetchFaults,updateFaults,fetchFaultsStatus } from '@/service/api/faults';
+import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
 
 interface Faults {
   id: number;
@@ -133,7 +134,7 @@ const columns: DataTableColumns<Faults> = [
   }
   },
   { title: '维修次数', key: 'repair_count' },
-  { title: '状态', key: 'warranty_status_text' },
+  { title: '状态', key: 'status_text' },
   {
     title: '操作',
     key: 'actions',
@@ -197,6 +198,26 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
+
+const fetchStatus=async()=>{
+  loading.value = true;
+  const params: any = {
+    type:1
+  };
+
+  try {
+    const {data,error} = await fetchFaultsStatus(params);
+    if(error==null){
+        tableData.value = data.list;
+    }else{
+        message.error(`加载失败: ${error}`);
+    }
+  } catch (err) {
+    message.error(`加载失败${err}`);
+  } finally {
+    loading.value = false;
+  }
+}
 // async function loadFaultsTypes() {
 //   loading.value = true
 //   try {
@@ -239,7 +260,12 @@ watch([searchSerial], () => {
 <template>
   <div>
     <!-- 查询框 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
+    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
+      <div>
+        <UploadSiteMachineExcel buttonText="导入"/>
+        
+      </div>
+      
       <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入机器编号" clearable style="width: 240px" />
     </div>
 

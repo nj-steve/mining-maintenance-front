@@ -20,7 +20,6 @@ declare module 'vue' {
     IconGridiconsFullscreen: typeof import('~icons/gridicons/fullscreen')['default']
     IconGridiconsFullscreenExit: typeof import('~icons/gridicons/fullscreen-exit')['default']
     IconLocalBanner: typeof import('~icons/local/banner')['default']
-    IconLocalLogo: typeof import('~icons/local/logo')['default']
     IconMdiArrowDownThin: typeof import('~icons/mdi/arrow-down-thin')['default']
     IconMdiArrowUpThin: typeof import('~icons/mdi/arrow-up-thin')['default']
     IconMdiKeyboardEsc: typeof import('~icons/mdi/keyboard-esc')['default']
@@ -74,6 +73,8 @@ declare module 'vue' {
     TableColumnSetting: typeof import('./../components/advanced/table-column-setting.vue')['default']
     TableHeaderOperation: typeof import('./../components/advanced/table-header-operation.vue')['default']
     ThemeSchemaSwitch: typeof import('./../components/common/theme-schema-switch.vue')['default']
+    UploadExcel: typeof import('./../components/upload/UploadExcel.vue')['default']
+    UploadSiteMachineExcel: typeof import('./../components/upload/UploadSiteMachineExcel.vue')['default']
     WaveBg: typeof import('./../components/custom/wave-bg.vue')['default']
   }
 }

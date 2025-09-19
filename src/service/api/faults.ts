@@ -26,6 +26,17 @@ export function fetchFaults(params: { page?: number; limit?: number; [key: strin
 
 // 修改矿机
 // /api/faults/:id 
+//1: fault status, 2: order status
+export function fetchFaultsStatus(params: { type?:number}) {
+  return request({
+    url: '/api/data/fault_order_status',
+    method: 'get',
+    params
+  });
+}
+
+// 修改矿机
+// /api/faults/:id 
 export function updateFaults(id:number,params: {[key: string]: any }) {
   return request({
     url: '/api/faults/'+id,
@@ -33,4 +44,7 @@ export function updateFaults(id:number,params: {[key: string]: any }) {
     data:params
   });
 }
+
+
+
 
