@@ -26,6 +26,7 @@ declare module "@elegant-router/types" {
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "miningsite": "/miningsite";
     "repairrecords": "/repairrecords";
+    "repairrecordsdetail": "/repairrecordsdetail";
     "repairstation": "/repairstation";
     "users": "/users";
     "workflow": "/workflow";
@@ -69,6 +70,7 @@ declare module "@elegant-router/types" {
     | "login"
     | "miningsite"
     | "repairrecords"
+    | "repairrecordsdetail"
     | "repairstation"
     | "users"
     | "workflow"
@@ -97,6 +99,7 @@ declare module "@elegant-router/types" {
     | "home"
     | "miningsite"
     | "repairrecords"
+    | "repairrecordsdetail"
     | "repairstation"
     | "users"
     | "workflow"

@@ -3,6 +3,7 @@ import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchFaults,updateFaults,fetchFaultsStatus } from '@/service/api/faults';
+import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
 
 interface Faults {
@@ -12,12 +13,17 @@ interface Faults {
   Faults_type_id:number;
   status_id:number,
   contract_number: string;
+  status_text?: string;
+  site_name?: string;
+  site_id?:number;
+  model?: string;
   FaultsType?: {
     name?: string;
     hash_rate?: number;
     name_source?: string;
   };
   Site?: {
+    id?: number;
     name?: string;
   };
   Status?: {
@@ -32,6 +38,21 @@ const tableData = ref<Faults[]>([]);
 const loading = ref(false);
 const searchSerial = ref<string>('');
 const modelOptions = ref<{ label: string; value: number }[]>([])
+
+// 批量选择相关
+const selectedRowKeys = ref<number[]>([]);
+const selectedRows = ref<Faults[]>([]);
+
+// 工单相关
+const showWorkOrderModal = ref(false);
+const workOrderForm = ref({
+  workOrderNo: '',
+  workOrderDate: new Date().toISOString().split('T')[0],
+  site: '',
+  faultMachineCount: 0,
+  selectedMachines: [] as Faults[],
+  site_id:0
+});
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -62,6 +83,7 @@ const editForm = ref<Faults>({
   serial_number: '',
   serial_number_source: '',
   contract_number: '',
+  site_id:0
   // FaultsType: { name: '', hash_rate: 0 },
   // Site: { name: '' },
   
@@ -83,7 +105,8 @@ const handleOpenEdit = (row: Faults) => {
     status_id: row.status_id ?? 0,
     serial_number: row.serial_number || '',
     serial_number_source: row.serial_number_source || '',
-    contract_number: row.contract_number || ''
+    contract_number: row.contract_number || '',
+    site_id: row.site_id || 0,
   };
   // editForm.value = JSON.parse(JSON.stringify(row)); // 深拷贝
   showEditModal.value = true;
@@ -110,6 +133,10 @@ const handleSaveEdit = async () => {
 
 // ---------------- 表格列 ----------------
 const columns: DataTableColumns<Faults> = [
+  { 
+    type: 'selection',
+    multiple: true
+  },
   { title: '序号', key: 'id', width: 200 },
   { title: '日期', key: 'date' },
   { title: '场地', key: 'site_name'},
@@ -134,7 +161,7 @@ const columns: DataTableColumns<Faults> = [
   }
   },
   { title: '维修次数', key: 'repair_count' },
-  { title: '状态', key: 'status_text' },
+  { title: '状态', key: 'status_text'},
   {
     title: '操作',
     key: 'actions',
@@ -255,22 +282,115 @@ watch([searchSerial], () => {
   fetchData();
   
 });
+
+// 批量选择处理
+const handleSelectionChange = (keys: (string | number)[], rows: any[]) => {
+  selectedRowKeys.value = keys.map(key => Number(key));
+  selectedRows.value = rows as Faults[];
+  console.log('选中的记录:', keys, rows);
+};
+
+// 创建工单
+const handleCreateWorkOrder = () => {
+  // 只选择状态为"下架检查"的机器
+  const downCheckMachines = selectedRows.value.filter(row => 
+    row.Status?.name === '下架检查' || row.status_text === '下架检查'
+  );
+  
+  if (downCheckMachines.length === 0) {
+    message.warning('请选择状态为"下架检查"的机器');
+    return;
+  }
+  
+  // 生成工单编号
+  const workOrderNo = `WO${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+  
+  // 获取场地信息（取第一个选中机器的场地）
+  const site = downCheckMachines[0]?.Site?.name || downCheckMachines[0]?.site_name || '';
+  
+  workOrderForm.value = {
+    workOrderNo,
+    workOrderDate: new Date().toISOString().split('T')[0],
+    site,
+    site_id:downCheckMachines[0].site_id||0,
+    faultMachineCount: downCheckMachines.length,
+    selectedMachines: downCheckMachines
+  };
+  
+  showWorkOrderModal.value = true;
+};
+
+// 确认创建工单
+const handleConfirmWorkOrder = async () => {
+  try {
+    // 准备提交数据
+    const submitData = {
+      date: workOrderForm.value.workOrderDate,
+      fault_ids: workOrderForm.value.selectedMachines.map(machine => machine.id),
+      order_no: workOrderForm.value.workOrderNo,
+      site_id:workOrderForm.value.site_id,
+      // site_id: workOrderForm.value.selectedMachines[0]?.Site?.id || 0 // 假设第一个机器的场地ID
+    };
+    
+    console.log('提交工单数据:', submitData);
+    
+    // 调用创建工单API
+    const { data, error } = await createOrder(submitData);
+    
+    if (error === null) {
+      message.success('工单创建成功！');
+      showWorkOrderModal.value = false;
+      
+      // 清空选择
+      selectedRowKeys.value = [];
+      selectedRows.value = [];
+      
+      // 刷新数据
+      fetchData();
+    } else {
+      message.error(`工单创建失败: ${error}`);
+    }
+    
+  } catch (error) {
+    message.error('工单创建失败');
+    console.error('创建工单失败:', error);
+  }
+};
+
+// 取消创建工单
+const handleCancelWorkOrder = () => {
+  showWorkOrderModal.value = false;
+};
 </script>
 
 <template>
   <div>
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
-      <div>
+      <div style="display: flex; align-items: center; gap: 12px;">
         <UploadSiteMachineExcel buttonText="导入"/>
-        
+        <NButton 
+          type="primary" 
+          :disabled="selectedRows.length === 0"
+          @click="handleCreateWorkOrder"
+        >
+          创建工单 ({{ selectedRows.length }})
+        </NButton>
       </div>
       
       <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入机器编号" clearable style="width: 240px" />
     </div>
 
     <!-- 表格 -->
-    <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" remote />
+    <NDataTable 
+      :columns="columns" 
+      :data="tableData" 
+      :pagination="pagination" 
+      :loading="loading" 
+      remote
+      :row-key="(row: Faults) => row.id"
+      @update:checked-row-keys="handleSelectionChange"
+    />
 
     <!-- 修改弹框 -->
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
@@ -295,6 +415,50 @@ watch([searchSerial], () => {
       <template #footer>
         <NButton type="primary" @click="handleSaveEdit">保存</NButton>
         <NButton @click="showEditModal = false">取消</NButton>
+      </template>
+    </NModal>
+
+    <!-- 创建工单弹框 -->
+    <NModal v-model:show="showWorkOrderModal" style="width: 800px" preset="card" title="创建工单">
+      <NForm :model="workOrderForm" label-width="120">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+          <NFormItem label="工单编号">
+            <NInput v-model:value="workOrderForm.workOrderNo" readonly />
+          </NFormItem>
+          
+          <NFormItem label="工单日期">
+            <NInput v-model:value="workOrderForm.workOrderDate" readonly />
+          </NFormItem>
+          
+          <NFormItem label="场地">
+            <NInput v-model:value="workOrderForm.site" readonly />
+          </NFormItem>
+          
+          <NFormItem label="故障机台数">
+            <NInput :value="workOrderForm.faultMachineCount.toString()" readonly />
+          </NFormItem>
+        </div>
+        
+        <NFormItem label="选中故障机列表">
+          <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px;">
+            <div v-for="(machine, index) in workOrderForm.selectedMachines" :key="machine.id" 
+                 style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+              <div>
+                <div style="font-weight: 500;">{{ machine.serial_number }}</div>
+                <div style="font-size: 12px; color: #666;">
+                  {{ machine.FaultsType?.name || machine.model }} | 
+                  {{ machine.Site?.name || machine.site_name }}
+                </div>
+              </div>
+              <NTag type="warning">{{ machine.Status?.name || machine.status_text }}</NTag>
+            </div>
+          </div>
+        </NFormItem>
+      </NForm>
+      
+      <template #footer>
+        <NButton type="primary" @click="handleConfirmWorkOrder">创建</NButton>
+        <NButton @click="handleCancelWorkOrder">取消</NButton>
       </template>
     </NModal>
   </div>

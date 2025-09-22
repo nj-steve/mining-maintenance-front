@@ -32,6 +32,14 @@ export function fetchRepairDetails(params: { page?: number; limit?: number; [key
   });
 }
 
+// 维修明细列表
+export function fetchRepairDetailsByID(id: number) {
+  return request({
+    url: `/api/repair_details/${id}`,
+    method: 'get',
+  });
+}
+
 // 修改矿机
 // /api/faults/:id 
 export function updateFaults(id:number,params: {[key: string]: any }) {

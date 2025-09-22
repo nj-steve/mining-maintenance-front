@@ -106,6 +106,18 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.repairrecords',
       icon: 'mdi:file-cog',
       order: 5
+    },
+    props: true
+  },
+  {
+    name: 'repairrecordsdetail',
+    path: '/repairrecordsdetail',
+    component: 'layout.base$view.repairrecordsdetail',
+    meta: {
+      title: '维修详情',
+      i18nKey: 'route.repairrecordsdetail',
+      props: true,
+      hideInMenu: true
     }
   },
   {

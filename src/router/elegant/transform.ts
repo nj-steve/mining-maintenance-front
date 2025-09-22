@@ -172,6 +172,7 @@ const routeMap: RouteMap = {
   "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?",
   "miningsite": "/miningsite",
   "repairrecords": "/repairrecords",
+  "repairrecordsdetail": "/repairrecordsdetail",
   "repairstation": "/repairstation",
   "users": "/users",
   "workflow": "/workflow"

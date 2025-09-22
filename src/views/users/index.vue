@@ -2,11 +2,11 @@
 import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchUser, updateUser, createUser } from '@/service/api/auth';
+import { fetchUser, updateUser, createUser,fetchCompanies } from '@/service/api/auth';
 import { roleTagMap, roleRecord, userStatusMap, userStatusRecord } from "@/constants/business"
 
 interface User {
-  id?: number;                  // 主键ID（编辑时需要）
+  ID?: number;                  // 主键ID（编辑时需要）
   Username: string;              // 用户名
   ContactPhone: string;         // 联系电话
   Company: string;               // 公司
@@ -15,6 +15,18 @@ interface User {
   StartDate: string;            // 入职日期 (YYYY-MM-DD)
   AssignedCompanyID?: number;  // 分配的公司/站点/维修站 ID（可选）
   Status?: number;               // 状态：1-在职，0-离职（可选）
+}
+
+interface EditUser {
+  id:number,
+  assigned_company_id: number;
+  company: string;
+  contact_phone: string;
+  email: string;
+  role: number;
+  start_date: string;
+  status: number;
+  username: string;
 }
 
 const dialog = useDialog()
@@ -28,6 +40,9 @@ const searchRole = ref<number>(); // 角色筛选
 const modelOptions = ref<{ label: string; value: number }[]>([])
 // 状态下拉选项
 const statusOptions =  ref<{ label: string; value: number }[]>([])
+// 公司下拉选项
+const companyOptions = ref<{ label: string; value: number }[]>([])
+// const roleCompany=ref<[]>([]); //  获取角色公司id
 // [
   // { label: '在架', value: 1 },
   // { label: '维修', value: 2 },
@@ -60,16 +75,17 @@ const pagination = ref<PaginationProps>({
 // ---------------- 添加/编辑 弹框 ----------------
 const showModal = ref(false);
 const dialogMode = ref<'add' | 'edit'>('add');
-const editForm = ref<User>({
-  id: undefined,
-  Username: '',
-  ContactPhone: '',
-  Company: '',
-  Role: 1,
-  Email: '',
-  StartDate: '',
-  AssignedCompanyID: undefined,
-  Status: 1
+
+const editForm = ref<EditUser>({
+  id: 0,
+  assigned_company_id: 0,
+  company: "",
+  contact_phone: "",
+  email: "",
+  role: 1,        // 默认角色，可以根据需求调整
+  start_date: "", // 可以用 "" 或 new Date().toISOString()
+  status: 0,      // 默认状态
+  username: ""
 });
 
 
@@ -78,14 +94,15 @@ const editForm = ref<User>({
 const handleOpenAdd = () => {
   dialogMode.value = 'add';
   editForm.value = {
-    Username: '',
-    ContactPhone: '',
-    Company: '',
-    Role: 1,
-    Email: '',
-    StartDate: '',
-    AssignedCompanyID: undefined,
-    Status: 1
+    id: 0,
+    assigned_company_id: 0,
+    company: "",
+    contact_phone: "",
+    email: "",
+    role: 1,        // 默认角色，可以根据需求调整
+    start_date: "", // 可以用 "" 或 new Date().toISOString()
+    status: 0,      // 默认状态
+    username: ""
   };
   
   // editForm.value = {
@@ -97,11 +114,32 @@ const handleOpenAdd = () => {
   showModal.value = true;
 };
 
+function userToEditUser(user: User): EditUser {
+  return {
+    id: user.ID || 0,
+    assigned_company_id: user.AssignedCompanyID || 0,
+    company: user.Company || "",
+    contact_phone: user.ContactPhone || "",
+    email: user.Email || "",
+    role: user.Role || 1,
+    start_date: user.StartDate || "",
+    status: user.Status !== undefined ? user.Status : 0,
+    username: user.Username || ""
+  };
+}
+
 // 打开编辑弹框
 const handleOpenEdit = (row: User) => {
   dialogMode.value = 'edit';
-  editForm.value = { ...row }; // 拷贝一份
+  editForm.value =userToEditUser(row)
+  // editForm.value = { ...row }; // 拷贝一份
   console.log("editForm.value",editForm.value)
+  
+  // 根据角色加载对应的公司选项
+  if (row.Role) {
+    getCompanys(row.Role);
+  }
+  
   showModal.value = true;
 };
 
@@ -110,15 +148,16 @@ const handleSave = async () => {
   try {
     if (dialogMode.value === 'add') {
       const res = await createUser(editForm.value);
-      if (res.response?.data?.msg === "success") {
+      if (res.response?.data?.msg === "Operation successful") {
         message.success('添加成功！');
         fetchData();
       } else {
         message.error('添加失败: ' + res.response?.data?.msg);
       }
     } else {
+      
       const res = await updateUser(editForm.value.id!, editForm.value);
-      if (res.response?.data?.msg === "success") {
+      if (res.response?.data?.msg === "Operation successful") {
         message.success('修改成功！');
         fetchData();
       } else {
@@ -197,6 +236,61 @@ const fetchData = async () => {
   }
 };
 
+// ---------------- 数据获取 ----------------
+const getCompanys = async (role?: number) => {
+  // 如果没有传入角色，使用当前表单中的角色
+  const currentRole = role || editForm.value.role;
+  
+  // 管理员(1)和售后管理(2)不需要选择公司
+  if (!currentRole || currentRole === 1 || currentRole === 2) {
+    console.log("当前角色不需要选择公司:", currentRole);
+    companyOptions.value = [];
+    // 清空已选的公司
+    editForm.value.assigned_company_id = 0;
+    return;
+  }
+
+  const params: any = {
+    role: currentRole.toString()
+  };
+
+  try {
+    const { data, error } = await fetchCompanies(params);
+    console.log("获取公司数据:", data);
+    
+    if (error === null && data) {
+      // 根据返回的数据结构更新公司选项
+      if (Array.isArray(data)) {
+        // 如果直接返回数组
+        companyOptions.value = data.map((item: any) => ({
+          label: item.name || item.company_name || item.title,
+          value: item.id || item.company_id
+        }));
+      } else if (data.list && Array.isArray(data.list)) {
+        // 如果返回的是分页格式 { list: [], pagination: {} }
+        companyOptions.value = data.list.map((item: any) => ({
+          label: item.name || item.company_name || item.title,
+          value: item.id || item.company_id
+        }));
+      } else {
+        console.warn("未知的数据格式:", data);
+        companyOptions.value = [];
+      }
+      
+      // 清空当前选中的公司，因为角色变了
+      editForm.value.assigned_company_id = 0;
+    } else {
+      message.error(`加载公司数据失败: ${error}`);
+      companyOptions.value = [];
+    }
+  } catch (err) {
+    console.error("获取公司数据异常:", err);
+    message.error(`加载公司数据失败: ${err}`);
+    companyOptions.value = [];
+  }
+};
+
+
 onMounted(() => {
   fetchData()
   // 初始化赋值
@@ -216,6 +310,7 @@ watch([searchSerial,searchRole], () => {
   pagination.value.page = 1;
   fetchData();
 });
+
 </script>
 
 <template>
@@ -244,42 +339,52 @@ watch([searchSerial,searchRole], () => {
   <NForm :model="editForm" label-width="100">
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
       <NFormItem label="姓名">
-        <NInput v-model:value="editForm.Username" placeholder="请输入姓名" />
+        <NInput v-model:value="editForm.username" placeholder="请输入姓名" />
       </NFormItem>
 
       <NFormItem label="角色类型">
         <NSelect
-          v-model:value="editForm.Role"
+          v-model:value="editForm.role"
           :options="modelOptions"
           placeholder="请选择角色类型"
+          @update:value="getCompanys"
           clearable
         />
       </NFormItem>
 
       <NFormItem label="联系电话">
-        <NInput v-model:value="editForm.ContactPhone" placeholder="请输入联系电话" />
+        <NInput v-model:value="editForm.contact_phone" placeholder="请输入联系电话" />
       </NFormItem>
 
       <NFormItem label="邮箱">
-        <NInput v-model:value="editForm.Email" placeholder="请输入邮箱" />
+        <NInput v-model:value="editForm.email" placeholder="请输入邮箱" />
       </NFormItem>
 
-      <NFormItem label="所属公司">
-        <NInput v-model:value="editForm.Company" placeholder="请输入所属公司" />
-      </NFormItem>
+        <NFormItem 
+          v-if="editForm.role !== 1 && editForm.role !== 2" 
+          label="所属公司"
+        >
+          <NSelect
+            v-model:value="editForm.assigned_company_id"
+            :options="companyOptions"
+            placeholder="请选择公司"
+            clearable
+          />
+          <!-- <NInput v-model:value="editForm.Company" placeholder="请输入所属公司" /> -->
+        </NFormItem>
 
       <NFormItem label="用户状态">
         <NSelect
-          v-model:value="editForm.Status"
+          v-model:value="editForm.status"
           :options="statusOptions"
           placeholder="请选择状态"
         />
       </NFormItem>
 
-      <NFormItem label="权限分配">
+      <!-- <NFormItem label="权限分配"> -->
 
         <!-- <NSelect v-model:value="editForm.role" placeholder="请输入权限分配" /> -->
-      </NFormItem>
+      <!-- </NFormItem> -->
     </div>
   </NForm>
 

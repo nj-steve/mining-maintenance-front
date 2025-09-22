@@ -129,10 +129,11 @@
   import { ref, onMounted } from "vue"
   import { useRoute } from "vue-router"
   import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace } from "naive-ui"
-  import { fetchRepairDetails } from '@/service/api/repair'
+  import { fetchRepairDetailsByID } from '@/service/api/repair'
   
   const route = useRoute();
-  const id = route.params.id; // 用它去请求详情数据
+  // const id = route.params.id; // 用它去请求详情数据
+  const id = ref(route.params.id as string);
   const loading = ref(false);
 
   const isEdit = ref(false)
@@ -180,7 +181,8 @@
     
     loading.value = true;
     try {
-      const { data, error } = await fetchRepairDetails({ id: id as string });
+      const { data, error } = await fetchRepairDetailsByID(Number(id.value));
+      console.log("data",data)
       if (error === null && data && data.length > 0) {
         const detail = data[0]; // 假设返回的是数组，取第一个
         form.value = {

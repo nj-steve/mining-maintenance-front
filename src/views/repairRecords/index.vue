@@ -120,7 +120,7 @@ function goDetail(id: number | string) {
     return;
   }
   try {
-    router.push({ name: 'repairrecords-detail', params: { id: String(id) } });
+    router.push({ name: 'repairrecordsdetail', params: { id: String(id) } });
   } catch (error) {
     console.error("路由跳转失败:", error);
   }

@@ -172,7 +172,9 @@ const local: App.I18n.Schema = {
     repairrecords:"Repair Records",
     workflow:"Work Flow",
     miningsite:"Mining Site",
-    users:"Permission"
+    users:"Permission",
+    repairrecordsdetail:"Repair Records Detail",
+    
   },
   page: {
     login: {
