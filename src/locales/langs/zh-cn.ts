@@ -173,7 +173,8 @@ const local: App.I18n.Schema = {
     workflow:"工单流程",
     miningsite:"矿场列表",
     users:"权限管理",
-    repairrecordsdetail:"维修明细"
+    repairrecordsdetail:"维修明细",
+    sitedetail:"矿场详情",
   },
   page: {
     login: {

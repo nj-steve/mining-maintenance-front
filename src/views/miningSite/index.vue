@@ -1,36 +1,35 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h } from 'vue';
+import { useRouter } from 'vue-router';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchSites,updateSites } from '@/service/api/site';
 
-interface Faults {
-  id: number;
-  serial_number: string;
-  serial_number_source: string;
-  Faults_type_id:number;
-  status_id:number,
-  contract_number: string;
-  FaultsType?: {
-    name?: string;
-    hash_rate?: number;
-    name_source?: string;
-  };
-  Site?: {
-    name?: string;
-  };
-  Status?: {
-    name?: string;
-  };
+interface Site {
+  ID: number;
+  Name: string;
+  Address: string;
+  AssetCount: number;
+  OffShelfCount: number;
+  InLogisticsCount: number;
+  UnderRepairCount: number;
+  ToBePutOnShelfCount: number;
+  TotalHistoricalRepairs: number;
+  IsOnsiteDefault: number;
+  // 场地状态
+  contact_person: string;
+  contact_phone: string;
+  contact_email: string;
 }
 
 const dialog = useDialog()
 const message = useMessage();
+const router = useRouter();
 
-const tableData = ref<Faults[]>([]);
+const tableData = ref<Site[]>([]);
 const loading = ref(false);
 const searchSerial = ref<string>('');
-const modelOptions = ref<{ label: string; value: number }[]>([])
+const modelOptions = ref<{ label: string; value: number }[]>([{label:'是',value:1},{label:'否',value:0}])
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -54,35 +53,23 @@ const pagination = ref<PaginationProps>({
 
 // ---------------- 修改弹框 ----------------
 const showEditModal = ref(false);
-const editForm = ref<Faults>({
+const editForm = ref({
   id: 0,
-  Faults_type_id:0,
-  status_id:0,
-  serial_number: '',
-  serial_number_source: '',
-  contract_number: '',
-  // FaultsType: { name: '', hash_rate: 0 },
-  // Site: { name: '' },
-  
+  name: '',
+  address: '',
+  asset_count: 0,
+  is_onsite_default: 0
 });
 
-// 状态下拉选项
-const statusOptions = [
-  { label: '在架', value: 1 },
-  { label: '维修', value: 2 },
-  { label: '报废', value: 3 },
-  { label: '下架', value: 4 }
-];
 
 // 打开修改弹框
-const handleOpenEdit = (row: Faults) => {
+const handleOpenEdit = (row: Site) => {
   editForm.value = {
-    id: row.id,
-    Faults_type_id: row.Faults_type_id ?? 0,
-    status_id: row.status_id ?? 0,
-    serial_number: row.serial_number || '',
-    serial_number_source: row.serial_number_source || '',
-    contract_number: row.contract_number || ''
+    id: row.ID,
+    name: row.Name || '',
+    address: row.Address || '',
+    asset_count: row.AssetCount ?? 0,
+    is_onsite_default: row.IsOnsiteDefault ?? 0,
   };
   // editForm.value = JSON.parse(JSON.stringify(row)); // 深拷贝
   showEditModal.value = true;
@@ -92,13 +79,12 @@ const handleOpenEdit = (row: Faults) => {
 const handleSaveEdit = async () => {
   try {
     // TODO: 调用后端接口 updateSites(editForm.value)
-    // console.log('修改提交:', editForm.value);
-    const res = await updateSites(editForm.value.id, editForm.value);
-    if(res.response?.data?.msg=="success"){
+    const {error} = await updateSites(editForm.value.id, editForm.value);
+    if(error==null){
         message.success('修改成功！');
         fetchData(); // 刷新表格
       }else{
-        message.error('修改失败:' +res.response?.data?.msg);
+        message.error('修改失败:' +error);
       }
   } catch (err) {
     message.error('修改失败');
@@ -108,7 +94,7 @@ const handleSaveEdit = async () => {
 };
 
 // ---------------- 表格列 ----------------
-const columns: DataTableColumns<Faults> = [
+const columns: DataTableColumns<Site> = [
   { title: '场地名称', key: 'Name', width: 200 },
   { title: '场地地址', key: 'Address' },
   { title: '资产数', key: 'AssetCount'},
@@ -126,7 +112,6 @@ const columns: DataTableColumns<Faults> = [
       '报废': 'error',
       '下架':'info',
     };
-
     const label = row.Status?.name || '未知';
     // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
     return h(NTag, {type: tagMap[row.Status?.name] }, () => label)
@@ -154,34 +139,38 @@ const columns: DataTableColumns<Faults> = [
     title: '操作',
     key: 'actions',
     align:'center',
-    render: (row: Faults) => {
+    render: (row: Site) => {
       return [
         h(
           NButton,
           {
-            type: 'info',
+            // type: 'info',
             ghost: true,
-            style: "margin-right: 8px;",
+            size:'small',
+            style: "margin-right: 8px;color: #1890ff;",
             onClick: () => handleOpenEdit(row)
           },
-          { default: () => '编辑' }
+          {
+            default: () => '编辑',
+            // icon: () => h('icon-mdi-pencil', { class: 'text-icon' })
+          }
         ),
         h(
           NButton,
           {
-            type: 'error',
+            // type: 'primary',
             ghost: true,
+            size:'small',
+            style: 'color: #1890ff;',
             onClick: () => {
-              // dialog.warning({
-              //   title: '确认报废',
-              //   content: `你确定要报废矿机「${row.serial_number}」吗？`,
-              //   positiveText: '确定',
-              //   negativeText: '取消',
-              //   onPositiveClick: () => message.error("报废操作,暂未启用")
-              // })
+              router.push(`/miningsite/${row.ID}/info`);
             }
+            
           },
-          { default: () => '查看' }
+          {
+            default: () => '查看',
+            // icon: () => h('icon-mdi-eye', { class: 'text-icon', style: 'color: #1890ff;' })
+          }
         )
       ]
     }
@@ -213,36 +202,9 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
-// async function loadFaultsTypes() {
-//   loading.value = true
-//   try {
-//     const res = await fetchSitesTypes({})
-//     if (res && res.data.length>0) {
-//       // 明确 item 类型
-//       const arr = res.data as { id:number, name: string,hash_rate:string }[]
-
-//       // names.value = [arr.map(item => item.name+" _ "+item.hash_rate+" T")]
-
-//       modelOptions.value = arr.map(item => ({
-//         label:  item.name+" _ "+item.hash_rate+" T",
-//         value: item.id,
-//       }))
-      
-//     } else {
-//       // names.value = []
-//       modelOptions.value = []
-//     }
-//   } catch (err) {
-//     // console.error('获取场地数据失败:', err)
-//     message.error('加载场地数据失败')
-//   } finally {
-//     loading.value = false
-//   }
-// }
 
 onMounted(() => {
   fetchData()
-//   loadFaultsTypes();
 });
 watch([searchSerial], () => {
   tableData.value = [];
@@ -263,24 +225,21 @@ watch([searchSerial], () => {
     <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" remote />
 
     <!-- 修改弹框 -->
-    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
+    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改场地信息">
       <NForm :model="editForm" label-width="100">
-        <NFormItem label="机型">
-          <NSelect v-model:value="editForm.Faults_type_id" :options="modelOptions" />
+        <NFormItem label="场地名称">
+          <NInput v-model:value="editForm.name" disabled />
         </NFormItem>
-        <NFormItem label="机型">
-          <NSelect v-model:value="editForm.Faults_type_id" :options="modelOptions" />
+        <NFormItem label="场地地址">
+          <NInput v-model:value="editForm.address" disabled />
         </NFormItem>
-        <NFormItem label="机器编号">
-          <NInput v-model:value="editForm.serial_number" />
+        <NFormItem label="资产数">
+          <NInputNumber v-model:value="editForm.asset_count" disabled />
         </NFormItem>
-        <!-- <NFormItem label="场地">
-          <NInput v-model:value="editForm.Site?.name" disabled/>
-        </NFormItem> -->
-    
-        <NFormItem label="状态">
-          <NSelect v-model:value="editForm.status_id" :options="statusOptions" />
+        <NFormItem label="是否有驻场">
+          <NSelect v-model:value="editForm.is_onsite_default" :options="modelOptions" />
         </NFormItem>
+       
       </NForm>
       <template #footer>
         <NButton type="primary" @click="handleSaveEdit">保存</NButton>

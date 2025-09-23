@@ -19,96 +19,11 @@ interface CardData {
   icon: string;
 }
 
-const cardData = computed<CardData[]>(() => [
-  {
-    key: 'visitCount',
-    title: "资产数",
-    value: 9725,
-    unit: '',
-    color: {
-      start: '#ec4786',
-      end: '#b955a4'
-    },
-    icon: 'ant-design:bar-chart-outlined'
-  },
-  {
-    key: 'turnover',
-    title: "今日下架",
-    value: 1026,
-    unit: '$',
-    color: {
-      start: '#865ec0',
-      end: '#5144b4'
-    },
-    icon: 'ant-design:money-collect-outlined'
-  },
-  {
-    key: 'downloadCount',
-    title: "待处理",
-    value: 970925,
-    unit: '',
-    color: {
-      start: '#56cdf3',
-      end: '#719de3'
-    },
-    icon: 'carbon:document-download'
-  },
-  {
-    key: 'dealCount',
-    title: "物流中",
-    value: 9527,
-    unit: '',
-    color: {
-      start: '#fcbc25',
-      end: '#f68057'
-    },
-    icon: 'ant-design:trademark-circle-outlined'
-  },
-  {
-    key: 'visitCount',
-    title: "在修设备",
-    value: 9725,
-    unit: '',
-    color: {
-      start: '#ec4786',
-      end: '#b955a4'
-    },
-    icon: 'ant-design:bar-chart-outlined'
-  },
-  {
-    key: 'turnover',
-    title: "今日完成维修",
-    value: 1026,
-    unit: '$',
-    color: {
-      start: '#865ec0',
-      end: '#5144b4'
-    },
-    icon: 'ant-design:money-collect-outlined'
-  },
-  {
-    key: 'downloadCount',
-    title: "待上架",
-    value: 970925,
-    unit: '',
-    color: {
-      start: '#56cdf3',
-      end: '#719de3'
-    },
-    icon: 'carbon:document-download'
-  },
-  {
-    key: 'dealCount',
-    title: "历史下架总数",
-    value: 9527,
-    unit: '',
-    color: {
-      start: '#fcbc25',
-      end: '#f68057'
-    },
-    icon: 'ant-design:trademark-circle-outlined'
-  }
-]);
+const props = defineProps<{
+  data: CardData[];
+}>();
+
+const cardData = computed<CardData[]>(() => props.data);
 
 interface GradientBgProps {
   gradientColor: string;
@@ -150,4 +65,10 @@ function getGradientColor(color: CardData['color']) {
   </NCard>
 </template>
 
-<style scoped></style>
+<style scoped lang="scss">
+.card-wrapper {
+  .rd-8px {
+    border-radius: 8px;
+  }
+}
+</style>

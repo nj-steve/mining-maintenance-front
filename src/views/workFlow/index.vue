@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, h } from 'vue';
+import { onMounted, ref, watch, h, computed } from 'vue';
 import dayjs from "dayjs";
-import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NCheckbox } from 'naive-ui';
+import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
 import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders } from '@/service/api/workflow';
 
 
@@ -33,6 +33,13 @@ const message = useMessage();
 const tableData = ref<Order[]>([]);
 const loading = ref(false);
 const searchSerial = ref<string>('');
+
+// 批量选择相关
+const checkedRowKeys = ref<DataTableRowKey[]>([]);
+const selectedOrders = computed(() => {
+  return tableData.value.filter(order => checkedRowKeys.value.includes(order.ID));
+});
+const isBatchDispatchEnabled = computed(() => selectedOrders.value.length > 0);
 const modelOptions = ref<{ label: string; value: number }[]>([])
 // 分页
 const pagination = ref<PaginationProps>({
@@ -145,6 +152,29 @@ const handleOpenDispatch = (row: Order) => {
   showDispatchModal.value = true;
 };
 
+// 批量派单处理
+const handleBatchDispatch = () => {
+  if (selectedOrders.value.length === 0) {
+    message.warning('请先选择要派单的工单');
+    return;
+  }
+  
+  // 使用第一个选中的工单作为模板
+  currentOrder.value = selectedOrders.value[0];
+  
+  // 重置表单
+  dispatchForm.value = {
+    faultCount: selectedOrders.value.reduce((sum, order) => sum + order.FaultCount, 0),
+    onsite: null as null | number,
+    repairStation: null as null | number,
+    logisticsCompany: null as null | number,
+    logisticsInfo: '',
+    remark: `批量派单 - 共${selectedOrders.value.length}个工单`
+  };
+  
+  showDispatchModal.value = true;
+};
+
 // 提交派单
 const handleSubmitDispatch = async () => {
   if (!currentOrder.value) return;
@@ -180,14 +210,36 @@ const handleSubmitDispatch = async () => {
       submitData.logistics_info = dispatchForm.value.logisticsInfo;
     }
 
-    const res = await dispatchOrders(currentOrder.value.ID, submitData);
-    if (res.response?.data?.code == String(0)) {
-      message.success('派单成功！');
-      showDispatchModal.value = false;
-      fetchData(); // 刷新表格
-    } else {
-      message.error('派单失败:' + res.response?.data?.msg);
+    // 判断是批量派单还是单个派单
+    const ordersToDispatch = selectedOrders.value.length > 0 ? selectedOrders.value : [currentOrder.value];
+    
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (const order of ordersToDispatch) {
+      try {
+        const res = await dispatchOrders(order.ID, submitData);
+        if (res.response?.data?.code == String(0)) {
+          successCount++;
+        } else {
+          failCount++;
+        }
+      } catch {
+        failCount++;
+      }
     }
+    
+    if (failCount === 0) {
+      message.success(`派单成功！共处理${successCount}个工单`);
+    } else if (successCount === 0) {
+      message.error(`派单失败！共${failCount}个工单处理失败`);
+    } else {
+      message.warning(`部分成功：${successCount}个成功，${failCount}个失败`);
+    }
+    
+    showDispatchModal.value = false;
+    checkedRowKeys.value = []; // 清空选择
+    fetchData(); // 刷新表格
   } catch (err) {
     message.error('派单失败');
   }
@@ -214,6 +266,10 @@ const handleSaveEdit = async () => {
 
 // ---------------- 表格列 ----------------
 const columns: DataTableColumns<Order> = [
+  {
+    type: 'selection',
+    width: 50
+  },
   { title: '工单编号', key: 'OrderNo', width: 200 },
   { title: '维修商', key: 'StationID' },
   { title: '故障机数量', key: 'FaultCount'},
@@ -401,13 +457,33 @@ watch([searchSerial], () => {
 
 <template>
   <div>
-    <!-- 查询框 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
-      <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入机器编号" clearable style="width: 240px" />
+    <!-- 查询框和批量操作 -->
+    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
+      <div class="flex items-center gap-2">
+        <NButton 
+          type="primary" 
+          :disabled="!isBatchDispatchEnabled"
+          :class="{ 'batch-dispatch-disabled': !isBatchDispatchEnabled, 'batch-dispatch-enabled': isBatchDispatchEnabled }"
+          @click="handleBatchDispatch"
+        >
+          批量派单 ({{ selectedOrders.length }})
+        </NButton>
+      </div>
+      <div class="flex items-center gap-2">
+        <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入机器编号" clearable style="width: 240px" />
+      </div>
     </div>
 
     <!-- 表格 -->
-    <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" remote />
+    <NDataTable 
+      :columns="columns" 
+      :data="tableData" 
+      :pagination="pagination" 
+      :loading="loading" 
+      :row-key="(row: Order) => row.ID"
+      v-model:checked-row-keys="checkedRowKeys"
+      remote 
+    />
 
     <!-- 修改弹框 -->
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
@@ -655,5 +731,26 @@ watch([searchSerial], () => {
 .timeline-operator {
   font-size: 12px;
   color: #666;
+}
+
+/* 批量派单按钮样式 */
+.batch-dispatch-disabled {
+  background-color: #d9d9d9 !important;
+  border-color: #d9d9d9 !important;
+  color: #999 !important;
+  cursor: not-allowed !important;
+}
+
+.batch-dispatch-enabled {
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease;
+}
+
+.batch-dispatch-enabled:hover {
+  background-color: #40a9ff !important;
+  border-color: #40a9ff !important;
 }
 </style>

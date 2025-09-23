@@ -111,14 +111,15 @@ export const generatedRoutes: GeneratedRoute[] = [
   },
   {
     name: 'repairrecordsdetail',
-    path: '/repairrecordsdetail',
+    path: '/repairrecords/:id/detail',
     component: 'layout.base$view.repairrecordsdetail',
     meta: {
       title: '维修详情',
       i18nKey: 'route.repairrecordsdetail',
       props: true,
       hideInMenu: true
-    }
+    },
+    props: true
   },
   {
     name: 'repairstation',
@@ -130,6 +131,18 @@ export const generatedRoutes: GeneratedRoute[] = [
       icon: 'mdi:office-building-cog',
       order: 6
     }
+  },
+  {
+    name: 'sitedetail',
+    path: '/miningsite/:id/info',
+    component: 'layout.base$view.sitedetail',
+    meta: {
+      title: 'sitedetail',
+      i18nKey: 'route.sitedetail',
+      props: true,
+      hideInMenu: true
+    },
+    props: true
   },
   {
     name: 'users',

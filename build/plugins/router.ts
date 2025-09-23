@@ -19,6 +19,15 @@ export function setupElegantRouter() {
         return `/login/:module(${moduleReg})?`;
       }
 
+      // 为详情页路由添加参数
+      if (key === 'repairrecordsdetail') {
+        return '/repairrecords/:id/detail';
+      }
+
+      if (key === 'sitedetail') {
+        return '/miningsite/:id/info';
+      }
+
       return routePath;
     },
     onRouteMetaGen(routeName) {

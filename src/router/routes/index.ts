@@ -8,7 +8,14 @@ import { transformElegantRoutesToVueRoutes } from '../elegant/transform';
  *
  * @link https://github.com/soybeanjs/elegant-router?tab=readme-ov-file#custom-route
  */
-const customRoutes: CustomRoute[] = [];
+/** 场地详情路由 */
+// 自定义路由只能使用 CustomRouteKey 类型的名称（'root' | 'not-found'）
+// 详情页路由（repairrecordsdetail, sitedetail）属于 GeneratedRouteKey，由 elegant-router 自动生成
+// 这些路由的配置在 src/router/elegant/routes.ts 中，路径转换在 build/plugins/router.ts 中
+const customRoutes: CustomRoute[] = [
+  // 这里只能添加 CustomRouteKey 类型的路由（'root' | 'not-found'）
+  // 其他路由由 elegant-router 根据 views 目录结构自动生成
+];
 
 /** create routes when the auth route mode is static */
 export function createStaticRoutes() {
