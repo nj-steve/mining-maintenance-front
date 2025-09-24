@@ -5,16 +5,20 @@ import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchUser, updateUser, createUser,fetchCompanies } from '@/service/api/auth';
 import { roleTagMap, roleRecord, userStatusMap, userStatusRecord } from "@/constants/business"
 
+interface Company {
+  id: number;
+  name: string;
+}
+
 interface User {
-  ID?: number;                  // 主键ID（编辑时需要）
-  Username: string;              // 用户名
-  ContactPhone: string;         // 联系电话
-  Company: string;               // 公司
-  Role: number;                  // 角色：1-管理员，2-售后管理，3-运维人员，4-维修人员
-  Email: string;                 // 邮箱
-  StartDate: string;            // 入职日期 (YYYY-MM-DD)
-  AssignedCompanyID?: number;  // 分配的公司/站点/维修站 ID（可选）
-  Status?: number;               // 状态：1-在职，0-离职（可选）
+  id?: number;                  // 主键ID（编辑时需要）
+  username: string;              // 用户名
+  contact_phone: string;         // 联系电话
+  company_info: Company [];               // 公司
+  role: number;                  // 角色：1-管理员，2-售后管理，3-运维人员，4-维修人员
+  email: string;                 // 邮箱
+  start_date: string;            // 入职日期 (YYYY-MM-DD)
+  status?: number;               // 状态：1-在职，0-离职（可选）
 }
 
 interface EditUser {
@@ -88,8 +92,6 @@ const editForm = ref<EditUser>({
   username: ""
 });
 
-
-
 // 打开添加弹框
 const handleOpenAdd = () => {
   dialogMode.value = 'add';
@@ -116,15 +118,15 @@ const handleOpenAdd = () => {
 
 function userToEditUser(user: User): EditUser {
   return {
-    id: user.ID || 0,
-    assigned_company_id: user.AssignedCompanyID || 0,
-    company: user.Company || "",
-    contact_phone: user.ContactPhone || "",
-    email: user.Email || "",
-    role: user.Role || 1,
-    start_date: user.StartDate || "",
-    status: user.Status !== undefined ? user.Status : 0,
-    username: user.Username || ""
+    id: user.id || 0,
+    assigned_company_id: user.company_info[0].id || 0,
+    company: user.company_info[0].name || "",
+    contact_phone: user.contact_phone || "",
+    email: user.email || "",
+    role: user.role || 1,
+    start_date: user.start_date || "",
+    status: user.status !== undefined ? user.status : 0,
+    username: user.username || ""
   };
 }
 
@@ -133,11 +135,11 @@ const handleOpenEdit = (row: User) => {
   dialogMode.value = 'edit';
   editForm.value =userToEditUser(row)
   // editForm.value = { ...row }; // 拷贝一份
-  console.log("editForm.value",editForm.value)
+  // console.log("editForm.value",editForm.value)
   
   // 根据角色加载对应的公司选项
-  if (row.Role) {
-    getCompanys(row.Role);
+  if (row.role) {
+    getCompanys(row.role);
   }
   
   showModal.value = true;
@@ -148,6 +150,7 @@ const handleSave = async () => {
   try {
     if (dialogMode.value === 'add') {
       const res = await createUser(editForm.value);
+      console.log("addUser",res)
       if (res.response?.data?.msg === "Operation successful") {
         message.success('添加成功！');
         fetchData();
@@ -157,6 +160,7 @@ const handleSave = async () => {
     } else {
       
       const res = await updateUser(editForm.value.id!, editForm.value);
+      console.log("updateUser",res)
       if (res.response?.data?.msg === "Operation successful") {
         message.success('修改成功！');
         fetchData();
@@ -173,19 +177,21 @@ const handleSave = async () => {
 
 // ---------------- 表格列 ----------------
 const columns: DataTableColumns<User> = [
-  { title: '姓名', key: 'Username', width: 200 },
-  { title: '角色类型', key: 'Role', render: (row: any ) => {
-    const label = roleRecord[row.Role] || '未知';
-    return h(NTag, {type: roleTagMap[row.Role] }, () => label)
+  { title: '姓名', key: 'username', width: 200 },
+  { title: '角色类型', key: 'role', render: (row: any ) => {
+    const label = roleRecord[row.role] || '未知';
+    return h(NTag, {type: roleTagMap[row.role] }, () => label)
   }},
-  { title: '联系电话', key: 'ContactPhone'},
-  { title: '邮箱', key: 'Email'},
-  { title: '所属公司', key: 'Company' },
-  { title: '入职时间', key: 'StartDate' },
-  { title: '状态', key: 'Status', 
+  { title: '联系电话', key: 'contact_phone'},   
+  { title: '邮箱', key: 'email'},
+  { title: '所属公司', key: 'company_info',render: (row: any ) => {
+    return row.company_info?.[0]?.name || '未知';
+  } },
+  { title: '入职时间', key: 'start_date' },
+  { title: '状态', key: 'status', 
     render: (row: any ) => {
-      const label = userStatusRecord[row.Status] || '未知';
-      return h(NTag, {type: userStatusMap[row.Status] }, () => label)
+      const label = userStatusRecord[row.status] || '未知';
+      return h(NTag, {type: userStatusMap[row.status] }, () => label)
     }
   },
   {
@@ -322,7 +328,6 @@ watch([searchSerial,searchRole], () => {
         <NSelect v-model:value="searchRole" :options="modelOptions"  placeholder="角色筛选" clearable />
         <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入姓名" clearable style="width: 240px" />
       </div>
-      
     </div>
 
     <!-- 表格 -->

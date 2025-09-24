@@ -59,11 +59,11 @@ export function updateOrders(id:number,params: {[key: string]: any }) {
   });
 }
 
-// 派工单
+// 批量派工单
 // /api/:id/dispatch
-export function dispatchOrders(id:number,params: {[key: string]: any }) {
+export function dispatchOrders(params: {[key: string]: any }) {
   return request({
-    url: '/api/orders/'+id+'/dispatch',
+    url: '/api/orders/dispatch',
     method: 'post',
     data:params
   });

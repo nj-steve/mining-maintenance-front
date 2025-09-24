@@ -33,6 +33,42 @@
           </n-button>
         </template>
       </n-modal>
+      
+      <!-- 导入结果弹框 -->
+      <n-modal v-model:show="showResult" preset="dialog" title="导入结果" style="width: 600px;">
+        <div v-if="importResult" style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- 导入统计 -->
+          <div style="display: flex; gap: 24px; padding: 16px; background-color: #f5f5f5; border-radius: 6px;">
+            <div style="text-align: center;">
+              <div style="font-size: 24px; font-weight: bold; color: #52c41a;">{{ importResult.success_count }}</div>
+              <div style="color: #666;">成功导入</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 24px; font-weight: bold; color: #ff4d4f;">{{ importResult.failure_count }}</div>
+              <div style="color: #666;">导入失败</div>
+            </div>
+          </div>
+          
+          <!-- 错误详情 -->
+          <div v-if="importResult.errors && importResult.errors.length > 0">
+            <h4 style="margin: 0 0 12px 0; color: #ff4d4f;">错误详情：</h4>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #d9d9d9; border-radius: 4px; padding: 12px; background-color: #fff;">
+              <div v-for="(error, index) in importResult.errors" :key="index" style="margin-bottom: 8px; padding: 8px; background-color: #fff2f0; border-left: 3px solid #ff4d4f; font-family: monospace; font-size: 13px;">
+                {{ error }}
+              </div>
+            </div>
+          </div>
+          
+          <!-- 成功提示 -->
+          <div v-if="importResult.failure_count === 0" style="padding: 12px; background-color: #f6ffed; border: 1px solid #b7eb8f; border-radius: 4px; color: #52c41a;">
+            ✅ 所有数据导入成功！
+          </div>
+        </div>
+        
+        <template #action>
+          <n-button type="primary" @click="handleCloseResult">关闭</n-button>
+        </template>
+      </n-modal>
     </div>
   </template>
   
@@ -55,6 +91,11 @@
     buttonText: '导入'
   })
 
+  // ---------------- Emits ----------------
+  const emit = defineEmits<{
+    success: []
+  }>()
+
   const tableData = ref([]);
   
   // ---------------- State ----------------
@@ -69,6 +110,12 @@
 
   const showModal = ref(false)
   const uploading = ref(false)
+  const showResult = ref(false)
+  const importResult = ref<{
+    success_count: number
+    failure_count: number
+    errors: string[]
+  } | null>(null)
   
   const siteOptions = ref([
     { label: '场地 A', value: 1 },
@@ -107,7 +154,7 @@
       const token = localStg.get('token')
       const Authorization = token ? `Bearer ${token}` : ''
   
-      await axios.request({
+      const response = await axios.request({
         url: baseURL + '/api/faults/import',
         method: 'post',
         data: formData,
@@ -117,8 +164,20 @@
         }
       })
   
-      message.success(`文件 ${selectedFile.value.name} 上传成功！`)
-      showModal.value = false
+      // 处理导入结果
+      if (response.data && response.data.data) {
+        importResult.value = response.data.data
+        showResult.value = true
+        // 不立即关闭上传弹框，等用户查看结果后手动关闭
+        // 触发成功事件，通知父组件刷新数据
+        emit('success')
+      } else {
+        message.success(`文件 ${selectedFile.value.name} 上传成功！`)
+        showModal.value = false
+        // 触发成功事件，通知父组件刷新数据
+        emit('success')
+      }
+      
       selectedFile.value = null
       selectedSite.value = null
     } catch (e) {
@@ -127,6 +186,13 @@
     } finally {
       uploading.value = false
     }
+  }
+  
+  // 关闭结果弹框
+  const handleCloseResult = () => {
+    showResult.value = false
+    showModal.value = false
+    importResult.value = null
   }
 
   // ---------------- 数据获取 ----------------

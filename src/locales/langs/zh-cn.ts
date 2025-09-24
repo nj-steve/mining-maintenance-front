@@ -170,7 +170,7 @@ const local: App.I18n.Schema = {
     faults:"故障机管理",
     repairstation:"维修站",
     repairrecords:"维修明细",
-    workflow:"工单流程",
+    workflow:"工单列表",
     miningsite:"矿场列表",
     users:"权限管理",
     repairrecordsdetail:"维修明细",

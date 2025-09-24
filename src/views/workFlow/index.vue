@@ -159,6 +159,13 @@ const handleBatchDispatch = () => {
     return;
   }
   
+  // 检查是否存在已派单的工单（StationID != 0）
+  const alreadyDispatchedOrders = selectedOrders.value.filter(order => order.StationID !== 0);
+  if (alreadyDispatchedOrders.length > 0) {
+    message.warning('请选择未派单的工单');
+    return;
+  }
+  
   // 使用第一个选中的工单作为模板
   currentOrder.value = selectedOrders.value[0];
   
@@ -199,6 +206,7 @@ const handleSubmitDispatch = async () => {
     // 构建提交数据
     const submitData: any = {
       // order_status: 2,
+      order_ids: selectedOrders.value.map(order => order.ID),
       fault_count: dispatchForm.value.faultCount,
       onsite: dispatchForm.value.onsite,
       repair_station_id: dispatchForm.value.repairStation,
@@ -218,7 +226,8 @@ const handleSubmitDispatch = async () => {
     
     for (const order of ordersToDispatch) {
       try {
-        const res = await dispatchOrders(order.ID, submitData);
+        const res = await dispatchOrders(submitData);
+        
         if (res.response?.data?.code == String(0)) {
           successCount++;
         } else {
@@ -271,9 +280,18 @@ const columns: DataTableColumns<Order> = [
     width: 50
   },
   { title: '工单编号', key: 'OrderNo', width: 200 },
-  { title: '维修商', key: 'StationID' },
+  { title: '维修商', key: 'StationName' },
   { title: '故障机数量', key: 'FaultCount'},
-  { title: '是否驻场', key: 'Onsite'},
+  { title: '是否驻场', key: 'Onsite',
+    render: (row: any ) => {
+      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        1: 'success',
+        0: 'error',
+      };
+      const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
+      return h(NTag, {type: tagMap[row.Onsite] }, () => label)
+    }
+  },
   { title: '总费用', key: 'RepairCost' },
   { title: '付款状态', key: 'SettlementStatus', 
   // render: (row: Miner) => row.Status?.name ,
@@ -308,6 +326,7 @@ const columns: DataTableColumns<Order> = [
           {
             type: 'info',
             ghost: true,
+            size: 'small',
             style: "margin-right: 8px;",
             onClick: () => handleOpenEdit(row)
           },
@@ -318,21 +337,23 @@ const columns: DataTableColumns<Order> = [
           {
             type: 'info',
             ghost: true,
+            size: 'small',
             style: "margin-left: 8px;",
             onClick: () => handleOpenDetail(row)
           },
           { default: () => '查看' }
         ),
-         h(
+         ...(row.StationID === 0 ? [h(
           NButton,
           {
             type: 'info',
             ghost: true,
+            size: 'small',
             style: "margin-left: 8px;",
             onClick: () => handleOpenDispatch(row)
           },
           { default: () => '派单' }
-        ),
+        )] : []),
         // h(
         //   NButton,
         //   {
@@ -380,8 +401,6 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
-
-
 
 // ---------------- 查看详情弹框 ----------------
 const showDetailModal = ref(false);
@@ -462,6 +481,8 @@ watch([searchSerial], () => {
       <div class="flex items-center gap-2">
         <NButton 
           type="primary" 
+          ghost
+          size="small"
           :disabled="!isBatchDispatchEnabled"
           :class="{ 'batch-dispatch-disabled': !isBatchDispatchEnabled, 'batch-dispatch-enabled': isBatchDispatchEnabled }"
           @click="handleBatchDispatch"
@@ -581,7 +602,7 @@ watch([searchSerial], () => {
    <NForm :model="dispatchForm" label-width="120">
      <!-- 选择故障机数量 -->
      <NFormItem label="选择故障机数量">
-       <NInputNumber v-model:value="dispatchForm.faultCount" :min="1" />
+       <NInputNumber disabled v-model:value="dispatchForm.faultCount" :min="1" />
      </NFormItem>
 
      <!-- 是否驻场 -->

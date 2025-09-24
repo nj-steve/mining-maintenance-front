@@ -2,6 +2,7 @@
 import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import { useRouter } from 'vue-router';
 import { fetchFaults,updateFaults,fetchFaultsStatus } from '@/service/api/faults';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
@@ -33,6 +34,7 @@ interface Faults {
 
 const dialog = useDialog()
 const message = useMessage();
+const router = useRouter();
 
 const tableData = ref<Faults[]>([]);
 const loading = ref(false);
@@ -135,37 +137,75 @@ const handleSaveEdit = async () => {
 const columns: DataTableColumns<Faults> = [
   { 
     type: 'selection',
-    multiple: true
+    multiple: true,
+    width: 60
   },
-  { title: '序号', key: 'id', width: 200 },
-  { title: '日期', key: 'date' },
-  { title: '场地', key: 'site_name'},
-  { title: '型号', key: 'model'},
-  { title: 'SN码', key: 'sn' },
-  { title: '问题描述', key: 'description', 
-  // render: (row: Miner) => row.Status?.name ,
-  render: (row: any ) => {
-    if (row.Status?.name === null || row.Status?.name === undefined) {
-      return null;
-    }
-    const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-      '在架': 'success',
-      '维修': 'warning',
-      '报废': 'error',
-      '下架':'info',
-    };
+  { title: '序号', key: 'id', width: 80 },
+  { title: '日期', key: 'date', width: 120 },
+  { title: 'SN码', key: 'sn', width: 180 },
+  { title: '场地', key: 'site_name', width: 150,
+    render: (row: Faults) => {
+       const siteName = row.site_name || '未知';
+       const siteId = row.site_id || 0;
+       
+       if (siteId) {
+         return h(
+           NButton,
+           {
+             text: true,
+             type: 'primary',
+             onClick: () => {
+               router.push(`/miningsite/${siteId}/info`);
+             }
+           },
+           { default: () => siteName }
+         );
+       }
+       
+       return siteName;
+     }
+  },
+  { title: '型号', key: 'model', width: 120},
+  
+  { title: '问题描述', key: 'description', width: 200},
+  { title: '工单编号', key: 'order_no', width: 150},
 
-    const label = row.Status?.name || '未知';
-    // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-    return h(NTag, {type: tagMap[row.Status?.name] }, () => label)
-  }
+  // render: (row: Miner) => row.Status?.name ,
+  // render: (row: any ) => {
+  //   if (row.Status?.name === null || row.Status?.name === undefined) {
+  //     return null;
+  //   }
+  //   const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+  //     '在架': 'success',
+  //     '维修': 'warning',
+  //     '报废': 'error',
+  //     '下架':'info',
+  //   };
+
+  //   const label = row.Status?.name || '未知';
+  //   // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
+  //   return h(NTag, {type: tagMap[row.Status?.name] }, () => label)
+  // }
+  // },
+  { title: '维修次数', key: 'repair_count', width: 100 },
+  { title: '状态', key: 'status_text', width: 100,
+    render: (row: Faults) => {
+      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        '在架': 'success',
+        '维修': 'info',
+        '报废': 'error',
+        '下架检查':'warning',
+      };
+      const label = row.status_text || '未知';
+      return h(NTag, {type: tagMap[row.status_text || '未知'] }, () => label)
+    }
   },
-  { title: '维修次数', key: 'repair_count' },
-  { title: '状态', key: 'status_text'},
   {
     title: '操作',
     key: 'actions',
     align:'center',
+    width: 120,
+    fixed: 'right',
     render: (row: Faults) => {
       return [
         h(
@@ -368,7 +408,7 @@ const handleCancelWorkOrder = () => {
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <UploadSiteMachineExcel buttonText="导入"/>
+        <UploadSiteMachineExcel buttonText="导入" @success="fetchData"/>
         <NButton 
           type="primary" 
           :disabled="selectedRows.length === 0"
@@ -390,6 +430,8 @@ const handleCancelWorkOrder = () => {
       remote
       :row-key="(row: Faults) => row.id"
       @update:checked-row-keys="handleSelectionChange"
+      :scroll-x="1400"
+      striped
     />
 
     <!-- 修改弹框 -->
