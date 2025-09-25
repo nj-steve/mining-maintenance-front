@@ -59,6 +59,27 @@ export function updateOrders(id:number,params: {[key: string]: any }) {
   });
 }
 
+// 状态列表
+// /api/orders/status
+// type: filter (1: fault status, 2: order status)
+export function fetchOrdersStatus(params: {[key: string]: any }) {
+  return request({
+    url: '/api/data/fault_order_status',
+    method: 'get',
+    params
+  });
+}
+
+// 物流列表
+// /api/orders/status
+// type: filter (1: fault status, 2: order status)
+export function fetchOrdersLogistics() {
+  return request({
+    url: '/api/data/logistics',
+    method: 'get'
+  });
+}
+
 // 批量派工单
 // /api/:id/dispatch
 export function dispatchOrders(params: {[key: string]: any }) {

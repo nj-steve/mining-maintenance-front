@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
-import dayjs from "dayjs";
-import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NCheckbox } from 'naive-ui';
+import dayjs from 'dayjs';
+import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NCheckbox, NDatePicker } from 'naive-ui';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
-import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders } from '@/service/api/workflow';
-
+import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders, fetchOrdersLogistics,fetchOrdersStatus } from '@/service/api/workflow';
+import {fetchRepairStations} from '@/service/api/repair';
+import {fetchSites} from '@/service/api/site';
 
 interface Order {
   ID: number;                     // 工单ID
@@ -20,6 +21,7 @@ interface Order {
   LogisticsCost: number;          // 物流费用
   TotalCost: number;              // 总费用
   SettlementStatus: number;       // 付款状态
+  SettlementStatusText: string | null; // 付款状态文本
   PaymentDate: string | null;     // 付款日期
   LogisticsCompanyId: number | null; // 物流公司ID
   CreatedBy: string | null;       // 创建人
@@ -77,12 +79,18 @@ const editForm = ref({
 });
 
 // 状态下拉选项
-const statusOptions = [
-  { label: '在架', value: 1 },
-  { label: '维修', value: 2 },
-  { label: '报废', value: 3 },
-  { label: '下架', value: 4 }
-];
+const statusOptions = ref<{ label: string; value: number }[]>([]);
+const searchOrderStatus = ref<number>(0);
+
+// 新增筛选项
+const searchSiteId = ref<number | null>(null);  // 场地筛选
+const searchStationId = ref<number | null>(null);  // 维修站筛选
+const searchStartDate = ref<number | null>(null);  // 开始时间
+const searchEndDate = ref<number | null>(null);  // 结束时间
+
+// 场地和维修站选项
+const siteOptions = ref<{ label: string; value: number }[]>([]);
+const stationOptions = ref<{ label: string; value: number }[]>([]);
 
 // 打开修改弹框
 const handleOpenEdit = (row: Order) => {
@@ -292,27 +300,44 @@ const columns: DataTableColumns<Order> = [
       return h(NTag, {type: tagMap[row.Onsite] }, () => label)
     }
   },
-  { title: '总费用', key: 'RepairCost' },
+  { title: '总费用', key: 'RepairCost',
+    render: (row: any ) => {
+      if (row.RepairCost === null || row.RepairCost === undefined) {
+        return '未知';
+      }
+      return row.RepairCost || '未知';
+    }
+   },
   { title: '付款状态', key: 'SettlementStatus', 
-  // render: (row: Miner) => row.Status?.name ,
   render: (row: any ) => {
-    if (row.Status?.name === null || row.Status?.name === undefined) {
+    if (row.SettlementStatusText === null || row.SettlementStatusText === undefined) {
       return null;
     }
+    //待处理，处理中，已完成，未解决
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-      '在架': 'success',
-      '维修': 'warning',
-      '报废': 'error',
-      '下架':'info',
+      '已付款': 'success',
+      '未付款': 'warning',
+      '未申请': 'default',
     };
 
-    const label = row.Status?.name || '未知';
+    const label = row.SettlementStatusText || '未知';
     // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-    return h(NTag, {type: tagMap[row.Status?.name] }, () => label)
+    return h(NTag, {type: tagMap[row.SettlementStatusText] }, () => label)
   }
   },
   { title: '付款日期', key: 'PaymentDate' },
-  { title: '工单状态', key: 'OrderStatus' },
+  { title: '工单状态', key: 'OrderStatusText',
+    render: (row: any) => {
+      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+      '已完成': 'success',
+      '维修': 'primary',
+      '未解决': 'error',
+      '待处理':'warning',
+      };
+      const label = row.OrderStatusText || '未知';
+      return h(NTag, {type: tagMap[row.OrderStatusText] }, () => label)
+    }
+   },
   { title: '短保期开始', key: 'warranty_status_text' },
   { title: '剩余短保期', key: 'warranty_status_text' },
   {
@@ -382,7 +407,12 @@ const fetchData = async () => {
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
-    sn: searchSerial.value || undefined
+    sn: searchSerial.value || undefined,
+    order_status: searchOrderStatus.value || undefined,
+    site_id: searchSiteId.value || undefined,
+    station_id: searchStationId.value || undefined,
+    start_date: searchStartDate.value ? dayjs(searchStartDate.value).format('YYYY-MM-DD') : undefined,
+    end_date: searchEndDate.value ? dayjs(searchEndDate.value).format('YYYY-MM-DD') : undefined
   };
 
   try {
@@ -401,6 +431,93 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
+
+// 重置筛选条件
+const handleReset = () => {
+  searchSerial.value = '';
+  searchOrderStatus.value = 0;
+  searchSiteId.value = null;
+  searchStationId.value = null;
+  searchStartDate.value = null;
+  searchEndDate.value = null;
+  pagination.value.page = 1;
+  fetchData();
+};
+
+// 获取场地数据
+const fetchSiteData = async () => {
+  try {
+    // 这里需要根据实际的API接口来获取场地数据
+    const { data, error } = await fetchSites({page:1,page_size:1000});
+    if (!error && data) {
+      siteOptions.value = data.list.map((site: any) => ({
+        label: site.Name,
+        value: site.ID,
+      }));
+    }
+    
+    // 临时模拟数据
+    // siteOptions.value = [];
+    // siteOptions.value = [
+    //   { label: '场地A', value: 1 },
+    //   { label: '场地B', value: 2 },
+    //   { label: '场地C', value: 3 }
+    // ];
+  } catch (err) {
+    message.error('获取场地数据失败');
+  }
+};
+
+// 获取维修站数据
+const fetchStationData = async () => {
+  try {
+    // 这里需要根据实际的API接口来获取维修站数据
+    const { data, error } = await fetchRepairStations({page:1,page_size:1000});
+    if (!error && data) {
+      // console.log("data",data.list)
+      stationOptions.value = data.list.map((station: any) => ({
+        label: station.Name,
+        value: station.ID
+      }));
+    }
+    // console.log("stationOptions",stationOptions.value)
+    
+    // 临时模拟数据
+    // stationOptions.value = [
+    //   { label: '维修站A', value: 1 },
+    //   { label: '维修站B', value: 2 },
+    //   { label: '维修站C', value: 3 }
+    // ];
+  } catch (err) {
+    message.error('获取维修站数据失败');
+  }
+};
+
+// ---------------- 数据获取 ----------------
+const fetchOrderStatusData = async () => {
+  loading.value = true;
+  const params: any = {
+   type:2,//订单状态
+  };
+
+  try {
+    const {data,error} = await fetchOrdersStatus(params);
+    
+    if(error==null){
+       statusOptions.value = data.map((item: any) => ({
+        label: item.name,
+        value: item.id,
+      }));
+    }else{
+        message.error(`加载失败: ${error}`);
+    }
+  } catch (err) {
+    message.error(`加载失败${err}`);
+  } finally {
+    loading.value = false;
+  }
+};
+
 
 // ---------------- 查看详情弹框 ----------------
 const showDetailModal = ref(false);
@@ -464,21 +581,24 @@ const fetchDetailData = async (orderId: number) => {
 
 onMounted(() => {
   fetchData()
+  fetchOrderStatusData()
+  fetchSiteData()
+  fetchStationData()
 //   loadFaultsTypes();
 });
-watch([searchSerial], () => {
+watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchStartDate, searchEndDate], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
-  
 });
 </script>
 
 <template>
   <div>
     <!-- 查询框和批量操作 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
-      <div class="flex items-center gap-2">
+    <div class="mb-4" style="margin-bottom: 16px">
+      <!-- 第一行：批量操作按钮 -->
+      <div class="flex items-center gap-2" style="margin-bottom: 12px">
         <NButton 
           type="primary" 
           ghost
@@ -490,8 +610,65 @@ watch([searchSerial], () => {
           批量派单 ({{ selectedOrders.length }})
         </NButton>
       </div>
-      <div class="flex items-center gap-2">
-        <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入机器编号" clearable style="width: 240px" />
+      
+      <!-- 第二行：筛选条件 -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- 场地筛选 -->
+        <NSelect 
+          v-model:value="searchSiteId" 
+          :options="siteOptions" 
+          placeholder="请选择场地" 
+          clearable 
+          style="width: 160px"
+        />
+        
+        <!-- 维修站筛选 -->
+        <NSelect 
+          v-model:value="searchStationId" 
+          :options="stationOptions" 
+          placeholder="请选择维修站" 
+          clearable 
+          style="width: 160px"
+        />
+        
+       <!-- 开始时间 -->
+         <NDatePicker 
+           v-model:value="searchStartDate" 
+           type="date" 
+           placeholder="开始时间" 
+           clearable 
+           style="width: 160px"
+         />
+         
+         <!-- 结束时间 -->
+         <NDatePicker 
+           v-model:value="searchEndDate" 
+           type="date" 
+           placeholder="结束时间" 
+           clearable 
+           style="width: 160px"
+         />
+        
+        <!-- 工单状态 -->
+        <NSelect 
+          v-model:value="searchOrderStatus" 
+          :options="statusOptions" 
+          placeholder="请选择工单状态" 
+          clearable 
+          style="width: 160px"
+        />
+        
+        <!-- 机器编号 -->
+        <NInput 
+          v-model:value="searchSerial" 
+          placeholder="请输入机器编号" 
+          clearable 
+          style="width: 200px"
+        />
+        
+        <!-- 查询按钮 -->
+        <NButton type="primary" @click="fetchData">查询</NButton>
+        <NButton @click="handleReset">重置</NButton>
       </div>
     </div>
 
@@ -548,7 +725,7 @@ watch([searchSerial], () => {
       </NFormItem>
       <NFormItem label="付款日期">
         <!-- 使用 value-format 输出字符串（这里用 YYYY-MM-DD，与表单初始化格式一致） -->
-       <!-- <NDatePicker
+        <!-- <NDatePicker
           v-model:formatted-value="editForm.payment_date"
           type="date"
           value-format="yyyy-MM-dd"
@@ -570,93 +747,93 @@ watch([searchSerial], () => {
     </NModal>
 
     <!-- 查看详情弹框 -->
-<NModal v-model:show="showDetailModal" style="width: 600px" preset="card" title="工单操作日志">
-  <div v-if="operation_history.length > 0" class="detail-container">
-    <h2>工单编号：{{ detailData?.order_no }}</h2>
-    <div class="timeline">
-     <div v-for="(log, index) in operation_history" :key="log.occurred_at" class="timeline-item">
-       <div class="timeline-line" :class="{ 'is-first': index === 0, 'is-last': index === operation_history.length - 1 }">
-         <div class="timeline-dot"></div>
-       </div>
-       <div class="timeline-content-wrapper">
-         <div class="timeline-header">
-           <div class="timeline-title">{{ log.status_text }}</div>
-           <div class="timeline-time">{{ log.occurred_at }}</div>
-         </div>
-         <div class="timeline-body">
-           <div class="timeline-description">{{ log.info }}</div>
-           <div class="timeline-operator">操作人：{{ log.operator_name }}</div>
-         </div>
+    <NModal v-model:show="showDetailModal" style="width: 600px" preset="card" title="工单操作日志">
+      <div v-if="operation_history.length > 0" class="detail-container">
+        <h2>工单编号：{{ detailData?.order_no }}</h2>
+        <div class="timeline">
+        <div v-for="(log, index) in operation_history" :key="log.occurred_at" class="timeline-item">
+          <div class="timeline-line" :class="{ 'is-first': index === 0, 'is-last': index === operation_history.length - 1 }">
+            <div class="timeline-dot"></div>
+          </div>
+          <div class="timeline-content-wrapper">
+            <div class="timeline-header">
+              <div class="timeline-title">{{ log.status_text }}</div>
+              <div class="timeline-time">{{ log.occurred_at }}</div>
+            </div>
+            <div class="timeline-body">
+              <div class="timeline-description">{{ log.info }}</div>
+              <div class="timeline-operator">操作人：{{ log.operator_name }}</div>
+            </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <template #footer>
-    <NButton @click="showDetailModal = false">关闭</NButton>
-  </template>
-</NModal>
- 
- <!-- 派单弹框 -->
- <NModal v-model:show="showDispatchModal" style="width: 600px" preset="card" title="派单">
-   <NForm :model="dispatchForm" label-width="120">
-     <!-- 选择故障机数量 -->
-     <NFormItem label="选择故障机数量">
-       <NInputNumber disabled v-model:value="dispatchForm.faultCount" :min="1" />
-     </NFormItem>
+      <template #footer>
+        <NButton @click="showDetailModal = false">关闭</NButton>
+      </template>
+    </NModal>
+    
+    <!-- 派单弹框 -->
+    <NModal v-model:show="showDispatchModal" style="width: 600px" preset="card" title="派单">
+      <NForm :model="dispatchForm" label-width="120">
+        <!-- 选择故障机数量 -->
+        <NFormItem label="选择故障机数量">
+          <NInputNumber disabled v-model:value="dispatchForm.faultCount" :min="1" />
+        </NFormItem>
 
-     <!-- 是否驻场 -->
-     <NFormItem label="是否驻场" required>
-       <NSelect 
-         v-model:value="dispatchForm.onsite"
-         :options="siteStationOptions"
-         placeholder="请选择"
-       />
-     </NFormItem>
+        <!-- 是否驻场 -->
+        <NFormItem label="是否驻场" required>
+          <NSelect 
+            v-model:value="dispatchForm.onsite"
+            :options="siteStationOptions"
+            placeholder="请选择"
+          />
+        </NFormItem>
 
-     <!-- 选择维修站 -->
-     <NFormItem label="选择维修站" required>
-       <NSelect 
-         v-model:value="dispatchForm.repairStation"
-         :options="repairStationOptions"
-         placeholder="请选择就近维修站"
-       />
-     </NFormItem>
-     <template v-if="dispatchForm.onsite === 0">
-       <!-- 物流公司 -->
-       <NFormItem label="物流公司" :required="dispatchForm.onsite === 0">
-         <NSelect 
-           v-model:value="dispatchForm.logisticsCompany"
-           :options="logisticsCompanyOptions"
-           placeholder="请选择物流公司"
-         />
-       </NFormItem>
-  
-       <!-- 物流信息 -->
-       <NFormItem label="物流信息">
-         <NInput 
-           v-model:value="dispatchForm.logisticsInfo"
-           type="textarea"
-           placeholder="请填写物流单号、预计送达时间等信息"
-         />
-       </NFormItem>
-     </template>
-  
-      <!-- 备注 -->
-      <NFormItem label="备注">
-        <NInput 
-          v-model:value="dispatchForm.remark"
-          type="textarea"
-          placeholder="请填写其他需要说明的信息"
-        />
-      </NFormItem>
-   </NForm>
+        <!-- 选择维修站 -->
+        <NFormItem label="选择维修站" required>
+          <NSelect 
+            v-model:value="dispatchForm.repairStation"
+            :options="repairStationOptions"
+            placeholder="请选择就近维修站"
+          />
+        </NFormItem>
+        <template v-if="dispatchForm.onsite === 0">
+          <!-- 物流公司 -->
+          <NFormItem label="物流公司" :required="dispatchForm.onsite === 0">
+            <NSelect 
+              v-model:value="dispatchForm.logisticsCompany"
+              :options="logisticsCompanyOptions"
+              placeholder="请选择物流公司"
+            />
+          </NFormItem>
+      
+          <!-- 物流信息 -->
+          <NFormItem label="物流信息">
+            <NInput 
+              v-model:value="dispatchForm.logisticsInfo"
+              type="textarea"
+              placeholder="请填写物流单号、预计送达时间等信息"
+            />
+          </NFormItem>
+        </template>
+      
+          <!-- 备注 -->
+          <NFormItem label="备注">
+            <NInput 
+              v-model:value="dispatchForm.remark"
+              type="textarea"
+              placeholder="请填写其他需要说明的信息"
+            />
+          </NFormItem>
+      </NForm>
 
-   <template #footer>
-     <NButton type="primary" @click="handleSubmitDispatch">确认派单</NButton>
-     <NButton @click="showDispatchModal = false">取消</NButton>
-   </template>
- </NModal>
+      <template #footer>
+        <NButton type="primary" @click="handleSubmitDispatch">确认派单</NButton>
+        <NButton @click="showDispatchModal = false">取消</NButton>
+      </template>
+    </NModal>
     </div>
 </template>
 
