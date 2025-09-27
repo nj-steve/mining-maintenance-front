@@ -1,0 +1,1 @@
+import{I as e}from"./index-BB5fvi2P.js";function i(t){return e({url:"/api/repair_stations",method:"get",params:t})}function u(t){return e({url:"/api/repair_details",method:"get",params:t})}function s(t){return e({url:`/api/repair_details/${t}`,method:"get"})}function n(t,a){return e({url:"/api/repair_stations/"+t,method:"put",data:a})}export{s as a,i as b,u as f,n as u};

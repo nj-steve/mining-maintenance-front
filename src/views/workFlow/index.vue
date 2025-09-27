@@ -221,11 +221,6 @@ const handleSubmitDispatch = async () => {
       remark: dispatchForm.value.remark
     };
 
-    if (dispatchForm.value.onsite === 0) {
-      submitData.logistics_company_id = dispatchForm.value.logisticsCompany;
-      submitData.logistics_info = dispatchForm.value.logisticsInfo;
-    }
-
     // 判断是批量派单还是单个派单
     const ordersToDispatch = selectedOrders.value.length > 0 ? selectedOrders.value : [currentOrder.value];
     
@@ -366,7 +361,29 @@ const columns: DataTableColumns<Order> = [
             style: "margin-left: 8px;",
             onClick: () => handleOpenDetail(row)
           },
-          { default: () => '查看' }
+          { default: () => '查看详情' }
+        ),
+        h(
+          NButton,
+          {
+            type: 'success',
+            ghost: true,
+            size: 'small',
+            style: "margin-left: 8px;",
+            onClick: () => handleOpenAddLog(row)
+          },
+          { default: () => '添加日志' }
+        ),
+         h(
+          NButton,
+          {
+            type: 'info',
+            ghost: true,
+            size: 'small',
+            style: "margin-left: 8px;",
+            onClick: () => handleOpenDetail(row)
+          },
+          { default: () => '流程' }
         ),
          ...(row.StationID === 0 ? [h(
           NButton,
@@ -379,6 +396,7 @@ const columns: DataTableColumns<Order> = [
           },
           { default: () => '派单' }
         )] : []),
+        
         // h(
         //   NButton,
         //   {
@@ -519,17 +537,70 @@ const fetchOrderStatusData = async () => {
 };
 
 
-// ---------------- 查看详情弹框 ----------------
+// ---------------- 查看详情弹框 ----------------// 详情弹框相关
 const showDetailModal = ref(false);
 const detailData = ref({order_no:""}); // 工单操作日志
 const operation_history = ref<any[]>([]); // 工单操作日志
 const selectedRow = ref<Order | null>(null);
+
+// 添加操作日志弹框相关
+const showAddLogModal = ref(false);
+const addLogForm = ref({
+  order_status: null as null | number,
+  occurred_at: Date.now(),
+  description: ''
+});
 
 // 打开详情弹框
 const handleOpenDetail = async (row: Order) => {
   selectedRow.value = row;
   showDetailModal.value = true;
   await fetchDetailData(row.ID);
+};
+
+// 打开添加操作日志弹框
+const handleOpenAddLog = (row: Order) => {
+  selectedRow.value = row;
+  addLogForm.value = {
+    order_status: row.OrderStatus,
+    occurred_at: Date.now(),
+    description: ''
+  };
+  showAddLogModal.value = true;
+};
+
+// 提交操作日志
+const handleSubmitLog = async () => {
+  if (!selectedRow.value) return;
+  
+  if (addLogForm.value.order_status === null) {
+    message.error('请选择工单状态');
+    return;
+  }
+  
+  if (!addLogForm.value.description.trim()) {
+    message.error('请填写操作描述');
+    return;
+  }
+  
+  try {
+    // 这里需要调用添加操作日志的API
+    // const { error } = await addOrderLog({
+    //   order_id: selectedRow.value.ID,
+    //   order_status: addLogForm.value.order_status,
+    //   occurred_at: dayjs(addLogForm.value.occurred_at).format('YYYY-MM-DD HH:mm:ss'),
+    //   description: addLogForm.value.description
+    // });
+    
+    // 临时模拟成功
+    message.success('操作日志添加成功');
+    showAddLogModal.value = false;
+    
+    // 刷新操作日志
+    await fetchDetailData(selectedRow.value.ID);
+  } catch (err) {
+    message.error('添加操作日志失败');
+  }
 };
 
 // 获取工单详情（操作日志）
@@ -799,26 +870,8 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
             placeholder="请选择就近维修站"
           />
         </NFormItem>
-        <template v-if="dispatchForm.onsite === 0">
-          <!-- 物流公司 -->
-          <NFormItem label="物流公司" :required="dispatchForm.onsite === 0">
-            <NSelect 
-              v-model:value="dispatchForm.logisticsCompany"
-              :options="logisticsCompanyOptions"
-              placeholder="请选择物流公司"
-            />
-          </NFormItem>
       
-          <!-- 物流信息 -->
-          <NFormItem label="物流信息">
-            <NInput 
-              v-model:value="dispatchForm.logisticsInfo"
-              type="textarea"
-              placeholder="请填写物流单号、预计送达时间等信息"
-            />
-          </NFormItem>
-        </template>
-      
+
           <!-- 备注 -->
           <NFormItem label="备注">
             <NInput 
@@ -832,6 +885,45 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       <template #footer>
         <NButton type="primary" @click="handleSubmitDispatch">确认派单</NButton>
         <NButton @click="showDispatchModal = false">取消</NButton>
+      </template>
+    </NModal>
+
+    <!-- 添加操作日志弹框 -->
+    <NModal v-model:show="showAddLogModal" style="width: 500px" preset="card" title="添加工单操作日志">
+      <NForm :model="addLogForm" label-width="100">
+        <!-- 工单状态 -->
+        <NFormItem label="工单状态" required>
+          <NSelect 
+            v-model:value="addLogForm.order_status"
+            :options="statusOptions"
+            placeholder="请选择工单状态"
+          />
+        </NFormItem>
+
+        <!-- 操作时间 -->
+        <NFormItem label="操作时间" required>
+          <NDatePicker 
+            v-model:value="addLogForm.occurred_at"
+            type="datetime"
+            placeholder="请选择操作时间"
+            style="width: 100%"
+          />
+        </NFormItem>
+
+        <!-- 操作描述 -->
+        <NFormItem label="操作描述" required>
+          <NInput 
+            v-model:value="addLogForm.description"
+            type="textarea"
+            placeholder="请填写操作描述"
+            :rows="4"
+          />
+        </NFormItem>
+      </NForm>
+
+      <template #footer>
+        <NButton type="primary" @click="handleSubmitLog">确认添加</NButton>
+        <NButton @click="showAddLogModal = false">取消</NButton>
       </template>
     </NModal>
     </div>

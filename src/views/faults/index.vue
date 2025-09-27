@@ -99,6 +99,20 @@ const statusOptions = [
   { label: '下架', value: 4 }
 ];
 
+// 批量修改状态弹框相关
+const showBatchStatusModal = ref(false);
+const showApiBatchStatusModal = ref(false);
+
+const batchStatusForm = ref({
+  orderNumbers: '',
+  status: null as null | number,
+  file: null as File | null
+});
+const batchApiStatusForm = ref({
+  status: null as null | number,
+});
+const fileInputRef = ref<HTMLInputElement | null>(null);
+
 // 打开修改弹框
 const handleOpenEdit = (row: Faults) => {
   editForm.value = {
@@ -285,32 +299,6 @@ const fetchStatus=async()=>{
     loading.value = false;
   }
 }
-// async function loadFaultsTypes() {
-//   loading.value = true
-//   try {
-//     const res = await fetchFaultsTypes({})
-//     if (res && res.data.length>0) {
-//       // 明确 item 类型
-//       const arr = res.data as { id:number, name: string,hash_rate:string }[]
-
-//       // names.value = [arr.map(item => item.name+" _ "+item.hash_rate+" T")]
-
-//       modelOptions.value = arr.map(item => ({
-//         label:  item.name+" _ "+item.hash_rate+" T",
-//         value: item.id,
-//       }))
-      
-//     } else {
-//       // names.value = []
-//       modelOptions.value = []
-//     }
-//   } catch (err) {
-//     // console.error('获取场地数据失败:', err)
-//     message.error('加载场地数据失败')
-//   } finally {
-//     loading.value = false
-//   }
-// }
 
 onMounted(() => {
   fetchData()
@@ -401,6 +389,80 @@ const handleConfirmWorkOrder = async () => {
 const handleCancelWorkOrder = () => {
   showWorkOrderModal.value = false;
 };
+
+// 打开批量修改状态弹框
+const handleOpenApiBatchStatus = () => {
+  batchApiStatusForm.value = {
+    status: null,
+  };
+  showApiBatchStatusModal.value = true;
+};
+
+
+// 打开批量修改状态弹框
+const handleOpenBatchStatus = () => {
+  batchStatusForm.value = {
+    orderNumbers: '',
+    status: null,
+    file: null
+  };
+  showBatchStatusModal.value = true;
+};
+
+// 处理文件上传
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    batchStatusForm.value.file = target.files[0];
+  }
+};
+
+// 提交批量修改状态
+const handleSubmitBatchStatus = async () => {
+  if (!batchStatusForm.value.orderNumbers.trim() && !batchStatusForm.value.file) {
+    message.error('请输入工单号或上传文件');
+    return;
+  }
+  
+  if (batchStatusForm.value.status === null) {
+    message.error('请选择状态');
+    return;
+  }
+  
+  try {
+    // 这里需要调用批量修改状态的API
+    // const formData = new FormData();
+    // formData.append('orderNumbers', batchStatusForm.value.orderNumbers);
+    // formData.append('status', batchStatusForm.value.status.toString());
+    // if (batchStatusForm.value.file) {
+    //   formData.append('file', batchStatusForm.value.file);
+    // }
+    // const { error } = await batchUpdateStatus(formData);
+    
+    // 临时模拟成功
+    message.success('批量修改状态成功');
+    showBatchStatusModal.value = false;
+    
+    // 刷新数据
+    fetchData();
+  } catch (error) {
+    message.error('批量修改状态失败');
+    console.error('批量修改状态失败:', error);
+  }
+};
+
+// 取消批量修改状态
+const handleCancelBatchStatus = () => {
+  showBatchStatusModal.value = false;
+  batchStatusForm.value = {
+    orderNumbers: '',
+    status: null,
+    file: null
+  };
+  if (fileInputRef.value) {
+    fileInputRef.value.value = '';
+  }
+};
 </script>
 
 <template>
@@ -415,6 +477,20 @@ const handleCancelWorkOrder = () => {
           @click="handleCreateWorkOrder"
         >
           创建工单 ({{ selectedRows.length }})
+        </NButton>
+         <NButton 
+          type="warning" 
+          :disabled="selectedRows.length === 0"
+          @click="handleOpenApiBatchStatus"
+        >
+          修改状态 ({{ selectedRows.length }})
+        </NButton>
+
+        <NButton 
+          type="warning" 
+          @click="handleOpenBatchStatus"
+        >
+          导入改状态
         </NButton>
       </div>
       
@@ -437,19 +513,6 @@ const handleCancelWorkOrder = () => {
     <!-- 修改弹框 -->
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
       <NForm :model="editForm" label-width="100">
-        <NFormItem label="机型">
-          <NSelect v-model:value="editForm.Faults_type_id" :options="modelOptions" />
-        </NFormItem>
-        <NFormItem label="机型">
-          <NSelect v-model:value="editForm.Faults_type_id" :options="modelOptions" />
-        </NFormItem>
-        <NFormItem label="机器编号">
-          <NInput v-model:value="editForm.serial_number" />
-        </NFormItem>
-        <!-- <NFormItem label="场地">
-          <NInput v-model:value="editForm.Site?.name" disabled/>
-        </NFormItem> -->
-    
         <NFormItem label="状态">
           <NSelect v-model:value="editForm.status_id" :options="statusOptions" />
         </NFormItem>
@@ -501,6 +564,77 @@ const handleCancelWorkOrder = () => {
       <template #footer>
         <NButton type="primary" @click="handleConfirmWorkOrder">创建</NButton>
         <NButton @click="handleCancelWorkOrder">取消</NButton>
+      </template>
+    </NModal>
+
+    <!-- 导入机器修改状态弹框 -->
+    <NModal v-model:show="showBatchStatusModal" style="width: 500px" preset="card" title="批量修改状态">
+      <NForm :model="batchStatusForm" label-width="100">
+        <!-- 工单输入框 -->
+        <NFormItem label="工单号">
+          <NInput 
+            v-model:value="batchStatusForm.orderNumbers"
+            type="textarea"
+            placeholder="请输入工单号，多个工单号用换行分隔"
+            :rows="4"
+          />
+        </NFormItem>
+
+        <!-- 状态下拉选择 -->
+        <NFormItem label="状态" required>
+          <NSelect 
+            v-model:value="batchStatusForm.status"
+            :options="statusOptions"
+            placeholder="请选择状态"
+          />
+        </NFormItem>
+
+        <!-- 文件上传 -->
+        <NFormItem label="文件上传">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <input 
+              ref="fileInputRef"
+              type="file" 
+              accept=".xlsx,.xls,.csv"
+              @change="handleFileChange"
+              style="width: 100%;"
+            />
+            <div style="font-size: 12px; color: #666;">
+              支持上传 Excel 或 CSV 文件，文件中应包含工单号列表
+            </div>
+            <div v-if="batchStatusForm.file" style="font-size: 12px; color: #18a058;">
+              已选择文件: {{ batchStatusForm.file.name }}
+            </div>
+          </div>
+        </NFormItem>
+      </NForm>
+      
+      <template #footer>
+        <NButton type="primary" @click="handleSubmitBatchStatus">提交</NButton>
+        <NButton @click="handleCancelBatchStatus">取消</NButton>
+      </template>
+    </NModal>
+
+        <!-- 批量修改状态弹框 -->
+    <NModal v-model:show="showApiBatchStatusModal" style="width: 500px" preset="card" title="批量修改状态">
+      <NForm :model="batchStatusForm" label-width="100">
+        <!-- 工单输入框 -->
+
+        <!-- 状态下拉选择 -->
+        <NFormItem label="状态" required>
+          <NSelect 
+            v-model:value="batchStatusForm.status"
+            :options="statusOptions"
+            placeholder="请选择状态"
+          />
+        </NFormItem>
+
+   
+      </NForm>
+      
+      <template #footer>
+        <NButton type="primary" @click="handleSubmitBatchStatus">提交</NButton>
+        <NButton @click="handleCancelBatchStatus">取消</NButton>
       </template>
     </NModal>
   </div>
