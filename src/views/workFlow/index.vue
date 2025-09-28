@@ -3,7 +3,7 @@ import { onMounted, ref, watch, h, computed } from 'vue';
 import dayjs from 'dayjs';
 import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NCheckbox, NDatePicker } from 'naive-ui';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
-import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders, fetchOrdersLogistics,fetchOrdersStatus } from '@/service/api/workflow';
+import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus,createOrdersLog } from '@/service/api/workflow';
 import {fetchRepairStations} from '@/service/api/repair';
 import {fetchSites} from '@/service/api/site';
 
@@ -135,12 +135,6 @@ const repairStationOptions = ref([
   { label: '维修站B', value: 3 }
 ]);
 
-const logisticsCompanyOptions = ref([
-  { label: '请选择物流公司', value: 1 },
-  { label: '顺丰速运', value: 2 },
-  { label: '京东物流', value: 3 },
-  { label: '德邦物流', value: 4 }
-]);
 
 // 当前操作的工单
 const currentOrder = ref<Order | null>(null);
@@ -205,10 +199,6 @@ const handleSubmitDispatch = async () => {
     return;
   }
 
-  if (dispatchForm.value.onsite === 0 && dispatchForm.value.logisticsCompany === null) {
-    message.error('请选择物流公司');
-    return;
-  }
 
   try {
     // 构建提交数据
@@ -591,6 +581,17 @@ const handleSubmitLog = async () => {
     //   occurred_at: dayjs(addLogForm.value.occurred_at).format('YYYY-MM-DD HH:mm:ss'),
     //   description: addLogForm.value.description
     // });
+    const { error } = await createOrdersLog(selectedRow.value.ID,{
+      status: addLogForm.value.order_status,
+      date_time: dayjs(addLogForm.value.occurred_at).format('YYYY-MM-DD HH:mm:ss'),
+      remark: addLogForm.value.description
+    });
+    if (error) {
+      message.error(`添加操作日志失败: ${error}`);
+      return;
+    }
+    
+
     
     // 临时模拟成功
     message.success('操作日志添加成功');

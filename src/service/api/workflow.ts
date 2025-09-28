@@ -49,6 +49,16 @@ export function createOrder(params: {[key: string]: any }) {
   });
 }
 
+// 创建工单操作日志
+// /orders/fid}/operation log
+export function createOrdersLog(id:number,params: {[key: string]: any }) {
+  return request({
+    url: '/api/orders/'+id+'/operation_log',
+    method: 'post',
+    data:params
+  });
+}
+
 // 修改工单
 // /api/faults/:id 
 export function updateOrders(id:number,params: {[key: string]: any }) {

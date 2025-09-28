@@ -45,6 +45,31 @@ export function updateFaults(id:number,params: {[key: string]: any }) {
   });
 }
 
+//fault_order_status
+// param :fault_ids:[]
+// param :status:number
+export function updateFaultsStatus(params: {[key: string]: any }) {
+  return request({
+    url: '/api/faults/update_status',
+    method: 'put',
+    data:params
+  });
+}
+
+// 上传文件批量修改状态
+// /api/faults/batch_update_status
+// params:
+//   order_numbers: string[]
+//   status: number
+//   file：文件上传
+export function batchUpdateStatus(params: {[key: string]: any }) {
+  return request({
+    url: '/api/faults/batch_update_status',
+    method: 'put',
+    data:params
+  });
+}
+
 
 
 

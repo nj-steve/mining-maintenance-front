@@ -1,1 +1,0 @@
-import{_ as o}from"./exception-base.vue_vue_type_script_setup_true_lang-BJD9s01Q.js";import{d as n,c as t,o as a}from"./index-BB5fvi2P.js";const m=n({name:"404",__name:"index",setup(c){return(_,s)=>{const e=o;return a(),t(e,{type:"404"})}}});export{m as default};

@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h } from 'vue';
-import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
+import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker } from 'naive-ui';
+import BatchStatusModal from './components/BatchStatusModal.vue';
+import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { fetchFaults,updateFaults,fetchFaultsStatus } from '@/service/api/faults';
+import { fetchFaults,updateFaults } from '@/service/api/faults';
+import {fetchOrdersStatus} from '@/service/api/workflow';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
 
@@ -32,14 +35,19 @@ interface Faults {
   };
 }
 
-const dialog = useDialog()
 const message = useMessage();
 const router = useRouter();
 
 const tableData = ref<Faults[]>([]);
 const loading = ref(false);
 const searchSerial = ref<string>('');
+const searchSiteId = ref<number | null>(null);
+const searchStatus = ref<number | null>(null);
+const searchStartDate = ref<number | null>(null);
+const searchEndDate = ref<number | null>(null);
+const searchModel = ref<number | null>(null);
 const modelOptions = ref<{ label: string; value: number }[]>([])
+const statusOptions = ref<{ label: string; value: number }[]>([]);
 
 // 批量选择相关
 const selectedRowKeys = ref<number[]>([]);
@@ -91,27 +99,36 @@ const editForm = ref<Faults>({
   
 });
 
-// 状态下拉选项
-const statusOptions = [
-  { label: '在架', value: 1 },
-  { label: '维修', value: 2 },
-  { label: '报废', value: 3 },
-  { label: '下架', value: 4 }
-];
-
 // 批量修改状态弹框相关
-const showBatchStatusModal = ref(false);
-const showApiBatchStatusModal = ref(false);
 
-const batchStatusForm = ref({
-  orderNumbers: '',
-  status: null as null | number,
-  file: null as File | null
-});
-const batchApiStatusForm = ref({
-  status: null as null | number,
-});
-const fileInputRef = ref<HTMLInputElement | null>(null);
+
+
+
+
+// ---------------- 数据获取 ----------------
+const fetchOrderStatusData = async () => {
+  loading.value = true;
+  const params: any = {
+   type:1,//故障机状态
+  };
+
+  try {
+    const {data,error} = await fetchOrdersStatus(params);
+    
+    if(error==null){
+       statusOptions.value = data.map((item: any) => ({
+        label: item.name,
+        value: item.id,
+      }));
+    }else{
+        message.error(`加载失败: ${error}`);
+    }
+  } catch (err) {
+    message.error(`加载失败${err}`);
+  } finally {
+    loading.value = false;
+  }
+};
 
 // 打开修改弹框
 const handleOpenEdit = (row: Faults) => {
@@ -183,24 +200,6 @@ const columns: DataTableColumns<Faults> = [
   
   { title: '问题描述', key: 'description', width: 200},
   { title: '工单编号', key: 'order_no', width: 150},
-
-  // render: (row: Miner) => row.Status?.name ,
-  // render: (row: any ) => {
-  //   if (row.Status?.name === null || row.Status?.name === undefined) {
-  //     return null;
-  //   }
-  //   const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-  //     '在架': 'success',
-  //     '维修': 'warning',
-  //     '报废': 'error',
-  //     '下架':'info',
-  //   };
-
-  //   const label = row.Status?.name || '未知';
-  //   // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-  //   return h(NTag, {type: tagMap[row.Status?.name] }, () => label)
-  // }
-  // },
   { title: '维修次数', key: 'repair_count', width: 100 },
   { title: '状态', key: 'status_text', width: 100,
     render: (row: Faults) => {
@@ -208,7 +207,7 @@ const columns: DataTableColumns<Faults> = [
         '在架': 'success',
         '维修': 'info',
         '报废': 'error',
-        '下架检查':'warning',
+        '新下架':'warning',
       };
       const label = row.status_text || '未知';
       return h(NTag, {type: tagMap[row.status_text || '未知'] }, () => label)
@@ -232,23 +231,6 @@ const columns: DataTableColumns<Faults> = [
           },
           { default: () => '修改' }
         ),
-        // h(
-        //   NButton,
-        //   {
-        //     type: 'error',
-        //     ghost: true,
-        //     onClick: () => {
-        //       dialog.warning({
-        //         title: '确认报废',
-        //         content: `你确定要报废矿机「${row.serial_number}」吗？`,
-        //         positiveText: '确定',
-        //         negativeText: '取消',
-        //         onPositiveClick: () => message.error("报废操作,暂未启用")
-        //       })
-        //     }
-        //   },
-        //   { default: () => '报废' }
-        // )
       ]
     }
   }
@@ -260,7 +242,12 @@ const fetchData = async () => {
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
-    sn: searchSerial.value || undefined
+    sn: searchSerial.value || undefined,
+    site_id: searchSiteId.value || undefined,
+    status: searchStatus.value || undefined,
+    start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
+    end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
+    model: searchModel.value || undefined
   };
 
   try {
@@ -280,35 +267,15 @@ const fetchData = async () => {
   }
 };
 
-const fetchStatus=async()=>{
-  loading.value = true;
-  const params: any = {
-    type:1
-  };
-
-  try {
-    const {data,error} = await fetchFaultsStatus(params);
-    if(error==null){
-        tableData.value = data.list;
-    }else{
-        message.error(`加载失败: ${error}`);
-    }
-  } catch (err) {
-    message.error(`加载失败${err}`);
-  } finally {
-    loading.value = false;
-  }
-}
-
 onMounted(() => {
   fetchData()
+  fetchOrderStatusData();
 //   loadFaultsTypes();
 });
-watch([searchSerial], () => {
+watch([searchSerial, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
-  
 });
 
 // 批量选择处理
@@ -320,13 +287,13 @@ const handleSelectionChange = (keys: (string | number)[], rows: any[]) => {
 
 // 创建工单
 const handleCreateWorkOrder = () => {
-  // 只选择状态为"下架检查"的机器
+  // 只选择状态为"新下架"的机器
   const downCheckMachines = selectedRows.value.filter(row => 
-    row.Status?.name === '下架检查' || row.status_text === '下架检查'
+    row.Status?.name === '新下架' || row.status_text === '新下架'
   );
   
   if (downCheckMachines.length === 0) {
-    message.warning('请选择状态为"下架检查"的机器');
+    message.warning('请选择状态为"新下架"的机器');
     return;
   }
   
@@ -390,78 +357,13 @@ const handleCancelWorkOrder = () => {
   showWorkOrderModal.value = false;
 };
 
-// 打开批量修改状态弹框
-const handleOpenApiBatchStatus = () => {
-  batchApiStatusForm.value = {
-    status: null,
-  };
-  showApiBatchStatusModal.value = true;
-};
-
-
-// 打开批量修改状态弹框
-const handleOpenBatchStatus = () => {
-  batchStatusForm.value = {
-    orderNumbers: '',
-    status: null,
-    file: null
-  };
-  showBatchStatusModal.value = true;
-};
-
-// 处理文件上传
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    batchStatusForm.value.file = target.files[0];
-  }
-};
-
-// 提交批量修改状态
-const handleSubmitBatchStatus = async () => {
-  if (!batchStatusForm.value.orderNumbers.trim() && !batchStatusForm.value.file) {
-    message.error('请输入工单号或上传文件');
-    return;
-  }
-  
-  if (batchStatusForm.value.status === null) {
-    message.error('请选择状态');
-    return;
-  }
-  
-  try {
-    // 这里需要调用批量修改状态的API
-    // const formData = new FormData();
-    // formData.append('orderNumbers', batchStatusForm.value.orderNumbers);
-    // formData.append('status', batchStatusForm.value.status.toString());
-    // if (batchStatusForm.value.file) {
-    //   formData.append('file', batchStatusForm.value.file);
-    // }
-    // const { error } = await batchUpdateStatus(formData);
-    
-    // 临时模拟成功
-    message.success('批量修改状态成功');
-    showBatchStatusModal.value = false;
-    
-    // 刷新数据
-    fetchData();
-  } catch (error) {
-    message.error('批量修改状态失败');
-    console.error('批量修改状态失败:', error);
-  }
-};
-
-// 取消批量修改状态
-const handleCancelBatchStatus = () => {
-  showBatchStatusModal.value = false;
-  batchStatusForm.value = {
-    orderNumbers: '',
-    status: null,
-    file: null
-  };
-  if (fileInputRef.value) {
-    fileInputRef.value.value = '';
-  }
+// 处理刷新数据
+const handleRefresh = () => {
+  // 清空选中状态
+  selectedRowKeys.value = [];
+  selectedRows.value = [];
+  // 刷新数据
+  fetchData();
 };
 </script>
 
@@ -478,23 +380,69 @@ const handleCancelBatchStatus = () => {
         >
           创建工单 ({{ selectedRows.length }})
         </NButton>
-         <NButton 
-          type="warning" 
-          :disabled="selectedRows.length === 0"
-          @click="handleOpenApiBatchStatus"
-        >
-          修改状态 ({{ selectedRows.length }})
-        </NButton>
 
-        <NButton 
-          type="warning" 
-          @click="handleOpenBatchStatus"
-        >
-          导入改状态
-        </NButton>
+            <!-- 批量修改状态组件 -->
+        <BatchStatusModal 
+          :status-options="statusOptions"
+          :selectedRows="selectedRows"
+          @refresh="handleRefresh"
+        />
+
+
+        <UploadFileBathStatusModal 
+          :status-options="statusOptions"
+          @refresh="handleRefresh"
+        />
       </div>
-      
-      <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入机器编号" clearable style="width: 240px" />
+
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+        <NInput 
+          v-model:value="searchSerial" 
+          @change="fetchData" 
+          placeholder="请输入机器编号" 
+          clearable 
+          style="width: 200px" 
+        />
+        
+        <!-- <NInputNumber 
+          v-model:value="searchSiteId" 
+          placeholder="场地ID" 
+          clearable 
+          style="width: 150px" 
+        /> -->
+        
+        <NSelect 
+          v-model:value="searchStatus" 
+          :options="statusOptions" 
+          placeholder="机器状态" 
+          clearable 
+          style="width: 150px" 
+        />
+        
+        <!-- <NDatePicker 
+          v-model:value="searchStartDate" 
+          type="date" 
+          placeholder="开始日期" 
+          clearable 
+          style="width: 150px" 
+        />
+        
+        <NDatePicker 
+          v-model:value="searchEndDate" 
+          type="date" 
+          placeholder="结束日期" 
+          clearable 
+          style="width: 150px" 
+        /> -->
+        
+        <!-- <NSelect 
+          v-model:value="searchModel" 
+          :options="modelOptions" 
+          placeholder="机器类型" 
+          clearable 
+          style="width: 150px" 
+        /> -->
+      </div>
     </div>
 
     <!-- 表格 -->
@@ -567,75 +515,8 @@ const handleCancelBatchStatus = () => {
       </template>
     </NModal>
 
-    <!-- 导入机器修改状态弹框 -->
-    <NModal v-model:show="showBatchStatusModal" style="width: 500px" preset="card" title="批量修改状态">
-      <NForm :model="batchStatusForm" label-width="100">
-        <!-- 工单输入框 -->
-        <NFormItem label="工单号">
-          <NInput 
-            v-model:value="batchStatusForm.orderNumbers"
-            type="textarea"
-            placeholder="请输入工单号，多个工单号用换行分隔"
-            :rows="4"
-          />
-        </NFormItem>
 
-        <!-- 状态下拉选择 -->
-        <NFormItem label="状态" required>
-          <NSelect 
-            v-model:value="batchStatusForm.status"
-            :options="statusOptions"
-            placeholder="请选择状态"
-          />
-        </NFormItem>
 
-        <!-- 文件上传 -->
-        <NFormItem label="文件上传">
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <input 
-              ref="fileInputRef"
-              type="file" 
-              accept=".xlsx,.xls,.csv"
-              @change="handleFileChange"
-              style="width: 100%;"
-            />
-            <div style="font-size: 12px; color: #666;">
-              支持上传 Excel 或 CSV 文件，文件中应包含工单号列表
-            </div>
-            <div v-if="batchStatusForm.file" style="font-size: 12px; color: #18a058;">
-              已选择文件: {{ batchStatusForm.file.name }}
-            </div>
-          </div>
-        </NFormItem>
-      </NForm>
-      
-      <template #footer>
-        <NButton type="primary" @click="handleSubmitBatchStatus">提交</NButton>
-        <NButton @click="handleCancelBatchStatus">取消</NButton>
-      </template>
-    </NModal>
-
-        <!-- 批量修改状态弹框 -->
-    <NModal v-model:show="showApiBatchStatusModal" style="width: 500px" preset="card" title="批量修改状态">
-      <NForm :model="batchStatusForm" label-width="100">
-        <!-- 工单输入框 -->
-
-        <!-- 状态下拉选择 -->
-        <NFormItem label="状态" required>
-          <NSelect 
-            v-model:value="batchStatusForm.status"
-            :options="statusOptions"
-            placeholder="请选择状态"
-          />
-        </NFormItem>
-
-   
-      </NForm>
-      
-      <template #footer>
-        <NButton type="primary" @click="handleSubmitBatchStatus">提交</NButton>
-        <NButton @click="handleCancelBatchStatus">取消</NButton>
-      </template>
-    </NModal>
+    
   </div>
 </template>
