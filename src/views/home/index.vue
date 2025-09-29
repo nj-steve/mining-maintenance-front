@@ -66,7 +66,7 @@ const cardDataForChild = computed(() => {
     },
     {
       key: 'todayRepairedCount',
-      title: '今日完成维修',
+      title: '今日维修',
       value: data.today_completed || 0,
       unit: '',
       color: { start: '#865ec0', end: '#5144b4' },
@@ -125,9 +125,9 @@ onMounted(async () => {
       </NGi>
     </NGrid>
     <NGrid :x-gap="gap" :y-gap="16" responsive="screen" item-responsive>
-      <NGi span="24 s:24 m:24">
+      <!-- <NGi span="24 s:24 m:24">
         <ProjectNews :orders="orders" />
-      </NGi>
+      </NGi> -->
       <!-- <NGi span="24 s:24 m:10">
         <CreativityBanner />
       </NGi> -->

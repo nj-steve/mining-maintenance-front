@@ -23,7 +23,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
   },
   series: [
     {
-      color: ['#5da8ff', '#8e9dff', '#fedc69', '#26deca'],
+      color: ['#8e9dff', '#26deca', '#ff9f7f', '#ffc658', '#5da8ff', '#9c88ff'],
       name: $t('page.home.schedule'),
       type: 'pie',
       radius: ['45%', '75%'],
@@ -58,10 +58,12 @@ async function mockData() {
 
   updateOptions(opts => {
     opts.series[0].data = [
-      { name: $t('page.home.study'), value: 20 },
-      { name: $t('page.home.entertainment'), value: 10 },
-      { name: $t('page.home.work'), value: 40 },
-      { name: $t('page.home.rest'), value: 30 }
+      { name: '今日下架', value: 15 },
+      { name: '待处理', value: 25 },
+      { name: '在修设备', value: 20 },
+      { name: '今日维修', value: 18 },
+      { name: '待上架', value: 12 },
+      { name: '物流中', value: 10 }
     ];
 
     return opts;
@@ -75,10 +77,12 @@ function updateLocale() {
     opts.series[0].name = originOpts.series[0].name;
 
     opts.series[0].data = [
-      { name: $t('page.home.study'), value: 20 },
-      { name: $t('page.home.entertainment'), value: 10 },
-      { name: $t('page.home.work'), value: 40 },
-      { name: $t('page.home.rest'), value: 30 }
+      { name: '今日下架', value: 15 },
+       { name: '待处理', value: 25 },
+       { name: '在修设备', value: 20 },
+       { name: '今日维修', value: 18 },
+       { name: '待上架', value: 12 },
+       { name: '物流中', value: 10 }
     ];
 
     return opts;
