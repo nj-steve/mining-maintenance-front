@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type PropType, h } from 'vue';
+import { NDataTable, NTag } from 'naive-ui';
 import { $t } from '@/locales';
 
 defineOptions({
@@ -8,32 +9,90 @@ defineOptions({
 
 interface NewsItem {
   id: number;
-  content: string;
-  time: string;
+  created_at: string;
+  logistics_type: string;
+  onsite_text: string;
+  order_no: string;
+  payment_date: string | null;
+  repair_station_name: string;
+  settlement_status: number;
+  settlement_status_text: string;
 }
 
-const newses = computed<NewsItem[]>(() => [
-  { id: 1, content: $t('page.home.projectNews.desc1'), time: '2021-05-28 22:22:22' },
-  { id: 2, content: $t('page.home.projectNews.desc2'), time: '2021-10-27 10:24:54' },
-  { id: 3, content: $t('page.home.projectNews.desc3'), time: '2021-10-31 22:43:12' },
-  { id: 4, content: $t('page.home.projectNews.desc4'), time: '2021-11-03 20:33:31' },
-  { id: 5, content: $t('page.home.projectNews.desc5'), time: '2021-11-07 22:45:32' }
-]);
+const props = defineProps({
+  orders: {
+    type: Array as PropType<NewsItem[]>,
+    default: () => []
+  }
+});
+
+const columns = [
+  {
+    title: '工单编号',
+    key: 'order_no',
+    width: 150
+  },
+  {
+    title: '创建时间',
+    key: 'created_at',
+    width: 120
+  },
+  {
+    title: '维修站点',
+    key: 'repair_station_name',
+    width: 200
+  },
+  {
+    title: '是否驻场',
+    key: 'onsite_text',
+    width: 100,
+    render: (row: NewsItem) => {
+      if (!row.onsite_text) return '-';
+      const isOnsite = row.onsite_text === '是';
+      return h(NTag, {
+        type: isOnsite ? 'success' : 'primary'
+      }, () => row.onsite_text);
+    }
+  },
+  {
+    title: '物流类型',
+    key: 'logistics_type',
+    width: 100
+  },
+  {
+    title: '付款日期',
+    key: 'payment_date',
+    width: 120,
+    render: (row: NewsItem) => row.payment_date || '-'
+  },
+  {
+    title: '结算状态',
+    key: 'settlement_status_text',
+    width: 100,
+    render: (row: NewsItem) => {
+      if (!row.settlement_status_text) return '-';
+      const isPayment = row.settlement_status_text === '已付款';
+      return h(NTag, {
+        type: isPayment ? 'success' : 'warning'
+      }, () => row.settlement_status_text);
+    }
+  }
+];
+
 </script>
 
 <template>
   <NCard title="最新工单" :bordered="false" size="small" segmented class="card-wrapper">
     <template #header-extra>
-      <a class="text-primary" href="javascript:;">{{ $t('page.home.projectNews.moreNews') }}</a>
+      <a class="text-primary" href="/workflow">{{ $t('page.home.projectNews.moreNews') }}</a>
     </template>
-    <NList>
-      <NListItem v-for="item in newses" :key="item.id">
-        <template #prefix>
-          <SoybeanAvatar class="size-48px!" />
-        </template>
-        <NThing :title="item.content" :description="item.time" />
-      </NListItem>
-    </NList>
+    <NDataTable
+      :columns="columns"
+      :data="orders"
+      :pagination="false"
+      size="small"
+      :bordered="false"
+    />
   </NCard>
 </template>
 

@@ -5,7 +5,7 @@
         <n-space vertical>
           <n-descriptions :column="2" label-placement="left" bordered>
             <n-descriptions-item label="日期">
-              <template v-if="!isEdit">{{ form.date }}</template>
+              <template v-if="!isEdit">{{ new Date(form.date).toLocaleDateString('zh-CN') }}</template>
               <n-date-picker v-else v-model:value="form.date" type="date" :value-format="'yyyy-MM-dd'" />
             </n-descriptions-item>
   
@@ -99,13 +99,17 @@
       <!-- 维修进程 -->
       <n-card title="维修进程">
         <n-descriptions :column="2" label-placement="left" bordered>
-          <n-descriptions-item label="维修时间">
-            <template v-if="!isEdit">{{ form.repairTime }}</template>
-            <n-date-picker v-else v-model:value="form.repairTime" type="datetime" :value-format="'yyyy-MM-dd HH:mm'" />
+          <n-descriptions-item label="开始时间">
+            <template v-if="!isEdit">{{ form.repairStartTime ? new Date(form.repairStartTime).toLocaleString() : '' }}</template>
+            <n-date-picker v-else v-model:value="form.repairStartTime" type="datetime" :value-format="'yyyy-MM-dd HH:mm'" />
+          </n-descriptions-item>
+           <n-descriptions-item label="结束时间">
+            <template v-if="!isEdit">{{ form.repairEndTime ? new Date(form.repairEndTime).toLocaleString() : '' }}</template>
+            <n-date-picker v-else v-model:value="form.repairEndTime" type="datetime" :value-format="'yyyy-MM-dd HH:mm'" />
           </n-descriptions-item>
   
           <n-descriptions-item label="维修状态">
-            <template v-if="!isEdit">{{ form.repairStatus }}</template>
+            <template v-if="!isEdit">{{ statusOptionsMap[Number(form.repairStatus)] }}</template>
             <n-select v-else v-model:value="form.repairStatus" :options="statusOptions" />
           </n-descriptions-item>
   
@@ -130,6 +134,7 @@
   import { useRoute } from "vue-router"
   import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace } from "naive-ui"
   import { fetchRepairDetailsByID } from '@/service/api/repair'
+  import { statusOptions, statusOptionsMap } from '@/constants/business'
   
   const route = useRoute();
   // const id = route.params.id; // 用它去请求详情数据
@@ -139,10 +144,10 @@
   const isEdit = ref(false)
   
   const form = ref({
-    date: new Date('2024-01-18').getTime(),
-    workOrderNo: "WO2024011800001",
-    machineModel: "S19 XP",
-    repairStation: "深圳维修中心",
+    date: new Date().getTime(),
+    workOrderNo: "",
+    machineModel: "",
+    repairStation: "",
     deviceSN: "SN2024011800001",
     powerSN: ["PWR20240118001234556", "PWR20240118001234557", "PWR20240118001234558"],
     boardSN: ["BRD120240118001234556", "BRD220240118001234556", "BRD320240118001234556"],
@@ -156,16 +161,17 @@
       "https://placehold.co/200x200?text=电源模块照片",
       "https://placehold.co/200x200?text=风扇照片"
     ],
-    repairTime: new Date('2024-01-18 09:30').getTime(),
+    repairStartTime: new Date('2024-01-18 09:30').getTime(),
+    repairEndTime: new Date('2024-01-18 10:30').getTime(),
     repairStatus: "维修完成",
     repairer: "刘工"
   })
   
-  const statusOptions = [
-    { label: "待维修", value: "待维修" },
-    { label: "维修中", value: "维修中" },
-    { label: "维修完成", value: "维修完成" }
-  ]
+  // const statusOptions = [
+  //   { label: "已修复", value: 9 },
+  //   { label: "未修复", value: 10 },
+  //   { label: "报废", value: 11 }
+  // ]
   
   function save() {
     console.log("保存数据", form.value)
@@ -183,8 +189,8 @@
     try {
       const { data, error } = await fetchRepairDetailsByID(Number(id.value));
       console.log("data",data)
-      if (error === null && data && data.length > 0) {
-        const detail = data[0]; // 假设返回的是数组，取第一个
+      if (error === null && data !== null) {
+        const detail = data; // 假设返回的是数组，取第一个
         form.value = {
           date: detail.Date ? new Date(detail.Date).getTime() : new Date().getTime(),
           workOrderNo: detail.WorkOrderNo || '',
@@ -195,13 +201,14 @@
           boardSN: detail.BoardSN ? detail.BoardSN.split(',') : [],
           repairComponent: detail.RepairComponent || '',
           defectReason: detail.DefectReason || '',
-          defectCodes: detail.DefectCodes ? detail.DefectCodes.split(',') : [],
+          defectCodes: detail.DefectCode ? detail.DefectCode.split(',') : [],
           position: detail.Position || '',
           verifyDefect: detail.VerifyDefect || '',
           images: detail.Images ? detail.Images.split(',') : [],
-          repairTime: detail.RepairTime ? new Date(detail.RepairTime).getTime() : new Date().getTime(),
-          repairStatus: detail.RepairStatus || '',
-          repairer: detail.Repairer || ''
+          repairStartTime: detail.StartTime ? new Date(detail.StartTime).getTime() : new Date().getTime(),
+          repairEndTime: detail.EndTime ? new Date(detail.EndTime).getTime() : new Date().getTime(),
+          repairStatus: detail.RepairResult || 0,
+          repairer: detail.RepairerName || ''
         };
       }
     } catch (error) {

@@ -49,6 +49,17 @@ export const roleRecord:Record<number, string> = {
     4: '维修人员',
   };
 
+export const statusOptionsMap:Record<number, string> = {
+    9: '已修复',
+    10: '未修复',
+    11: '报废',
+    0:'其他'
+  };
+export  const statusOptions = [
+    { label: "已修复", value: 9 },
+    { label: "未修复", value: 10 },
+    { label: "报废", value: 11 }
+  ]
 
 
   
