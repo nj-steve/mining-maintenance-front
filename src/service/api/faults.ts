@@ -24,7 +24,7 @@ export function fetchFaults(params: { page?: number; limit?: number; [key: strin
   });
 }
 
-// 修改矿机
+// 获取矿机
 // /api/faults/:id 
 //1: fault status, 2: order status
 export function fetchFaultsStatus(params: { type?:number}) {
@@ -59,7 +59,7 @@ export function updateFaultsStatus(params: {[key: string]: any }) {
 // 上传文件批量修改状态
 // /api/faults/batch_update_status
 // params:
-//   order_numbers: string[]
+//   order_no: string
 //   status: number
 //   file：文件上传
 export function batchUpdateStatus(params: {[key: string]: any }) {

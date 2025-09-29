@@ -1,4 +1,4 @@
-import{a1 as j,ag as w,aj as S,af as O,d as P,X as _,a7 as k,am as C,c0 as B,r as F,c1 as I,a9 as x}from"./index-CsQp1UxY.js";const L=j("n-form"),R=j("n-form-item-insts"),V=w("form",[S("inline",`
+import{a1 as j,ag as w,aj as S,af as O,d as P,X as _,a7 as k,am as C,c0 as B,r as F,c1 as I,a9 as x}from"./index-DT11-sQ0.js";const L=j("n-form"),R=j("n-form-item-insts"),V=w("form",[S("inline",`
  width: 100%;
  display: inline-flex;
  align-items: flex-start;

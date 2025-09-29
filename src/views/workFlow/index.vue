@@ -252,12 +252,12 @@ const handleSaveEdit = async () => {
   try {
     // TODO: 调用后端接口 updateOrders(editForm.value)
     // console.log('修改提交:', editForm.value);
-    const res = await updateOrders(editForm.value.id, editForm.value);
-    if(res.response?.data?.msg=="success"){
+    const { error } = await updateOrders(editForm.value.id, editForm.value);
+    if(error==null){
         message.success('修改成功！');
         fetchData(); // 刷新表格
       }else{
-        message.error('修改失败:' +res.response?.data?.msg);
+        message.error('修改失败:' +error);
       }
   } catch (err) {
     message.error('修改失败');
@@ -310,7 +310,14 @@ const columns: DataTableColumns<Order> = [
     return h(NTag, {type: tagMap[row.SettlementStatusText] }, () => label)
   }
   },
-  { title: '付款日期', key: 'PaymentDate' },
+  { title: '付款日期', key: 'PaymentDate',
+    render: (row: Order) => {
+      if (!row.PaymentDate) {
+        return '-';
+      }
+      return dayjs(row.PaymentDate).format('YYYY-MM-DD');
+    }
+  },
   { title: '工单状态', key: 'OrderStatusText',
     render: (row: any) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -323,13 +330,9 @@ const columns: DataTableColumns<Order> = [
       return h(NTag, {type: tagMap[row.OrderStatusText] }, () => label)
     }
    },
-  { title: '短保期开始', key: 'warranty_status_text' },
-  { title: '剩余短保期', key: 'warranty_status_text' },
-  {
-    title: '操作',
-    key: 'actions',
-    align:'center',
-    render: (row: Order) => {
+  // { title: '短保期开始', key: 'warranty_status_text' },
+  // { title: '剩余短保期', key: 'warranty_status_text' },
+  { title: '操作',    key: 'actions',    align:'center',    fixed: 'right',    width: 180,    render: (row: Order) => {
       return [
         h(
           NButton,
@@ -342,17 +345,17 @@ const columns: DataTableColumns<Order> = [
           },
           { default: () => '修改' }
         ), 
-        h(
-          NButton,
-          {
-            type: 'info',
-            ghost: true,
-            size: 'small',
-            style: "margin-left: 8px;",
-            onClick: () => handleOpenDetail(row)
-          },
-          { default: () => '查看详情' }
-        ),
+        // h(
+        //   NButton,
+        //   {
+        //     type: 'info',
+        //     ghost: true,
+        //     size: 'small',
+        //     style: "margin-left: 8px;",
+        //     onClick: () => handleOpenDetail(row)
+        //   },
+        //   { default: () => '详情' }
+        // ),
         h(
           NButton,
           {
@@ -362,7 +365,7 @@ const columns: DataTableColumns<Order> = [
             style: "margin-left: 8px;",
             onClick: () => handleOpenAddLog(row)
           },
-          { default: () => '添加日志' }
+          { default: () => '+ 日志' }
         ),
          h(
           NButton,
@@ -750,9 +753,12 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       :data="tableData" 
       :pagination="pagination" 
       :loading="loading" 
+      :fixed="['actions']"
       :row-key="(row: Order) => row.ID"
       v-model:checked-row-keys="checkedRowKeys"
       remote 
+      :scroll-x="1400"
+      striped
     />
 
     <!-- 修改弹框 -->
@@ -795,7 +801,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           :options="[{ label: '未付款', value: 0 }, { label: '已付款', value: 1 }]"
         />
       </NFormItem>
-      <NFormItem label="付款日期">
+      <!-- <NFormItem label="付款日期"> -->
         <!-- 使用 value-format 输出字符串（这里用 YYYY-MM-DD，与表单初始化格式一致） -->
         <!-- <NDatePicker
           v-model:formatted-value="editForm.payment_date"
@@ -803,12 +809,12 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           value-format="yyyy-MM-dd"
           clearable
         />-->
-      </NFormItem>
+      <!-- </NFormItem> -->
 
       <NFormItem label="工单状态">
         <NSelect
           v-model:value="editForm.order_status"
-          :options="[{ label: '待处理', value: 0 }, { label: '已完成', value: 1 }]"
+          :options="statusOptions"
         />
       </NFormItem>
       </NForm> 

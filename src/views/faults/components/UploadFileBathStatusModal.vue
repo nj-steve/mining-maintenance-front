@@ -14,8 +14,7 @@
       <NFormItem label="工单号">
         <NInput 
           v-model:value="form.orderNumbers"
-          placeholder="请输入工单号，多个工单号用换行分隔"
-          :rows="4"
+          placeholder="请输入工单号"
         />
       </NFormItem>
 
@@ -58,6 +57,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { NButton, NModal, NForm, NFormItem, NInput, NSelect, useMessage } from 'naive-ui';
+import { batchUpdateStatus } from '@/service/api/faults';
 
 const message = useMessage();
 
@@ -117,20 +117,24 @@ const handleSubmit = async () => {
   
   try {
     // 这里需要调用批量修改状态的API
-    // const formData = new FormData();
-    // formData.append('orderNumbers', form.value.orderNumbers);
-    // formData.append('status', form.value.status.toString());
-    // if (form.value.file) {
-    //   formData.append('file', form.value.file);
-    // }
-    // const { error } = await batchUpdateStatus(formData);
-    
-    // 临时模拟成功
-    message.success('批量修改状态成功');
-    visible.value = false;
-    
-    // 通知父组件刷新数据
-    emit('refresh');
+    const formData = new FormData();
+    formData.append('order_no', form.value.orderNumbers.toString());
+    formData.append('status', Number(form.value.status).toString());
+    if (form.value.file) {
+      formData.append('file', form.value.file);
+    }
+    const { error } = await batchUpdateStatus(formData);
+    if (error) {
+      message.error(error.message || '批量修改状态失败');
+      return;
+    }else{
+      // 临时模拟成功
+      message.success('批量修改状态成功');
+      visible.value = false;
+      
+      // 通知父组件刷新数据
+      emit('refresh');
+    }
   } catch (error) {
     message.error('批量修改状态失败');
     console.error('批量修改状态失败:', error);

@@ -5,7 +5,7 @@ import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { fetchFaults,updateFaults } from '@/service/api/faults';
+import { fetchFaults,updateFaultsStatus } from '@/service/api/faults';
 import {fetchOrdersStatus} from '@/service/api/workflow';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
@@ -15,7 +15,7 @@ interface Faults {
   serial_number: string;
   serial_number_source: string;
   Faults_type_id:number;
-  status_id:number,
+  status_value:number,
   contract_number: string;
   status_text?: string;
   site_name?: string;
@@ -89,7 +89,7 @@ const showEditModal = ref(false);
 const editForm = ref<Faults>({
   id: 0,
   Faults_type_id:0,
-  status_id:0,
+  status_value:0,
   serial_number: '',
   serial_number_source: '',
   contract_number: '',
@@ -100,10 +100,6 @@ const editForm = ref<Faults>({
 });
 
 // 批量修改状态弹框相关
-
-
-
-
 
 // ---------------- 数据获取 ----------------
 const fetchOrderStatusData = async () => {
@@ -135,7 +131,7 @@ const handleOpenEdit = (row: Faults) => {
   editForm.value = {
     id: row.id,
     Faults_type_id: row.Faults_type_id ?? 0,
-    status_id: row.status_id ?? 0,
+    status_value: row.status_value ?? 0,
     serial_number: row.serial_number || '',
     serial_number_source: row.serial_number_source || '',
     contract_number: row.contract_number || '',
@@ -150,13 +146,25 @@ const handleSaveEdit = async () => {
   try {
     // TODO: 调用后端接口 updateFaults(editForm.value)
     // console.log('修改提交:', editForm.value);
-    const res = await updateFaults(editForm.value.id, editForm.value);
-    if(res.response?.data?.msg=="success"){
-        message.success('修改成功！');
-        fetchData(); // 刷新表格
-      }else{
-        message.error('修改失败:' +res.response?.data?.msg);
-      }
+    const params={
+      status:editForm.value.status_value,
+      fault_ids:[editForm.value.id]
+    }
+    const { error } =await updateFaultsStatus(params);
+    if(error==null){
+      message.success('修改成功！');
+      fetchData(); // 刷新表格
+    }else{
+      message.error('修改失败:' +error);
+    }
+    
+    // const res = await updateFaults(editForm.value.id, editForm.value);
+    // if(res.response?.data?.msg=="success"){
+    //     message.success('修改成功！');
+    //     fetchData(); // 刷新表格
+    //   }else{
+    //     message.error('修改失败:' +res.response?.data?.msg);
+    //   }
   } catch (err) {
     message.error('修改失败');
   }finally{
@@ -462,7 +470,7 @@ const handleRefresh = () => {
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
       <NForm :model="editForm" label-width="100">
         <NFormItem label="状态">
-          <NSelect v-model:value="editForm.status_id" :options="statusOptions" />
+          <NSelect v-model:value="editForm.status_value" :options="statusOptions" />
         </NFormItem>
       </NForm>
       <template #footer>
