@@ -50,3 +50,32 @@ export function updateFaults(id:number,params: {[key: string]: any }) {
   });
 }
 
+// /api/repair_stations/:id 
+export function createRepairStation(params: {[key: string]: any }) {
+  return request({
+    url: '/api/repair_stations',
+    method: 'post',
+    data:params
+  });
+}
+//修改维修站
+// /api/repair_stations/:id 
+export function updateRepairStation(id:number,params: {[key: string]: any }) {
+  return request({
+    url: '/api/repair_stations/'+id,
+    method: 'put',
+    data:params
+  });
+}
+
+//删除维修站
+// /api/repair_stations/:id 
+export function deleteRepairStation(id:number) {
+  return request({
+    url: '/api/repair_stations/'+id,
+    method: 'delete',
+  });
+}
+
+
+

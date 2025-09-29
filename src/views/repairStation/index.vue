@@ -2,7 +2,9 @@
 import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchRepairStations,updateFaults } from '@/service/api/repair';
+import { fetchRepairStations,updateFaults,createRepairStation,deleteRepairStation } from '@/service/api/repair';
+import AddRepairStationModal from '@/components/custom/AddRepairStationModal.vue';
+import EditRepairStationModal from '@/components/custom/EditRepairStationModal.vue';
 
 
 interface CompanyInfo {
@@ -48,18 +50,11 @@ const pagination = ref<PaginationProps>({
 
 // ---------------- 修改弹框 ----------------
 const showEditModal = ref(false);
-const editForm = ref<CompanyInfo>({
-  ID: 0,
-  Name: '',
-  Address: '',
-  LegalRepresentative: '',
-  KYCStatus: 0,// 可能是枚举：0=未认证, 1=已认证
-  ContactName: '',
-  ContactPhone: '',
-  Score: 0,
-  CreatedAt: '', // ISO 时间字符串
-  UpdatedAt: '' // ISO 时间字符串
-});
+const currentEditData = ref<CompanyInfo | null>(null);
+
+// ---------------- 添加弹框 ----------------
+const showAddModal = ref(false);
+
 
 // 状态下拉选项
 const statusOptions = [
@@ -69,44 +64,42 @@ const statusOptions = [
   { label: '下架', value: 4 }
 ];
 
+
+
 // 打开修改弹框
 const handleOpenEdit = (row: CompanyInfo) => {
-  // editForm.value = {
-    // id: row.id,
-    // Faults_type_id: row.Faults_type_id ?? 0,
-    // status_id: row.status_id ?? 0,
-    // serial_number: row.serial_number || '',
-    // serial_number_source: row.serial_number_source || '',
-    // contract_number: row.contract_number || ''
-  // };
-  // editForm.value = JSON.parse(JSON.stringify(row)); // 深拷贝
+  currentEditData.value = JSON.parse(JSON.stringify(row)); // 深拷贝
   showEditModal.value = true;
 };
 
-// 保存修改
-const handleSaveEdit = async () => {
-  try {
-    // TODO: 调用后端接口 updateFaults(editForm.value)
-    // console.log('修改提交:', editForm.value);
-    const res = await updateFaults(editForm.value.ID, editForm.value);
-    if(res.response?.data?.msg=="success"){
-        message.success('修改成功！');
-        fetchData(); // 刷新表格
-      }else{
-        message.error('修改失败:' +res.response?.data?.msg);
-      }
-  } catch (err) {
-    message.error('修改失败');
-  }finally{
-    showEditModal.value = false;
-  }
+// 修改成功回调
+const handleEditSuccess = () => {
+  fetchData(); // 刷新表格
+};
+
+// 打开添加弹框
+const handleOpenAdd = () => {
+  showAddModal.value = true;
+};
+
+// 添加成功回调
+const handleAddSuccess = () => {
+  fetchData(); // 刷新表格
 };
 
 // ---------------- 表格列 ----------------
 const columns: DataTableColumns<CompanyInfo> = [
   { title: '公司名称', key: 'Name', width: 200 },
   { title: '法人代表', key: 'LegalRepresentative' },
-  { title: 'KYC认证', key: 'KYCStatus'},
+  { title: 'KYC认证', key: 'KYCStatus',
+    render: (row: CompanyInfo) => {
+      return h(NTag, {
+        type: row.KYCStatus === 1 ? 'success' : 'warning'
+      }, {
+        default: () => row.KYCStatus === 1 ? '已认证' : '未认证'
+      });
+    }
+  },
   { title: '详细地址', key: 'Address'},
   { title: '联系人', key: 'ContactName' },
   { title: '联系电话', key: 'ContactPhone', 
@@ -142,16 +135,17 @@ const columns: DataTableColumns<CompanyInfo> = [
             onClick: () => handleOpenEdit(row)
           },
           { default: () => '修改' }
-        ), h(
-          NButton,
-          {
-            type: 'info',
-            ghost: true,
-            style: "margin-right: 8px;",
-            onClick: () => handleOpenEdit(row)
-          },
-          { default: () => '查看' }
         ),
+        //  h(
+        //   NButton,
+        //   {
+        //     type: 'info',
+        //     ghost: true,
+        //     style: "margin-right: 8px;",
+        //     onClick: () => handleOpenEdit(row)
+        //   },
+        //   { default: () => '查看' }
+        // ),
         h(
           NButton,
           {
@@ -163,7 +157,19 @@ const columns: DataTableColumns<CompanyInfo> = [
                 content: `你确定要删除「${row.Name}」吗？`,
                 positiveText: '确定',
                 negativeText: '取消',
-                onPositiveClick: () => message.error("报废操作,暂未启用")
+                onPositiveClick: async () => {
+                  try {
+                    const { error } = await deleteRepairStation(row.ID);
+                    if (error === null) {
+                      message.success('删除成功！');
+                      fetchData(); // 刷新数据
+                    } else {
+                      message.error('删除失败');
+                    }
+                  } catch (err) {
+                    message.error('删除失败');
+                  }
+                }
               })
             }
           },
@@ -180,7 +186,7 @@ const fetchData = async () => {
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
-    sn: searchSerial.value || undefined
+    filter: searchSerial.value || undefined
   };
 
   try {
@@ -240,38 +246,27 @@ watch([searchSerial], () => {
 
 <template>
   <div>
-    <!-- 查询框 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
-      <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入机器编号" clearable style="width: 240px" />
+    <!-- 查询框和添加按钮 -->
+    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
+      <NButton type="primary" @click="handleOpenAdd">添加维修站</NButton>
+        <!-- 添加维修站组件 -->
+    <AddRepairStationModal 
+      v-model:show="showAddModal" 
+      @success="handleAddSuccess" 
+    />
+      <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入维修站名称" clearable style="width: 240px" />
     </div>
 
     <!-- 表格 -->
     <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" remote />
 
-    <!-- 修改弹框 -->
-    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
-      <NForm :model="editForm" label-width="100">
-        <!-- <NFormItem label="机型">
-          <NSelect v-model:value="editForm.Faults_type_id" :options="modelOptions" />
-        </NFormItem>
-        <NFormItem label="机型">
-          <NSelect v-model:value="editForm.Faults_type_id" :options="modelOptions" />
-        </NFormItem>
-        <NFormItem label="机器编号">
-          <NInput v-model:value="editForm.serial_number" />
-        </NFormItem>
-        <!-- <NFormItem label="场地">
-          <NInput v-model:value="editForm.Site?.name" disabled/>
-        </NFormItem> -->
-    
-        <!-- <NFormItem label="状态">
-          <NSelect v-model:value="editForm.status_id" :options="statusOptions" />
-        </NFormItem>  -->
-      </NForm>
-      <template #footer>
-        <NButton type="primary" @click="handleSaveEdit">保存</NButton>
-        <NButton @click="showEditModal = false">取消</NButton>
-      </template>
-    </NModal>
+    <!-- 修改维修站组件 -->
+    <EditRepairStationModal 
+      v-model:show="showEditModal" 
+      :edit-data="currentEditData"
+      @success="handleEditSuccess" 
+    />
+
+  
   </div>
 </template>
