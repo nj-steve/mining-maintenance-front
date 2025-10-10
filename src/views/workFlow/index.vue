@@ -72,7 +72,7 @@ const editForm = ref({
   "logistics_cost": 0,
   "onsite": 0,
   "order_status": 1,
-  "payment_date": "string",
+  "payment_date": null as string | null,
   "repair_cost": 0,
   "settlement_status": 1,
   "total_cost": 0
@@ -100,8 +100,8 @@ const handleOpenEdit = (row: Order) => {
     "logistics_cost": row.LogisticsCost||0,
     "onsite": row.Onsite||0,
     "order_status": row.OrderStatus||0,
-    payment_date:"",
-    // payment_date: row.PaymentDate && row.PaymentDate!=="" ? dayjs(row.PaymentDate).format('YYYY-MM-DD') : "", 
+    "payment_date": row.PaymentDate && row.PaymentDate!==""? dayjs(row.PaymentDate).format("YYYY-MM-DD"):null,
+    // payment_date: row.PaymentDate && row.PaymentDate!=="" ? dayjs(row.PaymentDate).valueOf().toString() : null, 
     "repair_cost": row.RepairCost||0,
     "settlement_status": row.SettlementStatus||0,
     "total_cost": row.TotalCost
@@ -129,11 +129,11 @@ const siteStationOptions = ref([
   { label: '否', value: 0 }
 ]);
 
-const repairStationOptions = ref([
-  { label: '请选择就近维修站', value: 1 },
-  { label: '维修站A', value: 2 },
-  { label: '维修站B', value: 3 }
-]);
+// const repairStationOptions = ref([
+//   { label: '请选择就近维修站', value: 1 },
+//   { label: '维修站A', value: 2 },
+//   { label: '维修站B', value: 3 }
+// ]);
 
 
 // 当前操作的工单
@@ -389,7 +389,6 @@ const columns: DataTableColumns<Order> = [
           },
           { default: () => '派单' }
         )] : []),
-        
         // h(
         //   NButton,
         //   {
@@ -491,14 +490,6 @@ const fetchStationData = async () => {
         value: station.ID
       }));
     }
-    // console.log("stationOptions",stationOptions.value)
-    
-    // 临时模拟数据
-    // stationOptions.value = [
-    //   { label: '维修站A', value: 1 },
-    //   { label: '维修站B', value: 2 },
-    //   { label: '维修站C', value: 3 }
-    // ];
   } catch (err) {
     message.error('获取维修站数据失败');
   }
@@ -528,7 +519,6 @@ const fetchOrderStatusData = async () => {
     loading.value = false;
   }
 };
-
 
 // ---------------- 查看详情弹框 ----------------// 详情弹框相关
 const showDetailModal = ref(false);
@@ -594,8 +584,6 @@ const handleSubmitLog = async () => {
       return;
     }
     
-
-    
     // 临时模拟成功
     message.success('操作日志添加成功');
     showAddLogModal.value = false;
@@ -627,32 +615,7 @@ const fetchDetailData = async (orderId: number) => {
     operation_history.value = [];
   }
 };
-// async function loadFaultsTypes() {
-//   loading.value = true
-//   try {
-//     const res = await fetchOrdersTypes({})
-//     if (res && res.data.length>0) {
-//       // 明确 item 类型
-//       const arr = res.data as { id:number, name: string,hash_rate:string }[]
 
-//       // names.value = [arr.map(item => item.name+" _ "+item.hash_rate+" T")]
-
-//       modelOptions.value = arr.map(item => ({
-//         label:  item.name+" _ "+item.hash_rate+" T",
-//         value: item.id,
-//       }))
-      
-//     } else {
-//       // names.value = []
-//       modelOptions.value = []
-//     }
-//   } catch (err) {
-//     // console.error('获取场地数据失败:', err)
-//     message.error('加载场地数据失败')
-//   } finally {
-//     loading.value = false
-//   }
-// }
 
 onMounted(() => {
   fetchData()
@@ -798,18 +761,18 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
     <NFormItem label="付款状态">
         <NSelect
           v-model:value="editForm.settlement_status"
-          :options="[{ label: '未付款', value: 0 }, { label: '已付款', value: 1 }]"
+          :options="[{ label: '未付款', value: 1 }, { label: '已付款', value: 2 }]"
         />
       </NFormItem>
-      <!-- <NFormItem label="付款日期"> -->
+      <NFormItem label="付款日期"> 
         <!-- 使用 value-format 输出字符串（这里用 YYYY-MM-DD，与表单初始化格式一致） -->
-        <!-- <NDatePicker
+        <NDatePicker
           v-model:formatted-value="editForm.payment_date"
           type="date"
           value-format="yyyy-MM-dd"
           clearable
-        />-->
-      <!-- </NFormItem> -->
+        />
+      </NFormItem>
 
       <NFormItem label="工单状态">
         <NSelect
@@ -873,7 +836,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
         <NFormItem label="选择维修站" required>
           <NSelect 
             v-model:value="dispatchForm.repairStation"
-            :options="repairStationOptions"
+            :options="stationOptions"
             placeholder="请选择就近维修站"
           />
         </NFormItem>

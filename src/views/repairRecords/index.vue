@@ -241,13 +241,37 @@ watch([work_order_no,repair_result], () => {
   fetchData();
   
 });
+
+// 下载模板
+const downloadTemplate = () => {
+  // 创建一个临时链接来下载模板文件
+  const link = document.createElement('a');
+  link.href = '/src/assets/template/repair-detail.xlsx'; // 模板文件路径
+  link.download = '维修明细导入模板.xlsx';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  message.success('模板下载已开始');
+};
 </script>
 
 <template>
   <div>
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
-      <UploadExcel uploadUrl="/api/repair_stations/import_repair_details" />
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <UploadExcel uploadUrl="/api/repair_stations/import_repair_details" />
+        <!-- 下载模板按钮 -->
+        <NButton 
+          text 
+          type="primary" 
+          @click="downloadTemplate"
+          style="font-size: 12px;"
+        >
+          📥 下载模板
+        </NButton>
+      </div>
+      
       <NInput v-model:value="work_order_no"  placeholder="请输入机器编号" clearable style="width: 240px" />
          <NSelect v-model:value="repair_result"   :options="statusOptions" clearable style="width: 240px" />
     </div>

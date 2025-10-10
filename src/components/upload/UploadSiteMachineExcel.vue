@@ -24,6 +24,14 @@
           >
             <n-button>选择文件</n-button>
           </n-upload>
+          
+          <!-- 下载模板链接 -->
+          <div style="text-align: left; margin-top: 8px;">
+            <n-button text type="primary" @click="downloadTemplate">
+              📥 下载模板
+            </n-button>
+          </div>
+          
         </div>
   
         <template #action>
@@ -74,7 +82,7 @@
   
   <script setup lang="ts">
   import { ref,onMounted } from 'vue'
-  import { NButton, NModal, NSelect, NUpload, useMessage } from 'naive-ui'
+  import { NButton, NModal, NSelect, NUpload, NIcon, useMessage } from 'naive-ui'
   import type { UploadFileInfo } from 'naive-ui'
   import axios from 'axios'
   import { getServiceBaseURL } from '@/utils/service'
@@ -193,6 +201,18 @@
     showResult.value = false
     showModal.value = false
     importResult.value = null
+  }
+
+  // 下载Excel模板
+  const downloadTemplate = () => {
+    // 创建一个临时链接来下载模板文件
+    const link = document.createElement('a')
+    link.href = '/src/assets/template/site_machine_template.xlsx' // 模板文件路径
+    link.download = '场地矿机导入模板.xlsx'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    message.success('模板下载已开始')
   }
 
   // ---------------- 数据获取 ----------------

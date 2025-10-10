@@ -388,15 +388,12 @@ const handleRefresh = () => {
         >
           创建工单 ({{ selectedRows.length }})
         </NButton>
-
-            <!-- 批量修改状态组件 -->
+        <!-- 批量修改状态组件 -->
         <BatchStatusModal 
           :status-options="statusOptions"
           :selectedRows="selectedRows"
           @refresh="handleRefresh"
         />
-
-
         <UploadFileBathStatusModal 
           :status-options="statusOptions"
           @refresh="handleRefresh"
@@ -411,14 +408,12 @@ const handleRefresh = () => {
           clearable 
           style="width: 200px" 
         />
-        
         <!-- <NInputNumber 
           v-model:value="searchSiteId" 
           placeholder="场地ID" 
           clearable 
           style="width: 150px" 
         /> -->
-        
         <NSelect 
           v-model:value="searchStatus" 
           :options="statusOptions" 

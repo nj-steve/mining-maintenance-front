@@ -45,6 +45,15 @@
           </div>
         </div>
       </NFormItem>
+       <!-- 下载模板链接 -->
+       <NButton 
+            text 
+            type="primary" 
+            @click="downloadTemplate"
+            style="font-size: 12px; padding: 0; text-align: left;"
+          >
+            📥 下载模板
+          </NButton>
     </NForm>
     
     <template #footer>
@@ -152,5 +161,17 @@ const handleCancel = () => {
   if (fileInputRef.value) {
     fileInputRef.value.value = '';
   }
+};
+
+// 下载模板
+const downloadTemplate = () => {
+  // 创建一个临时链接来下载模板文件
+  const link = document.createElement('a');
+  link.href = '/src/assets/template/site_machine_template.xlsx'; // 模板文件路径
+  link.download = '场地矿机导入模板.xlsx';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  message.success('模板下载已开始');
 };
 </script>
