@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
 import dayjs from 'dayjs';
-import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NCheckbox, NDatePicker } from 'naive-ui';
+import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NCheckbox, NDatePicker } from 'naive-ui';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
 import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus,createOrdersLog } from '@/service/api/workflow';
 import {fetchRepairStations} from '@/service/api/repair';
@@ -29,7 +29,6 @@ interface Order {
   UpdatedAt: string;              // 更新时间
 }
 
-const dialog = useDialog()
 const message = useMessage();
 
 const tableData = ref<Order[]>([]);
@@ -42,7 +41,6 @@ const selectedOrders = computed(() => {
   return tableData.value.filter(order => checkedRowKeys.value.includes(order.ID));
 });
 const isBatchDispatchEnabled = computed(() => selectedOrders.value.length > 0);
-const modelOptions = ref<{ label: string; value: number }[]>([])
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -80,7 +78,7 @@ const editForm = ref({
 
 // 状态下拉选项
 const statusOptions = ref<{ label: string; value: number }[]>([]);
-const searchOrderStatus = ref<number>(0);
+const searchOrderStatus = ref<number | undefined>(undefined);
 
 // 新增筛选项
 const searchSiteId = ref<number | null>(null);  // 场地筛选
@@ -128,13 +126,6 @@ const siteStationOptions = ref([
   { label: '是', value: 1 },
   { label: '否', value: 0 }
 ]);
-
-// const repairStationOptions = ref([
-//   { label: '请选择就近维修站', value: 1 },
-//   { label: '维修站A', value: 2 },
-//   { label: '维修站B', value: 3 }
-// ]);
-
 
 // 当前操作的工单
 const currentOrder = ref<Order | null>(null);
@@ -198,8 +189,6 @@ const handleSubmitDispatch = async () => {
     message.error('请选择维修站');
     return;
   }
-
-
   try {
     // 构建提交数据
     const submitData: any = {
@@ -238,10 +227,11 @@ const handleSubmitDispatch = async () => {
     } else {
       message.warning(`部分成功：${successCount}个成功，${failCount}个失败`);
     }
-    
+    fetchData(); // 刷新表格
     showDispatchModal.value = false;
     checkedRowKeys.value = []; // 清空选择
-    fetchData(); // 刷新表格
+    
+    
   } catch (err) {
     message.error('派单失败');
   }
@@ -274,6 +264,7 @@ const columns: DataTableColumns<Order> = [
   },
   { title: '工单编号', key: 'OrderNo', width: 200 },
   { title: '维修商', key: 'StationName' },
+  { title: '场地', key: 'SiteName' },
   { title: '故障机数量', key: 'FaultCount'},
   { title: '是否驻场', key: 'Onsite',
     render: (row: any ) => {
@@ -340,7 +331,7 @@ const columns: DataTableColumns<Order> = [
             type: 'info',
             ghost: true,
             size: 'small',
-            style: "margin-right: 8px;",
+            style: "margin-right: 8px;font-size:12px",
             onClick: () => handleOpenEdit(row)
           },
           { default: () => '修改' }
@@ -362,7 +353,7 @@ const columns: DataTableColumns<Order> = [
             type: 'success',
             ghost: true,
             size: 'small',
-            style: "margin-left: 8px;",
+            style: "margin-left: 8px; margin-top: 4px;font-size:12px",
             onClick: () => handleOpenAddLog(row)
           },
           { default: () => '+ 日志' }
@@ -373,7 +364,7 @@ const columns: DataTableColumns<Order> = [
             type: 'info',
             ghost: true,
             size: 'small',
-            style: "margin-left: 8px;",
+            style: "margin-left: 8px;margin-top: 4px;font-size:12px",
             onClick: () => handleOpenDetail(row)
           },
           { default: () => '流程' }
@@ -445,7 +436,7 @@ const fetchData = async () => {
 // 重置筛选条件
 const handleReset = () => {
   searchSerial.value = '';
-  searchOrderStatus.value = 0;
+  searchOrderStatus.value = undefined;
   searchSiteId.value = null;
   searchStationId.value = null;
   searchStartDate.value = null;
@@ -616,7 +607,6 @@ const fetchDetailData = async (orderId: number) => {
   }
 };
 
-
 onMounted(() => {
   fetchData()
   fetchOrderStatusData()
@@ -657,6 +647,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           :options="siteOptions" 
           placeholder="请选择场地" 
           clearable 
+          filterable
           style="width: 160px"
         />
         
@@ -666,6 +657,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           :options="stationOptions" 
           placeholder="请选择维修站" 
           clearable 
+          filterable
           style="width: 160px"
         />
         
@@ -840,8 +832,6 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
             placeholder="请选择就近维修站"
           />
         </NFormItem>
-      
-
           <!-- 备注 -->
           <NFormItem label="备注">
             <NInput 
