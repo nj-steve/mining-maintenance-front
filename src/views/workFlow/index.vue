@@ -192,7 +192,7 @@ const handleSubmitDispatch = async () => {
     // 构建提交数据
     const submitData: any = {
       // order_status: 2,
-      order_ids: selectedOrders.value.map(order => order.ID),
+      order_ids: selectedOrders.value.length > 0 ? selectedOrders.value.map(order => order.ID) : [currentOrder.value.ID],
       fault_count: dispatchForm.value.faultCount,
       onsite: dispatchForm.value.onsite,
       repair_station_id: dispatchForm.value.repairStation,
@@ -719,12 +719,13 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       <NForm :model="editForm" label-width="100">
         <!-- 工单编号 -->
     <NFormItem label="工单编号">
-      <NInput v-model:value="editForm.order_no" disabled />
+      <NInput size="small" v-model:value="editForm.order_no" disabled />
     </NFormItem>
 
     <!-- 是否驻场 -->
     <NFormItem label="是否驻场">
       <NSelect
+        size="small"
         v-model:value="editForm.onsite"
         :options="[
           { label: '否', value: 0 },
@@ -736,20 +737,20 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
     <!-- 维修费 + 物流费 -->
     <div style="display: flex; gap: 16px;">
       <NFormItem label="维修费">
-        <NInputNumber v-model:value="editForm.repair_cost" type="number" />
+        <NInputNumber size="small" v-model:value="editForm.repair_cost" type="number" />
       </NFormItem>
       <NFormItem label="物流费">
-        <NInputNumber v-model:value="editForm.logistics_cost" type="number" />
+        <NInputNumber size="small" v-model:value="editForm.logistics_cost" type="number" />
       </NFormItem>
     </div>
 
     <!-- 总费用（自动计算） -->
     <NFormItem label="总费用">
-      <NInputNumber :value="editForm.repair_cost + editForm.logistics_cost" disabled />
+      <NInputNumber size="small" :value="editForm.repair_cost + editForm.logistics_cost" disabled />
     </NFormItem>
 
     <NFormItem label="付款状态">
-        <NSelect
+        <NSelect size="small"
           v-model:value="editForm.settlement_status"
           :options="[{ label: '未付款', value: 1 }, { label: '已付款', value: 2 }]"
         />
@@ -757,6 +758,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       <NFormItem label="付款日期"> 
         <!-- 使用 value-format 输出字符串（这里用 YYYY-MM-DD，与表单初始化格式一致） -->
         <NDatePicker
+          size="small"
           v-model:formatted-value="editForm.payment_date"
           type="date"
           value-format="yyyy-MM-dd"
@@ -765,15 +767,15 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       </NFormItem>
 
       <NFormItem label="工单状态">
-        <NSelect
+        <NSelect size="small"
           v-model:value="editForm.order_status"
           :options="statusOptions"
         />
       </NFormItem>
       </NForm> 
       <template #footer>
-        <NButton type="primary" @click="handleSaveEdit">保存</NButton>
-        <NButton @click="showEditModal = false">取消</NButton>
+        <NButton size="small" type="primary" @click="handleSaveEdit" style="margin-right: 8px;">保存</NButton>
+        <NButton size="small" @click="showEditModal = false">取消</NButton>
       </template>
     </NModal>
 
@@ -841,7 +843,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       </NForm>
 
       <template #footer>
-        <NButton type="primary" @click="handleSubmitDispatch">确认派单</NButton>
+        <NButton type="primary" style="margin-right: 8px;" @click="handleSubmitDispatch">确认派单</NButton>
         <NButton @click="showDispatchModal = false">取消</NButton>
       </template>
     </NModal>
@@ -872,6 +874,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
         <NFormItem label="操作描述" required>
           <NInput 
             v-model:value="addLogForm.description"
+            size="small"
             type="textarea"
             placeholder="请填写操作描述"
             :rows="4"
@@ -880,7 +883,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       </NForm>
 
       <template #footer>
-        <NButton type="primary" @click="handleSubmitLog">确认添加</NButton>
+        <NButton type="primary" @click="handleSubmitLog"  style="margin-right: 8px; font-size: 12px;">确认添加</NButton>
         <NButton @click="showAddLogModal = false">取消</NButton>
       </template>
     </NModal>

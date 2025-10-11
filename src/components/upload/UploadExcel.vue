@@ -1,5 +1,6 @@
 <template>
     <n-upload
+      size="small"
       :show-file-list="false"
       :default-upload="false"
       :on-before-upload="handleUpload"

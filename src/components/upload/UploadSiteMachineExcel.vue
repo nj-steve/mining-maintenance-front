@@ -12,17 +12,20 @@
           <n-select
             v-model:value="selectedSite"
             :options="siteOptions"
+            size="small"
+            clearable
+            filterable
             placeholder="请选择场地"
           />
-  
           <!-- 文件选择 -->
           <n-upload
+            size="small"
             :show-file-list="true"
             :default-upload="false"
             :on-change="handleFileChange"
             accept=".xls,.xlsx"
           >
-            <n-button>选择文件</n-button>
+            <n-button size="small">选择文件</n-button>
           </n-upload>
           
           <!-- 下载模板链接 -->
@@ -35,8 +38,8 @@
         </div>
   
         <template #action>
-          <n-button @click="showModal = false">取消</n-button>
-          <n-button type="primary" :loading="uploading" @click="handleSubmit">
+          <n-button size="small" style="font-size: 12px;" @click="showModal = false">取消</n-button>
+          <n-button size="small" style="font-size: 12px;" type="primary" :loading="uploading" @click="handleSubmit">
             确定导入
           </n-button>
         </template>
@@ -74,7 +77,7 @@
         </div>
         
         <template #action>
-          <n-button type="primary" @click="handleCloseResult">关闭</n-button>
+          <n-button size="small" style="font-size: 12px;" type="primary" @click="handleCloseResult">关闭</n-button>
         </template>
       </n-modal>
     </div>
@@ -82,7 +85,7 @@
   
   <script setup lang="ts">
   import { ref,onMounted } from 'vue'
-  import { NButton, NModal, NSelect, NUpload, NIcon, useMessage } from 'naive-ui'
+  import { NButton, NModal, NSelect, NUpload, useMessage } from 'naive-ui'
   import type { UploadFileInfo } from 'naive-ui'
   import axios from 'axios'
   import { getServiceBaseURL } from '@/utils/service'
@@ -125,11 +128,7 @@
     errors: string[]
   } | null>(null)
   
-  const siteOptions = ref([
-    { label: '场地 A', value: 1 },
-    { label: '场地 B', value: 2 },
-    // { label: '场地 C', value: 3 }
-  ])
+  const siteOptions = ref([])
   const selectedSite = ref<number | null>(null)
   const selectedFile = ref<File | null>(null)
   
@@ -241,3 +240,17 @@ const fetchData = async () => {
   }
 };
   </script>
+  <style scoped lang="scss">
+:deep(.n-base-selection .n-base-selection-placeholder){
+  font-size: 12px !important;
+}
+:deep(.n-base-selection-overlay){
+  font-size: 12px !important;
+}
+:deep(.n-button){
+  font-size: 12px !important;
+}
+:deep(.n-input-wrapper){
+  font-size: 12px !important;
+}
+  </style>

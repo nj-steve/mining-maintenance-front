@@ -14,17 +14,21 @@
       <!-- 工单输入框 -->
       <NFormItem label="工单号">
         <NInput 
+          size="small"
           v-model:value="form.orderNumbers"
           placeholder="请输入工单号"
+          style="font-size: 12px;"
         />
       </NFormItem>
 
       <!-- 状态下拉选择 -->
       <NFormItem label="状态" required>
         <NSelect 
+        size="small"
           v-model:value="form.status"
           :options="statusOptions"
           placeholder="请选择状态"
+          style="font-size: 12px;"
         />
       </NFormItem>
 
@@ -176,3 +180,17 @@ const downloadTemplate = () => {
   message.success('模板下载已开始');
 };
 </script>
+<style scoped lang="scss">
+:deep(.n-base-selection .n-base-selection-placeholder){
+  font-size: 12px !important;
+}
+:deep(.n-base-selection-overlay){
+  font-size: 12px !important;
+}
+:deep(.n-button){
+  font-size: 12px !important;
+}
+:deep(.n-input-wrapper){
+  font-size: 12px !important;
+}
+</style>
