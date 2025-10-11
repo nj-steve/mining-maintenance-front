@@ -30,7 +30,6 @@ interface Order {
 }
 
 const message = useMessage();
-
 const tableData = ref<Order[]>([]);
 const loading = ref(false);
 const searchSerial = ref<string>('');
@@ -408,7 +407,7 @@ const fetchData = async () => {
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
-    sn: searchSerial.value || undefined,
+    order_no: searchSerial.value || undefined,
     order_status: searchOrderStatus.value || undefined,
     site_id: searchSiteId.value || undefined,
     station_id: searchStationId.value || undefined,
@@ -456,14 +455,6 @@ const fetchSiteData = async () => {
         value: site.ID,
       }));
     }
-    
-    // 临时模拟数据
-    // siteOptions.value = [];
-    // siteOptions.value = [
-    //   { label: '场地A', value: 1 },
-    //   { label: '场地B', value: 2 },
-    //   { label: '场地C', value: 3 }
-    // ];
   } catch (err) {
     message.error('获取场地数据失败');
   }
@@ -624,9 +615,9 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
 <template>
   <div>
     <!-- 查询框和批量操作 -->
-    <div class="mb-4" style="margin-bottom: 16px">
+    <div class="mb-4" style="margin-bottom: 16px; display: flex; justify-content: space-between;">
       <!-- 第一行：批量操作按钮 -->
-      <div class="flex items-center gap-2" style="margin-bottom: 12px">
+      <div class="flex items-center gap-2">
         <NButton 
           type="primary" 
           ghost
@@ -640,7 +631,15 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       </div>
       
       <!-- 第二行：筛选条件 -->
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap ">
+         <!-- 工单编号 -->
+        <NInput 
+          v-model:value="searchSerial" 
+          placeholder="工单号" 
+          clearable 
+          size="small"
+          style="width: 200px;font-size: 12px;"
+        />
         <!-- 场地筛选 -->
         <NSelect 
           v-model:value="searchSiteId" 
@@ -648,7 +647,8 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           placeholder="请选择场地" 
           clearable 
           filterable
-          style="width: 160px"
+          size="small"
+          style="width: 200px"
         />
         
         <!-- 维修站筛选 -->
@@ -658,6 +658,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           placeholder="请选择维修站" 
           clearable 
           filterable
+          size="small"
           style="width: 160px"
         />
         
@@ -667,38 +668,35 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
            type="date" 
            placeholder="开始时间" 
            clearable 
-           style="width: 160px"
+           size="small"
+           style="width: 120px"
          />
          
          <!-- 结束时间 -->
          <NDatePicker 
            v-model:value="searchEndDate" 
            type="date" 
+           size="small"
            placeholder="结束时间" 
            clearable 
-           style="width: 160px"
+           style="width: 120px"
          />
         
         <!-- 工单状态 -->
         <NSelect 
           v-model:value="searchOrderStatus" 
           :options="statusOptions" 
-          placeholder="请选择工单状态" 
+          placeholder="工单状态" 
+          size="small"
           clearable 
-          style="width: 160px"
+          style="width: 120px;font-size: 12px;"
         />
         
-        <!-- 机器编号 -->
-        <NInput 
-          v-model:value="searchSerial" 
-          placeholder="请输入机器编号" 
-          clearable 
-          style="width: 200px"
-        />
+       
         
         <!-- 查询按钮 -->
-        <NButton type="primary" @click="fetchData">查询</NButton>
-        <NButton @click="handleReset">重置</NButton>
+        <NButton type="primary" size="small"  @click="fetchData">查询</NButton>
+        <NButton size="small"  @click="handleReset">重置</NButton>
       </div>
     </div>
 
@@ -892,6 +890,19 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
 <style scoped>
 .detail-container {
   padding: 10px;
+}
+
+:deep(.n-base-selection .n-base-selection-placeholder){
+  font-size: 12px !important;
+}
+:deep(.n-base-selection-overlay){
+  font-size: 12px !important;
+}
+:deep(.n-input-wrapper){
+  font-size: 12px !important;
+}
+:deep(.n-button){
+  font-size: 12px !important;
 }
 
 .detail-container h2 {

@@ -11,4 +11,8 @@ body,
 html {
   overflow-x: hidden;
   color: rgb(var(--base-text-color));
+  font-size: 12px;
+}
+table{
+  font-size: 13px !important;
 }

@@ -2,6 +2,7 @@
   <!-- 触发按钮 -->
   <NButton 
     type="warning" 
+    size="small"
     @click="handleOpenModal"
   >
     SN导入更新

@@ -2,6 +2,7 @@
   <!-- 触发按钮 -->
   <NButton 
     type="warning" 
+    size="small"
     :disabled="selectedRows.length === 0"
     @click="handleOpenModal"
   >

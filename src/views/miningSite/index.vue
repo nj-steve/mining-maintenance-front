@@ -183,7 +183,7 @@ const fetchData = async () => {
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
-    sn: searchSerial.value || undefined
+    filter: searchSerial.value || undefined
   };
 
   try {

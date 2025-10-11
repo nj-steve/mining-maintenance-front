@@ -1,7 +1,7 @@
 <template>
     <div>
       <!-- 触发按钮 -->
-      <n-button type="primary" @click="showModal = true">
+      <n-button size="small" type="primary" @click="showModal = true">
         {{ buttonText }}
       </n-button>
   

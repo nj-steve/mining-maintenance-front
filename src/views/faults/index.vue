@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h } from 'vue';
-import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker } from 'naive-ui';
+import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker } from 'naive-ui';
 import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
@@ -9,6 +9,8 @@ import { fetchFaults,updateFaultsStatus } from '@/service/api/faults';
 import {fetchOrdersStatus} from '@/service/api/workflow';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
+import {fetchSites} from '@/service/api/site';
+
 
 interface Faults {
   id: number;
@@ -46,7 +48,7 @@ const searchStatus = ref<number | null>(null);
 const searchStartDate = ref<number | null>(null);
 const searchEndDate = ref<number | null>(null);
 const searchModel = ref<number | null>(null);
-const modelOptions = ref<{ label: string; value: number }[]>([])
+const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
 const statusOptions = ref<{ label: string; value: number }[]>([]);
 
 // 批量选择相关
@@ -123,6 +125,22 @@ const fetchOrderStatusData = async () => {
     message.error(`加载失败${err}`);
   } finally {
     loading.value = false;
+  }
+};
+
+// 获取场地数据
+const fetchSiteData = async () => {
+  try {
+    // 这里需要根据实际的API接口来获取场地数据
+    const { data, error } = await fetchSites({page:1,page_size:1000});
+    if (!error && data) {
+      siteOptions.value = data.list.map((site: any) => ({
+        label: site.Name,
+        value: site.ID,
+      }));
+    }
+  } catch (err) {
+    message.error('获取场地数据失败');
   }
 };
 
@@ -278,7 +296,7 @@ const fetchData = async () => {
 onMounted(() => {
   fetchData()
   fetchOrderStatusData();
-//   loadFaultsTypes();
+  fetchSiteData();
 });
 watch([searchSerial, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
   tableData.value = [];
@@ -383,6 +401,7 @@ const handleRefresh = () => {
         <UploadSiteMachineExcel buttonText="导入" @success="fetchData"/>
         <NButton 
           type="primary" 
+          size="small"
           :disabled="selectedRows.length === 0"
           @click="handleCreateWorkOrder"
         >
@@ -403,24 +422,51 @@ const handleRefresh = () => {
       <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
         <NInput 
           v-model:value="searchSerial" 
+          size="small"
           @change="fetchData" 
           placeholder="请输入机器编号" 
           clearable 
           style="width: 200px" 
         />
-        <!-- <NInputNumber 
-          v-model:value="searchSiteId" 
-          placeholder="场地ID" 
-          clearable 
-          style="width: 150px" 
-        /> -->
+        <!-- 场地筛选 -->
         <NSelect 
+          size="small"
+          v-model:value="searchSiteId" 
+          :options="siteOptions" 
+          placeholder="请选择场地" 
+          class="site-select"
+          clearable 
+          filterable
+          style="width: 180px;font-size: 12px;"
+        />
+          <!-- 开始时间 -->
+         <NDatePicker 
+           v-model:value="searchStartDate" 
+           type="date" 
+           placeholder="开始时间" 
+           clearable 
+           size="small"
+           style="width: 120px"
+         />
+         
+         <!-- 结束时间 -->
+         <NDatePicker 
+           v-model:value="searchEndDate" 
+           type="date" 
+           size="small"
+           placeholder="结束时间" 
+           clearable 
+           style="width: 120px"
+         />
+        <NSelect 
+        size="small"
           v-model:value="searchStatus" 
           :options="statusOptions" 
-          placeholder="机器状态" 
+          placeholder="状态" 
           clearable 
-          style="width: 150px" 
+          style="width: 100px;font-size: 12px;" 
         />
+
         
         <!-- <NDatePicker 
           v-model:value="searchStartDate" 
@@ -523,3 +569,20 @@ const handleRefresh = () => {
     
   </div>
 </template>
+<style scoped>
+.site-select :deep(.n-base-selection-placeholder){
+  font-size: 12px !important;
+}
+:deep(.n-base-selection .n-base-selection-placeholder){
+  font-size: 12px !important;
+}
+:deep(.n-base-selection-overlay){
+  font-size: 12px !important;
+}
+:deep(.n-button){
+  font-size: 12px !important;
+}
+:deep(.n-input-wrapper){
+  font-size: 12px !important;
+}
+</style>
