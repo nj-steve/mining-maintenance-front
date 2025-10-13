@@ -38,6 +38,7 @@ const message = useMessage();
 interface Faults {
   id: number;
   serial_number: string;
+  order_no?: string;
   Status?: {
     name?: string;
   };
@@ -72,6 +73,13 @@ const handleOpenModal = () => {
   
   if (validMachines.length === 0) {
     message.warning('请选择状态为"非新下架"的机器');
+    return;
+  }
+
+  // 订单号一致性校验
+  const orderNoSet = new Set(props.selectedRows.map(row => row.order_no ?? null));
+  if (orderNoSet.size > 1) {
+    message.warning('请选择相同订单机器');
     return;
   }
   

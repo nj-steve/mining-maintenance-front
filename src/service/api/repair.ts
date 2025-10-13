@@ -42,6 +42,17 @@ export function fetchRepairDetailsByID(id: number) {
 
 // 修改矿机
 // /api/faults/:id 
+export function updateRepairDetails(id:number,params: {[key: string]: any }) {
+  return request({
+    url: '/api/repair_details/'+id,
+    method: 'put',
+    data:params
+  });
+}
+
+
+// 修改矿机
+// /api/faults/:id 
 export function updateFaults(id:number,params: {[key: string]: any }) {
   return request({
     url: '/api/repair_stations/'+id,

@@ -4,6 +4,7 @@ import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormI
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchUser, updateUser, createUser,fetchCompanies } from '@/service/api/auth';
 import { roleTagMap, roleRecord, userStatusMap, userStatusRecord } from "@/constants/business"
+import { REG_EMAIL } from '@/constants/reg';
 
 interface Company {
   id: number;
@@ -23,7 +24,7 @@ interface User {
 
 interface EditUser {
   id:number,
-  assigned_company_id: number;
+  assigned_company_id: string;
   company: string;
   contact_phone: string;
   email: string;
@@ -45,7 +46,7 @@ const modelOptions = ref<{ label: string; value: number }[]>([])
 // 状态下拉选项
 const statusOptions =  ref<{ label: string; value: number }[]>([])
 // 公司下拉选项
-const companyOptions = ref<{ label: string; value: number }[]>([])
+const companyOptions = ref<{ label: string; value: string }[]>([])
 // const roleCompany=ref<[]>([]); //  获取角色公司id
 // [
   // { label: '在架', value: 1 },
@@ -82,7 +83,7 @@ const dialogMode = ref<'add' | 'edit'>('add');
 
 const editForm = ref<EditUser>({
   id: 0,
-  assigned_company_id: 0,
+  assigned_company_id: "",
   company: "",
   contact_phone: "",
   email: "",
@@ -97,7 +98,7 @@ const handleOpenAdd = () => {
   dialogMode.value = 'add';
   editForm.value = {
     id: 0,
-    assigned_company_id: 0,
+    assigned_company_id: "",
     company: "",
     contact_phone: "",
     email: "",
@@ -119,7 +120,7 @@ const handleOpenAdd = () => {
 function userToEditUser(user: User): EditUser {
   return {
     id: user.id || 0,
-    assigned_company_id: user.company_info[0].id || 0,
+    assigned_company_id: user.company_info[0].id.toString() || "",
     company: user.company_info[0].name || "",
     contact_phone: user.contact_phone || "",
     email: user.email || "",
@@ -148,6 +149,35 @@ const handleOpenEdit = (row: User) => {
 // 保存（新增/编辑共用）
 const handleSave = async () => {
   try {
+    // 验证表单数据
+     // 如果没有传入角色，使用当前表单中的角色
+  const currentRole = editForm.value.role;
+  
+  // 管理员(1)和售后管理(2)不需要选择公司
+  if (!currentRole || currentRole === 1 || currentRole === 2) {
+    console.log("当前角色不需要选择公司:", currentRole);
+  }else if (!editForm.value.assigned_company_id) {
+      message.error('请选择所属公司');
+      return;
+    }
+    if (!editForm.value.contact_phone) {
+      message.error('请输入联系电话');
+      return;
+    }
+    if (!editForm.value.email) {
+      message.error('请输入邮箱');
+      return false;
+    }
+    if (!REG_EMAIL.test(editForm.value.email.trim())) {
+      message.error('邮箱格式不正确');
+      return false;
+    }
+    
+    // if (!editForm.value.start_date) {
+    //   message.error('请输入入职时间');
+    //   return;
+    // }
+
     if (dialogMode.value === 'add') {
       const res = await createUser(editForm.value);
       console.log("addUser",res)
@@ -252,7 +282,7 @@ const getCompanys = async (role?: number) => {
     console.log("当前角色不需要选择公司:", currentRole);
     companyOptions.value = [];
     // 清空已选的公司
-    editForm.value.assigned_company_id = 0;
+    editForm.value.assigned_company_id = "";
     return;
   }
 
@@ -270,13 +300,13 @@ const getCompanys = async (role?: number) => {
         // 如果直接返回数组
         companyOptions.value = data.map((item: any) => ({
           label: item.name || item.company_name || item.title,
-          value: item.id || item.company_id
+          value: String(item.id ?? item.company_id)
         }));
       } else if (data.list && Array.isArray(data.list)) {
         // 如果返回的是分页格式 { list: [], pagination: {} }
         companyOptions.value = data.list.map((item: any) => ({
           label: item.name || item.company_name || item.title,
-          value: item.id || item.company_id
+          value: String(item.id ?? item.company_id)
         }));
       } else {
         console.warn("未知的数据格式:", data);
@@ -284,7 +314,7 @@ const getCompanys = async (role?: number) => {
       }
       
       // 清空当前选中的公司，因为角色变了
-      editForm.value.assigned_company_id = 0;
+      editForm.value.assigned_company_id = "";
     } else {
       message.error(`加载公司数据失败: ${error}`);
       companyOptions.value = [];

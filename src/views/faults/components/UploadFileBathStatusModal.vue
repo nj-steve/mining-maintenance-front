@@ -5,14 +5,14 @@
     size="small"
     @click="handleOpenModal"
   >
-    SN导入更新
+    导入更新状态
   </NButton>
 
   <!-- 导入机器修改状态弹框 -->
   <NModal v-model:show="visible" style="width: 500px" preset="card" title="批量修改状态">
     <NForm :model="form" label-width="100">
       <!-- 工单输入框 -->
-      <NFormItem label="工单号">
+      <NFormItem label="工单号" required>
         <NInput 
           size="small"
           v-model:value="form.orderNumbers"
@@ -33,7 +33,7 @@
       </NFormItem>
 
       <!-- 文件上传 -->
-      <NFormItem label="文件上传">
+      <NFormItem label="文件上传" required>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <input 
             ref="fileInputRef"
@@ -119,13 +119,18 @@ const handleFileChange = (event: Event) => {
 
 // 提交表单
 const handleSubmit = async () => {
-  if (!form.value.orderNumbers.trim() && !form.value.file) {
-    message.error('请输入工单号或上传文件');
+  if (!form.value.orderNumbers.trim() ) {
+    message.error('请输入工单号');
     return;
   }
-  
+
   if (form.value.status === null) {
     message.error('请选择状态');
+    return;
+  }
+
+  if (!form.value.file) {
+    message.error('请上传文件');
     return;
   }
   

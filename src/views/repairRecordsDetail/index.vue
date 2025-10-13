@@ -5,23 +5,23 @@
         <n-space vertical>
           <n-descriptions :column="2" label-placement="left" bordered>
             <n-descriptions-item label="日期">
-              <template v-if="!isEdit">{{ new Date(form.date).toLocaleDateString('zh-CN') }}</template>
-              <n-date-picker v-else v-model:value="form.date" type="date" :value-format="'yyyy-MM-dd'" />
+              <template v-if="!isEdit">{{ dayjs(form.date).format('YYYY-MM-DD HH:mm:ss') }}</template>
+              <n-date-picker v-else v-model:formatted-value="form.date" type="date" value-format="yyyy-MM-dd" />
             </n-descriptions-item>
   
             <n-descriptions-item label="工单编号">
-              <template v-if="!isEdit">{{ form.workOrderNo }}</template>
-              <n-input v-else v-model:value="form.workOrderNo" />
+              <template v-if="!isEdit">{{ form.work_order_no }}</template>
+              <n-input v-else v-model:value="form.work_order_no" />
             </n-descriptions-item>
   
             <n-descriptions-item label="机型">
-              <template v-if="!isEdit">{{ form.machineModel }}</template>
-              <n-input v-else v-model:value="form.machineModel" />
+              <template v-if="!isEdit">{{ form.machine_model }}</template>
+              <n-input v-else v-model:value="form.machine_model" />
             </n-descriptions-item>
   
             <n-descriptions-item label="维修站点">
               <template v-if="!isEdit">{{ form.repairStation }}</template>
-              <n-input v-else v-model:value="form.repairStation" />
+              <n-select v-else v-model:value="form.repairStation" />
             </n-descriptions-item>
           </n-descriptions>
         </n-space>
@@ -31,8 +31,8 @@
       <n-card title="设备信息">
         <n-descriptions :column="1" label-placement="left" bordered>
           <n-descriptions-item label="整机SN码">
-            <template v-if="!isEdit">{{ form.deviceSN }}</template>
-            <n-input v-else v-model:value="form.deviceSN" />
+            <template v-if="!isEdit">{{ form.device_sn }}</template>
+            <n-input v-else v-model:value="form.device_sn" />
           </n-descriptions-item>
   
           <n-descriptions-item label="电源SN码">
@@ -59,20 +59,20 @@
       <n-card title="维修详情">
         <n-descriptions :column="1" label-placement="left" bordered>
           <n-descriptions-item label="维修部件">
-            <template v-if="!isEdit">{{ form.repairComponent }}</template>
-            <n-input v-else v-model:value="form.repairComponent" />
+            <template v-if="!isEdit">{{ form.repair_component }}</template>
+            <n-input v-else v-model:value="form.repair_component" />
           </n-descriptions-item>
   
           <n-descriptions-item label="初测不良原因">
-            <template v-if="!isEdit">{{ form.defectReason }}</template>
-            <n-input v-else v-model:value="form.defectReason" />
+            <template v-if="!isEdit">{{ form.defect_reason }}</template>
+            <n-input v-else v-model:value="form.defect_reason" />
           </n-descriptions-item>
   
           <n-descriptions-item label="不良代码">
             <template v-if="!isEdit">
-              <div v-for="code in form.defectCodes" :key="code">{{ code }}</div>
+              <div>{{ form.defect_code }}</div>
             </template>
-            <n-dynamic-input v-else v-model:value="form.defectCodes" placeholder="请输入不良代码" />
+            <n-input v-else v-model:value="form.defect_code" placeholder="请输入不良代码" />
           </n-descriptions-item>
   
           <n-descriptions-item label="位号信息">
@@ -81,8 +81,8 @@
           </n-descriptions-item>
   
           <n-descriptions-item label="查证缺陷">
-            <template v-if="!isEdit">{{ form.verifyDefect }}</template>
-            <n-input v-else v-model:value="form.verifyDefect" />
+            <template v-if="!isEdit">{{ form.verify_defect }}</template>
+            <n-input v-else v-model:value="form.verify_defect" />
           </n-descriptions-item>
   
           <n-descriptions-item label="维修部位图片">
@@ -100,22 +100,22 @@
       <n-card title="维修进程">
         <n-descriptions :column="2" label-placement="left" bordered>
           <n-descriptions-item label="开始时间">
-            <template v-if="!isEdit">{{ form.repairStartTime ? new Date(form.repairStartTime).toLocaleString() : '' }}</template>
-            <n-date-picker v-else v-model:value="form.repairStartTime" type="datetime" :value-format="'yyyy-MM-dd HH:mm'" />
+            <template v-if="!isEdit">{{ form.start_time ? dayjs(form.start_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</template>
+            <n-date-picker v-else v-model:formatted-value="form.start_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
           </n-descriptions-item>
            <n-descriptions-item label="结束时间">
-            <template v-if="!isEdit">{{ form.repairEndTime ? new Date(form.repairEndTime).toLocaleString() : '' }}</template>
-            <n-date-picker v-else v-model:value="form.repairEndTime" type="datetime" :value-format="'yyyy-MM-dd HH:mm'" />
+            <template v-if="!isEdit">{{ form.end_time ? dayjs(form.end_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</template>
+            <n-date-picker v-else v-model:formatted-value="form.end_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
           </n-descriptions-item>
   
           <n-descriptions-item label="维修状态">
-            <template v-if="!isEdit">{{ statusOptionsMap[Number(form.repairStatus)] }}</template>
-            <n-select v-else v-model:value="form.repairStatus" :options="statusOptions" />
+            <template v-if="!isEdit">{{ statusOptionsMap[Number(form.repair_result)] }}</template>
+            <n-select v-else v-model:value="form.repair_result" :options="statusOptions" />
           </n-descriptions-item>
   
           <n-descriptions-item label="维修人员">
-            <template v-if="!isEdit">{{ form.repairer }}</template>
-            <n-input v-else v-model:value="form.repairer" />
+            <template v-if="!isEdit">{{ form.repairer_name }}</template>
+            <n-input v-else v-model:value="form.repairer_name" />
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
@@ -132,11 +132,14 @@
   <script setup lang="ts">
   import { ref, onMounted } from "vue"
   import { useRoute } from "vue-router"
+  import dayjs from 'dayjs';
+  import { useMessage } from 'naive-ui';
   import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace } from "naive-ui"
-  import { fetchRepairDetailsByID } from '@/service/api/repair'
+  import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
   import { statusOptions, statusOptionsMap } from '@/constants/business'
   
   const route = useRoute();
+  const message = useMessage()
   // const id = route.params.id; // 用它去请求详情数据
   const id = ref(route.params.id as string);
   const loading = ref(false);
@@ -144,27 +147,29 @@
   const isEdit = ref(false)
   
   const form = ref({
-    date: new Date().getTime(),
-    workOrderNo: "",
-    machineModel: "",
-    repairStation: "",
-    deviceSN: "SN2024011800001",
+    date: dayjs().format('YYYY-MM-DD'),
+    work_order_no: "",
+    machine_model: "",
+    repairStation: Number(route.params.repairStation),
+    device_sn: "SN2024011800001",
     powerSN: ["PWR20240118001234556", "PWR20240118001234557", "PWR20240118001234558"],
     boardSN: ["BRD120240118001234556", "BRD220240118001234556", "BRD320240118001234556"],
-    repairComponent: "主板",
-    defectReason: "无法开机",
-    defectCodes: ["PWR-ERR-001", "VOL-ABN-002"],
+    repair_component: "主板",
+    defect_reason: "无法开机",
+    defect_code: "",
     position: "C12, R45, Q78",
-    verifyDefect: "主板供电异常",
+    verify_defect: "主板供电异常",
     images: [
       "https://placehold.co/200x200?text=主板照片",
       "https://placehold.co/200x200?text=电源模块照片",
       "https://placehold.co/200x200?text=风扇照片"
     ],
-    repairStartTime: new Date('2024-01-18 09:30').getTime(),
-    repairEndTime: new Date('2024-01-18 10:30').getTime(),
-    repairStatus: "维修完成",
-    repairer: "刘工"
+    start_time: dayjs().format('YYYY-MM-DD HH:mm'),
+    end_time: dayjs().format('YYYY-MM-DD HH:mm'),
+    repair_result: 1,
+    repairer_name: "刘工",
+    power_sn: "",
+    motherboard_sn: ""
   })
   
   // const statusOptions = [
@@ -175,7 +180,14 @@
   
   function save() {
     console.log("保存数据", form.value)
-    isEdit.value = false
+
+    form.value.date = dayjs(form.value.date).format('YYYY-MM-DD')
+    form.value.start_time = String(form.value.start_time)
+    form.value.end_time = String(form.value.end_time)
+    updateRepairDetails(Number(id.value), form.value).then(() => {
+      message.success('修改成功')
+      isEdit.value = false
+    })
   }
   function cancel() {
     isEdit.value = false
@@ -192,23 +204,25 @@
       if (error === null && data !== null) {
         const detail = data; // 假设返回的是数组，取第一个
         form.value = {
-          date: detail.Date ? new Date(detail.Date).getTime() : new Date().getTime(),
-          workOrderNo: detail.WorkOrderNo || '',
-          machineModel: detail.MachineModel || '',
+          date: detail.Date ? dayjs(detail.Date).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+          work_order_no: detail.WorkOrderNo || '',
+          machine_model: detail.MachineModel || '',
           repairStation: detail.RepairStationName || '',
-          deviceSN: detail.DeviceSN || '',
+          device_sn: detail.DeviceSN || '',
           powerSN: detail.PowerSN ? detail.PowerSN.split(',') : [],
           boardSN: detail.BoardSN ? detail.BoardSN.split(',') : [],
-          repairComponent: detail.RepairComponent || '',
-          defectReason: detail.DefectReason || '',
-          defectCodes: detail.DefectCode ? detail.DefectCode.split(',') : [],
+          repair_component: detail.RepairComponent || '',
+          defect_reason: detail.DefectReason || '',
+          defect_code: detail.DefectCode || '',
           position: detail.Position || '',
-          verifyDefect: detail.VerifyDefect || '',
+          verify_defect: detail.VerifyDefect || '',
           images: detail.Images ? detail.Images.split(',') : [],
-          repairStartTime: detail.StartTime ? new Date(detail.StartTime).getTime() : new Date().getTime(),
-          repairEndTime: detail.EndTime ? new Date(detail.EndTime).getTime() : new Date().getTime(),
-          repairStatus: detail.RepairResult || 0,
-          repairer: detail.RepairerName || ''
+          start_time: detail.StartTime ? dayjs(detail.StartTime).format('YYYY-MM-DD HH:mm') : dayjs().format('YYYY-MM-DD HH:mm'),
+          end_time: detail.EndTime ? dayjs(detail.EndTime).format('YYYY-MM-DD HH:mm') : dayjs().format('YYYY-MM-DD HH:mm'),
+          repair_result: detail.RepairResult ?? 1,
+          repairer_name: detail.RepairerName || '',
+          power_sn: detail.PowerSN || '',
+          motherboard_sn: detail.BoardSN || ''
         };
       }
     } catch (error) {

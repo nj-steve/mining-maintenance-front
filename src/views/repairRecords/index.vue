@@ -2,7 +2,7 @@
 import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchRepairDetails,updateFaults } from '@/service/api/repair';
+import { fetchRepairDetails } from '@/service/api/repair';
 import UploadExcel from "@/components/upload/UploadExcel.vue"
 import { useRouter } from 'vue-router';
 import { statusOptions } from '@/constants/business'
