@@ -246,7 +246,7 @@ watch([work_order_no,repair_result], () => {
 const downloadTemplate = () => {
   // 创建一个临时链接来下载模板文件
   const link = document.createElement('a');
-  link.href = '/src/assets/template/repair-detail.xlsx'; // 模板文件路径
+  link.href = '/template/repair-detail.xlsx'; // 模板文件路径
   link.download = '维修明细导入模板.xlsx';
   document.body.appendChild(link);
   link.click();
