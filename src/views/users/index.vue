@@ -26,6 +26,7 @@ interface EditUser {
   id:number,
   assigned_company_id: string;
   company: string;
+  password: string;
   contact_phone: string;
   email: string;
   role: number;
@@ -84,6 +85,7 @@ const dialogMode = ref<'add' | 'edit'>('add');
 const editForm = ref<EditUser>({
   id: 0,
   assigned_company_id: "",
+  password: "",
   company: "",
   contact_phone: "",
   email: "",
@@ -99,6 +101,7 @@ const handleOpenAdd = () => {
   editForm.value = {
     id: 0,
     assigned_company_id: "",
+    password: "",
     company: "",
     contact_phone: "",
     email: "",
@@ -118,10 +121,15 @@ const handleOpenAdd = () => {
 };
 
 function userToEditUser(user: User): EditUser {
+  console.log("user",user)
+  console.log("user.company_info[0].id",user.company_info[0].id)
+  console.log("user.company_info[0].id",user.company_info[0].id.toString() || "")
+
   return {
     id: user.id || 0,
     assigned_company_id: user.company_info[0].id.toString() || "",
     company: user.company_info[0].name || "",
+    password: "",
     contact_phone: user.contact_phone || "",
     email: user.email || "",
     role: user.role || 1,
@@ -132,15 +140,19 @@ function userToEditUser(user: User): EditUser {
 }
 
 // 打开编辑弹框
-const handleOpenEdit = (row: User) => {
+const handleOpenEdit = async(row: User) => {
   dialogMode.value = 'edit';
   editForm.value =userToEditUser(row)
+
   // editForm.value = { ...row }; // 拷贝一份
   // console.log("editForm.value",editForm.value)
   
   // 根据角色加载对应的公司选项
   if (row.role) {
-    getCompanys(row.role);
+    // getCompanys(row.role);
+    await getCompanys(row.role); // 等待加载完公司选项
+    // 再次设置公司ID，确保选中
+    editForm.value.assigned_company_id = row.company_info?.[0]?.id?.toString() || "";
   }
   
   showModal.value = true;
@@ -171,6 +183,10 @@ const handleSave = async () => {
     if (!REG_EMAIL.test(editForm.value.email.trim())) {
       message.error('邮箱格式不正确');
       return false;
+    }
+    if (dialogMode.value === 'add' && !editForm.value.password) {
+      message.error('请输入密码');
+      return;
     }
     
     // if (!editForm.value.start_date) {
@@ -375,6 +391,9 @@ watch([searchSerial,searchRole], () => {
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
       <NFormItem label="姓名">
         <NInput v-model:value="editForm.username" placeholder="请输入姓名" />
+      </NFormItem>
+      <NFormItem label="密码">
+        <NInput v-model:value="editForm.password" type="password" placeholder="请输入密码" />
       </NFormItem>
 
       <NFormItem label="角色类型">
