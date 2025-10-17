@@ -100,6 +100,15 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     startLoading();
 
     const { data, error } = await fetchLogin(userName, password);
+    if (error) {
+      window.$notification?.error({
+        title: "登陆错误",
+        content:  error?.message || "",
+        duration: 4500
+      });
+      resetStore();
+      return;
+    }
     
     localStg.set('token', data?.token??"");
     localStg.set('refreshToken', data?.token??"");

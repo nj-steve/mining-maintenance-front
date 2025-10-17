@@ -122,13 +122,13 @@ const handleOpenAdd = () => {
 
 function userToEditUser(user: User): EditUser {
   console.log("user",user)
-  console.log("user.company_info[0].id",user.company_info[0].id)
-  console.log("user.company_info[0].id",user.company_info[0].id.toString() || "")
+  console.log("user.company_info[0].id",user.company_info?.[0].id)
+  console.log("user.company_info[0].id",user.company_info?.[0].id.toString() || "")
 
   return {
     id: user.id || 0,
-    assigned_company_id: user.company_info[0].id.toString() || "",
-    company: user.company_info[0].name || "",
+    assigned_company_id: user.company_info?.[0]?.id?.toString() || "",
+    company: user.company_info?.[0]?.name || "",
     password: "",
     contact_phone: user.contact_phone || "",
     email: user.email || "",
