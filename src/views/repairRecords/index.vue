@@ -35,6 +35,7 @@ const message = useMessage();
 const tableData = ref<Faults[]>([]);
 const loading = ref(false);
 const work_order_no = ref<string>('');
+const sn = ref<string>('');
 const modelOptions = ref<{ label: string; value: number }[]>([])
 // 分页
 const pagination = ref<PaginationProps>({
@@ -177,7 +178,7 @@ const fetchData = async () => {
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
-    // sn: work_order_no.value || undefined
+    sn: sn.value || undefined,
     repair_result: repair_result.value || undefined,
     work_order_no: work_order_no.value || undefined,
   };
@@ -235,12 +236,20 @@ onMounted(() => {
   fetchData()
 //   loadFaultsTypes();
 });
-watch([work_order_no,repair_result], () => {
+watch([work_order_no,repair_result,sn], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
   
 });
+
+// const isRepairStation = computed(() => {
+//   return JSON.parse(localStorage.getItem('userInfo')).role;
+// });
+const role = JSON.parse(localStorage.getItem('userInfo') ?? '{}')?.role;
+const isRepairStation = role === 4;
+
+
 
 // 下载模板
 const downloadTemplate = () => {
@@ -259,10 +268,11 @@ const downloadTemplate = () => {
   <div>
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <UploadExcel uploadUrl="/api/repair_stations/import_repair_details" />
+      <div  style="display: flex; gap: 8px; align-items: center;">
+        <UploadExcel v-if="isRepairStation" uploadUrl="/api/repair_stations/import_repair_details" />
         <!-- 下载模板按钮 -->
         <NButton 
+          v-if="isRepairStation"
           text 
           type="primary" 
           @click="downloadTemplate"
@@ -271,9 +281,12 @@ const downloadTemplate = () => {
           📥 下载模板
         </NButton>
       </div>
-      
-      <NInput v-model:value="work_order_no"  placeholder="请输入机器编号" clearable style="width: 240px" />
-         <NSelect v-model:value="repair_result"   :options="statusOptions" clearable style="width: 240px" />
+      <div style="display: flex; gap: 8px; align-items: center;">
+
+      <NInput v-model:value="work_order_no"  placeholder="请输入工单号" clearable style="width: 150px" />
+      <NInput v-model:value="sn"  placeholder="请输入机器SN" clearable style="width: 150px" />
+      <NSelect v-model:value="repair_result"   :options="statusOptions" clearable style="width: 150px" />
+      </div>
     </div>
 
     <!-- 表格 -->

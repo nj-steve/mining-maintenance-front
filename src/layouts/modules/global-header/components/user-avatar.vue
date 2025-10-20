@@ -5,6 +5,8 @@ import { useAuthStore } from '@/store/modules/auth';
 import { useRouterPush } from '@/hooks/common/router';
 import { useSvgIcon } from '@/hooks/common/icon';
 import { $t } from '@/locales';
+import local from '@/locales/langs/zh-cn';
+import { getItem } from 'localforage';
 
 defineOptions({
   name: 'UserAvatar'
@@ -63,6 +65,7 @@ function handleDropdown(key: DropdownKey) {
     routerPushByKey(key);
   }
 }
+const username = JSON.parse(localStorage.getItem('userInfo')??"{}")?.username;
 </script>
 
 <template>
@@ -73,7 +76,7 @@ function handleDropdown(key: DropdownKey) {
     <div>
       <ButtonIcon>
         <SvgIcon icon="ph:user-circle" class="text-icon-large" />
-        <span class="text-16px font-medium">{{ authStore.userInfo.username }}</span>
+        <span class="text-16px font-medium">{{ authStore.userInfo.username || username}}</span>
       </ButtonIcon>
     </div>
   </NDropdown>

@@ -4,6 +4,10 @@
 // Read more: https://github.com/soybeanjs/elegant-router
 
 import type { GeneratedRoute } from '@elegant-router/types';
+// // 获取角色
+// const role = JSON.parse(localStorage.getItem('userInfo') ?? '{}')?.role;
+// // ✅ 正确写法
+// const isRepairRole = role === '维修人员';
 
 export const generatedRoutes: GeneratedRoute[] = [
   {
@@ -94,7 +98,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'miningsite',
       i18nKey: 'route.miningsite',
       icon: 'mdi:factory',
-      order: 2
+      order: 2,
+      role: [1, 2, 3]
     }
   },
   {
@@ -105,7 +110,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'repairrecords',
       i18nKey: 'route.repairrecords',
       icon: 'mdi:file-cog',
-      order: 5
+      order: 5,
+      role: [1, 2, 3, 4]
     },
     props: true
   },
@@ -117,7 +123,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: '维修详情',
       i18nKey: 'route.repairrecordsdetail',
       props: true,
-      hideInMenu: true
+      hideInMenu: true,
+      role: [1, 2, 3, 4]
     },
     props: true
   },
@@ -129,7 +136,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'repairstation',
       i18nKey: 'route.repairstation',
       icon: 'mdi:office-building-cog',
-      order: 6
+      order: 6,
+      role: [1, 2, 3, 4]
     }
   },
   {
@@ -140,7 +148,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'sitedetail',
       i18nKey: 'route.sitedetail',
       props: true,
-      hideInMenu: true
+      hideInMenu: true,
+      role: [1, 2, 3]
     },
     props: true
   },
@@ -152,7 +161,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'users',
       i18nKey: 'route.users',
       icon: 'mdi:lock',
-      order: 7
+      order: 7,
+      role: [1, 2, 3]
     }
   },
   {
@@ -163,7 +173,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'workflow',
       i18nKey: 'route.workflow',
       icon: 'mdi:flowchart',
-      order: 3
+      order: 3,
+      role: [1, 2, 3]
     }
   }
 ];

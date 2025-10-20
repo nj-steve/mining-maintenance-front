@@ -10,6 +10,7 @@ import { $t } from '@/locales';
 import { useRouteStore } from '../route';
 import { useTabStore } from '../tab';
 import { clearAuthStorage, getToken } from './shared';
+import { json } from 'node:stream/consumers';
 
 export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   const route = useRoute();
@@ -100,6 +101,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     startLoading();
 
     const { data, error } = await fetchLogin(userName, password);
+    console.log("login", data, error);
     if (error) {
       window.$notification?.error({
         title: "登陆错误",
@@ -112,6 +114,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     
     localStg.set('token', data?.token??"");
     localStg.set('refreshToken', data?.token??"");
+    localStorage.setItem('userInfo', JSON.stringify(data));
+
     Object.assign(userInfo, data);
     
     

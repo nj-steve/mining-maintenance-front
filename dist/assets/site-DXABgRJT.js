@@ -1,0 +1,1 @@
+import{I as e}from"./index-C9vq3_ws.js";function i(){return e({url:"/api/statistics/dashboard",method:"get"})}function r(t){return e({url:"/api/sites",method:"get",params:t})}function u(t){return e({url:"/api/sites/"+t,method:"get"})}function o(t,s){return e({url:"/api/sites/"+t,method:"put",data:s})}export{i as a,u as b,r as f,o as u};

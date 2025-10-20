@@ -43,11 +43,14 @@ const router = useRouter();
 const tableData = ref<Faults[]>([]);
 const loading = ref(false);
 const searchSerial = ref<string>('');
+
 const searchSiteId = ref<number | null>(null);
 const searchStatus = ref<number | null>(null);
 const searchStartDate = ref<number | null>(null);
 const searchEndDate = ref<number | null>(null);
 const searchModel = ref<number | null>(null);
+const searchWorkOrderNo = ref<string>('');
+
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
 const statusOptions = ref<{ label: string; value: number }[]>([]);
 
@@ -269,6 +272,7 @@ const fetchData = async () => {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
     sn: searchSerial.value || undefined,
+    order_no: searchWorkOrderNo.value || undefined,
     site_id: searchSiteId.value || undefined,
     status: searchStatus.value || undefined,
     start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
@@ -298,7 +302,7 @@ onMounted(() => {
   fetchOrderStatusData();
   fetchSiteData();
 });
-watch([searchSerial, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
+watch([searchSerial,searchWorkOrderNo, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
@@ -424,9 +428,18 @@ const handleRefresh = () => {
           v-model:value="searchSerial" 
           size="small"
           @change="fetchData" 
-          placeholder="请输入机器编号" 
+          placeholder="请输入机器SN" 
           clearable 
-          style="width: 200px" 
+          style="width: 120px" 
+        />
+
+         <NInput 
+          v-model:value="searchWorkOrderNo" 
+          size="small"
+          @change="fetchData" 
+          placeholder="请输入工单号" 
+          clearable 
+          style="width: 120px" 
         />
         <!-- 场地筛选 -->
         <NSelect 
@@ -437,7 +450,7 @@ const handleRefresh = () => {
           class="site-select"
           clearable 
           filterable
-          style="width: 180px;font-size: 12px;"
+          style="width: 120px;font-size: 12px;"
         />
           <!-- 开始时间 -->
          <NDatePicker 
@@ -446,7 +459,7 @@ const handleRefresh = () => {
            placeholder="开始时间" 
            clearable 
            size="small"
-           style="width: 120px"
+           style="width: 110px"
          />
          
          <!-- 结束时间 -->
@@ -456,7 +469,7 @@ const handleRefresh = () => {
            size="small"
            placeholder="结束时间" 
            clearable 
-           style="width: 120px"
+           style="width: 110px"
          />
         <NSelect 
         size="small"
