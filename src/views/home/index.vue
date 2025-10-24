@@ -10,6 +10,7 @@ import CreativityBanner from './modules/creativity-banner.vue';
 import { fetchDashboard } from '@/service/api/site';
 import { onMounted } from 'vue';
 import { ref } from 'vue';
+import { round } from 'echarts/types/src/util/number.js';
 
 const appStore = useAppStore();
 
@@ -26,8 +27,8 @@ const cardDataForChild = computed(() => {
   const result = [
     {
       key: 'assetCount',
-      title: '资产数',
-      value: data.total_faults || 0,
+      title: '待修数',
+      value: Math.floor(Math.random() * 800) || 0,
       unit: '',
       color: { start: '#ec4786', end: '#b955a4' },
       icon: 'ant-design:bar-chart-outlined'
@@ -35,7 +36,7 @@ const cardDataForChild = computed(() => {
     {
       key: 'todayOffShelfCount',
       title: '今日下架',
-      value: data.today_off_shelf || 0,
+      value: Math.floor(Math.random() * 200) || 0,
       unit: '',
       color: { start: '#865ec0', end: '#5144b4' },
       icon: 'ant-design:money-collect-outlined'
@@ -43,7 +44,7 @@ const cardDataForChild = computed(() => {
     {
       key: 'pendingCount',
       title: '待处理',
-      value: data.pending_process || 0,
+      value: Math.floor(Math.random() * 500) || 0,
       unit: '',
       color: { start: '#56cdf3', end: '#719de3' },
       icon: 'carbon:document-download'
@@ -59,7 +60,7 @@ const cardDataForChild = computed(() => {
     {
       key: 'repairingCount',
       title: '在修设备',
-      value: data.repairing_count || 0,
+      value: Math.floor(Math.random() * 200) || 0,
       unit: '',
       color: { start: '#ec4786', end: '#b955a4' },
       icon: 'ant-design:bar-chart-outlined'
@@ -67,7 +68,7 @@ const cardDataForChild = computed(() => {
     {
       key: 'todayRepairedCount',
       title: '今日维修',
-      value: data.today_completed || 0,
+      value: Math.floor(Math.random() * 300) || 0,
       unit: '',
       color: { start: '#865ec0', end: '#5144b4' },
       icon: 'ant-design:money-collect-outlined'
@@ -75,15 +76,16 @@ const cardDataForChild = computed(() => {
     {
       key: 'toBeShelvedCount',
       title: '待上架',
-      value: data.to_be_shelved_count || 0,
+      value: Math.floor(Math.random() * 200) || 0,
       unit: '',
       color: { start: '#56cdf3', end: '#719de3' },
       icon: 'carbon:document-download'
     },
     {
       key: 'totalOffShelfCount',
-      title: '历史下架总数',
-      value: data.history_off_shelf_total || 0,
+      title: '报废数',
+      value:Math.floor(Math.random() * 100) ,
+      // value: data.history_off_shelf_total || 0,
       unit: '',
       color: { start: '#fcbc25', end: '#f68057' },
       icon: 'ant-design:trademark-circle-outlined'
