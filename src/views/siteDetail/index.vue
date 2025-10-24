@@ -6,21 +6,27 @@ import { fetchSitesDetail } from '@/service/api/site';
 // 使用项目内置的图标系统
 
 interface SiteDetail {
-  ID: number;
-  Name: string;
-  Address: string;
-  AssetCount: number;
-  OffShelfCount: number;
-  InLogisticsCount: number;
-  UnderRepairCount: number;
-  ToBePutOnShelfCount: number;
-  TotalHistoricalRepairs: number;
-  IsOnsiteDefault: number;
-  // 场地状态
-  contact_person: string;
-  contact_phone: string;
-  contact_email: string;
+  id: number;
+  name: string;
+  address?: string;
+  asset_count: number;
+  off_shelf_count: number;
+  in_logistics_count: number;
+  under_repair_count: number;
+  to_be_put_on_shelf_count: number;
+  site_status: number;
+  saler_name: string;
+  saler_id: number;
+  director_name: string;
+  phone: string;
+  email: string;
+  repairing: number;
+  repairing_rate: number;
+  wait_repair: number;
+  wait_repair_rate: number;
+  is_onsite_default?: number;
 }
+
 
 const route = useRoute();
 const router = useRouter();
@@ -84,15 +90,17 @@ onMounted(() => {
           <div class="info-grid">
             <div class="info-item">
               <span class="label">场地名称:</span>
-              <span class="value">{{ siteData.Name || '' }}</span>
+              <span class="value">{{ siteData.name || '' }}</span>
             </div>
             <div class="info-item">
               <span class="label">场地地址:</span>
-              <span class="value">{{ siteData.Address || '' }}</span>
+              <span class="value">{{ siteData.address || '' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">是否存在驻场:</span>
-              <span class="value" :class="siteData.IsOnsiteDefault === 1 ? 'status-yes' : 'status-no'">{{ siteData.IsOnsiteDefault === 1 ? '是' : '否' }}</span>
+              <span class="label">场地状态:</span>
+              <span class="value" :class="siteData.site_status === 1 ? 'status-yes' : 'status-no'">
+                {{ siteData.site_status === 1 ? '驻场' : siteData.site_status === 2 ? '寄修' : '驻场+寄修' }}
+              </span>
             </div>
           </div>
         </NCard>
@@ -102,45 +110,45 @@ onMounted(() => {
           <div class="stats-grid">
             <div class="stat-item">
               <span class="stat-label">总资产数:</span>
-              <span class="stat-value">{{ siteData.AssetCount || 0 }} 台</span>
+              <span class="stat-value">{{ siteData.asset_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">下架检查:</span>
-              <span class="stat-value">{{ siteData.OffShelfCount || 0 }} 台</span>
+              <span class="stat-value">{{ siteData.off_shelf_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">物流中:</span>
-              <span class="stat-value">{{ siteData.InLogisticsCount || 0 }} 台</span>
+              <span class="stat-value">{{ siteData.in_logistics_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">维修中:</span>
-              <span class="stat-value">{{ siteData.UnderRepairCount || 0 }} 台</span>
+              <span class="stat-value">{{ siteData.under_repair_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">待上线:</span>
-              <span class="stat-value">{{ siteData.ToBePutOnShelfCount || 0 }} 台</span>
+              <span class="stat-value">{{ siteData.to_be_put_on_shelf_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
                <span class="stat-label">历史总维修数:</span>
-               <span class="stat-value">{{ siteData.TotalHistoricalRepairs || 0 }} 次</span>
+               <span class="stat-value">{{ siteData.repairing_rate || 0 }} %</span>
              </div>
           </div>
         </NCard>
 
         <!-- 联系信息 -->
-        <NCard title="联系信息" class="contact-card">
+        <NCard title="售后专员" class="contact-card">
           <div class="contact-grid">
             <div class="contact-item">
               <span class="label">负责人:</span>
-              <span class="value">{{ siteData.contact_person || '' }}</span>
+              <span class="value">{{ siteData.saler_name || '' }}</span>
             </div>
             <div class="contact-item">
               <span class="label">联系电话:</span>
-              <span class="value">{{ siteData.contact_phone || '' }}</span>
+              <span class="value">{{ siteData.phone || '' }}</span>
             </div>
             <div class="contact-item">
               <span class="label">邮箱:</span>
-              <span class="value">{{ siteData.contact_email || '' }}</span>
+              <span class="value">{{ siteData.email || '' }}</span>
             </div>
           </div>
         </NCard>

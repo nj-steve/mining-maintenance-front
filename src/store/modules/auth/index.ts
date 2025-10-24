@@ -10,7 +10,6 @@ import { $t } from '@/locales';
 import { useRouteStore } from '../route';
 import { useTabStore } from '../tab';
 import { clearAuthStorage, getToken } from './shared';
-import { json } from 'node:stream/consumers';
 
 export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   const route = useRoute();
@@ -120,12 +119,12 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     
     
     if (!error) {
-      // const pass = await loginByToken(loginToken);
+      const pass = await loginByToken(data?.token??"");
 
-      // if (pass) {
-      //   // Check if the tab needs to be cleared
-      //   const isClear = checkTabClear();
-      //   let needRedirect = redirect;
+      if (pass) {
+        // Check if the tab needs to be cleared
+        // const isClear = checkTabClear();
+        // let needRedirect = redirect;
 
       //   if (isClear) {
       //     // If the tab needs to be cleared,it means we don't need to redirect.
@@ -140,54 +139,62 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         });
         window.location.href="/home"
         
-      // }
+      }else{
+        window.$notification?.error({
+          title: "登陆错误",
+          content:  "登陆错误",
+          duration: 4500
+        });
+        // resetStore();
+      }
     } else {
-      resetStore();
+      console.log("login error", error);
+      // resetStore();
     }
     endLoading();
   }
 
-  // async function loginByToken(loginToken: Api.Auth.LoginToken) {
-  //   // 1. stored in the localStorage, the later requests need it in headers
-  //   localStg.set('token', loginToken.token);
-  //   localStg.set('refreshToken', loginToken.refreshToken);
+  async function loginByToken(loginToken: string) {
+    // 1. stored in the localStorage, the later requests need it in headers
+    localStg.set('token', loginToken);
+    localStg.set('refreshToken', loginToken);
 
-  //   // 2. get user info
-  //   const pass = await getUserInfo();
+    // 2. get user info
+    const pass = await getUserInfo();
 
-  //   if (pass) {
-  //     token.value = loginToken.token;
+    if (pass) {
+      token.value = loginToken;
 
-  //     return true;
-  //   }
+      return true;
+    }
 
-  //   return false;
-  // }
+    return false;
+  }
 
-  // async function getUserInfo() {
-  //   const { data: info, error } = await fetchGetUserInfo();
+  async function getUserInfo() {
+    const { data: info, error } = await fetchGetUserInfo();
 
-  //   if (!error) {
-  //     // update store
-  //     Object.assign(userInfo, info);
+    if (!error) {
+      // update store
+      Object.assign(userInfo, info);
 
-  //     return true;
-  //   }
-
-  //   return false;
-  // }
+      return true;
+    }
+  
+    return false;
+  }
 
   async function initUserInfo() {
 
-    // const hasToken = getToken();
+    const hasToken = getToken();
 
-    // if (hasToken) {
-    //   const pass = await getUserInfo();
+    if (hasToken) {
+      const pass = await getUserInfo();
 
-    //   if (!pass) {
-    //     resetStore();
-    //   }
-    // }
+      if (!pass) {
+        resetStore();
+      }
+    }
   }
 
   return {

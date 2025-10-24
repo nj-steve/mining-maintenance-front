@@ -1,1 +1,0 @@
-const s={1:"success",0:"error",[-1]:"warning"},a={1:"在职",0:"离职",[-1]:"停用"},e={3:"success",2:"warning",4:"error",1:"info"},t={1:"管理员",2:"售后管理",3:"运维人员",4:"维修人员"},o={9:"已修复",10:"未修复",11:"报废",0:"其他"},r=[{label:"已修复",value:9},{label:"未修复",value:10},{label:"报废",value:11}];export{o as a,e as b,s as c,t as r,r as s,a as u};

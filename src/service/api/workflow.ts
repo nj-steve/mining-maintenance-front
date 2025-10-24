@@ -1,19 +1,19 @@
 import { request } from '../request';
 
-export interface Miner {
-  serial_number?: string;
-  miner_type?: string;
-  Site?: number;
-  sale?: number;
-  swap?: number;
-  scrap?: number;
-  asset?: number;
-  online?: number;
-  repairing?: number;
-  transfer?: number;
-  hashRate?: string | number;
-  [key: string]: unknown;
-}
+// export interface Miner {
+//   serial_number?: string;
+//   miner_type?: string;
+//   Site?: number;
+//   sale?: number;
+//   swap?: number;
+//   scrap?: number;
+//   asset?: number;
+//   online?: number;
+//   repairing?: number;
+//   transfer?: number;
+//   hashRate?: string | number;
+//   [key: string]: unknown;
+// }
 
 
 export function fetchOrders(params: { page?: number; limit?: number; [key: string]: any }) {
@@ -48,6 +48,7 @@ export function createOrder(params: {[key: string]: any }) {
     data:params
   });
 }
+
 
 // 创建工单操作日志
 // /orders/fid}/operation log
@@ -97,6 +98,32 @@ export function dispatchOrders(params: {[key: string]: any }) {
     url: '/api/orders/dispatch',
     method: 'post',
     data:params
+  });
+}
+
+/**
+ * 修改派遣工单
+ * /orders/repair_station/:id
+ * id：工单id
+ * "repair_station_id": xxx
+ */
+export function updateDispatchOrders(id:number,params: {[key: string]: any }) {
+  return request({
+    url: '/api/orders/'+id+'/handle',
+    method: 'put',
+    data:params
+  });
+}
+
+
+/**
+ * 工单删除(针对未处理的工单)
+ * /api/:id/handle
+ */
+export function delOrders(id:number) {
+  return request({
+    url: '/api/orders/'+id,
+    method: 'delete',
   });
 }
 

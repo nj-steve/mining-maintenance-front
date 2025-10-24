@@ -2,7 +2,7 @@
 import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchRepairStations,updateFaults,createRepairStation,deleteRepairStation } from '@/service/api/repair';
+import { fetchRepairStations,deleteRepairStation } from '@/service/api/repair';
 import AddRepairStationModal from '@/components/custom/AddRepairStationModal.vue';
 import EditRepairStationModal from '@/components/custom/EditRepairStationModal.vue';
 

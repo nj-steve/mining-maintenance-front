@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
 import dayjs from 'dayjs';
-import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NCheckbox, NDatePicker } from 'naive-ui';
+import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NCheckbox, NDatePicker, NIcon } from 'naive-ui';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
 import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus,createOrdersLog } from '@/service/api/workflow';
 import {fetchRepairStations} from '@/service/api/repair';
 import {fetchSites} from '@/service/api/site';
+import SvgIcon from '@/components/custom/svg-icon.vue';
 
 interface Order {
   ID: number;                     // 工单ID
@@ -333,7 +334,14 @@ const columns: DataTableColumns<Order> = [
             style: "margin-right: 8px;font-size:12px",
             onClick: () => handleOpenEdit(row)
           },
-          { default: () => '修改' }
+          {
+            icon: () => h(
+              NIcon,
+              null,
+              { default: () => h(SvgIcon, { icon: 'material-symbols:edit' }) }
+            ),
+            // default: () => '修改'
+          }
         ), 
         // h(
         //   NButton,
@@ -355,7 +363,7 @@ const columns: DataTableColumns<Order> = [
             style: "margin-left: 8px; margin-top: 4px;font-size:12px",
             onClick: () => handleOpenAddLog(row)
           },
-          { default: () => '+ 日志' }
+          { default: () => '日志' }
         ),
          h(
           NButton,
@@ -366,7 +374,7 @@ const columns: DataTableColumns<Order> = [
             style: "margin-left: 8px;margin-top: 4px;font-size:12px",
             onClick: () => handleOpenDetail(row)
           },
-          { default: () => '流程' }
+          { default: () => '历史日志' }
         ),
          ...(row.StationID === 0 ? [h(
           NButton,

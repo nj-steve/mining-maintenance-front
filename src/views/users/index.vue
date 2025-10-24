@@ -14,6 +14,7 @@ interface Company {
 interface User {
   id?: number;                  // 主键ID（编辑时需要）
   username: string;              // 用户名
+  real_name: string;             // 真实姓名
   contact_phone: string;         // 联系电话
   company_info: Company [];               // 公司
   role: number;                  // 角色：1-管理员，2-售后管理，3-运维人员，4-维修人员
@@ -33,6 +34,7 @@ interface EditUser {
   start_date: string;
   status: number;
   username: string;
+  real_name: string;
 }
 
 const dialog = useDialog()
@@ -92,7 +94,8 @@ const editForm = ref<EditUser>({
   role: 1,        // 默认角色，可以根据需求调整
   start_date: "", // 可以用 "" 或 new Date().toISOString()
   status: 0,      // 默认状态
-  username: ""
+  username: "",
+  real_name: ""
 });
 
 // 打开添加弹框
@@ -108,9 +111,10 @@ const handleOpenAdd = () => {
     role: 1,        // 默认角色，可以根据需求调整
     start_date: "", // 可以用 "" 或 new Date().toISOString()
     status: 0,      // 默认状态
-    username: ""
+    username: "",
+    real_name: ""
   };
-  
+
   // editForm.value = {
   //   id: undefined,
   //   Faults_type_id: 0,
@@ -121,12 +125,9 @@ const handleOpenAdd = () => {
 };
 
 function userToEditUser(user: User): EditUser {
-  console.log("user",user)
-  console.log("user.company_info[0].id",user.company_info?.[0].id)
-  console.log("user.company_info[0].id",user.company_info?.[0].id.toString() || "")
-
   return {
     id: user.id || 0,
+    real_name: user.real_name || "",
     assigned_company_id: user.company_info?.[0]?.id?.toString() || "",
     company: user.company_info?.[0]?.name || "",
     password: "",
@@ -223,7 +224,8 @@ const handleSave = async () => {
 
 // ---------------- 表格列 ----------------
 const columns: DataTableColumns<User> = [
-  { title: '姓名', key: 'username', width: 200 },
+  { title: '昵称', key: 'username', width: 200 },
+  { title: '真实姓名', key: 'real_name', width: 200 },
   { title: '角色类型', key: 'role', render: (row: any ) => {
     const label = roleRecord[row.role] || '未知';
     return h(NTag, {type: roleTagMap[row.role] }, () => label)
@@ -389,8 +391,11 @@ watch([searchSerial,searchRole], () => {
 >
   <NForm :model="editForm" label-width="100">
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-      <NFormItem label="姓名">
-        <NInput v-model:value="editForm.username" placeholder="请输入姓名" />
+      <NFormItem label="昵称">
+        <NInput v-model:value="editForm.username" placeholder="请输入昵称" />
+      </NFormItem>
+      <NFormItem label="真实姓名">
+        <NInput v-model:value="editForm.real_name" placeholder="请输入真实姓名" />
       </NFormItem>
       <NFormItem label="密码">
         <NInput v-model:value="editForm.password" type="password" placeholder="请输入密码" />

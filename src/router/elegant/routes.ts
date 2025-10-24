@@ -99,7 +99,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.miningsite',
       icon: 'mdi:factory',
       order: 2,
-      role: [1, 2, 3]
+      role: ['1', '2', '3']
     }
   },
   {
@@ -111,7 +111,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.repairrecords',
       icon: 'mdi:file-cog',
       order: 5,
-      role: [1, 2, 3, 4]
+      role: ['1', '2', '3', '4']
     },
     props: true
   },
@@ -124,7 +124,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.repairrecordsdetail',
       props: true,
       hideInMenu: true,
-      role: [1, 2, 3, 4]
+      role: ['1', '2', '3', '4']
     },
     props: true
   },
@@ -137,7 +137,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.repairstation',
       icon: 'mdi:office-building-cog',
       order: 6,
-      role: [1, 2, 3, 4]
+      role: ['1', '2', '3', '4']
     }
   },
   {
@@ -149,7 +149,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.sitedetail',
       props: true,
       hideInMenu: true,
-      role: [1, 2, 3]
+      role: ['1', '2', '3']
     },
     props: true
   },
@@ -162,7 +162,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.users',
       icon: 'mdi:lock',
       order: 7,
-      role: [1, 2, 3]
+      role: ['1', '2', '3']
     }
   },
   {
@@ -174,7 +174,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.workflow',
       icon: 'mdi:flowchart',
       order: 3,
-      role: [1, 2, 3]
+      role: ['1', '2', '3']
     }
   }
 ];

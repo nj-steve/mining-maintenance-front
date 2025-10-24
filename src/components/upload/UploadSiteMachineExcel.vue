@@ -1,7 +1,12 @@
 <template>
     <div>
       <!-- 触发按钮 -->
-      <n-button size="small" type="primary" @click="showModal = true">
+      <n-button size="small" ghost type="primary" @click="showModal = true">
+        <template #icon>
+          <NIcon>
+            <SvgIcon icon="material-symbols:upload" />
+          </NIcon>
+        </template>
         {{ buttonText }}
       </n-button>
   
@@ -85,7 +90,7 @@
   
   <script setup lang="ts">
   import { ref,onMounted } from 'vue'
-  import { NButton, NModal, NSelect, NUpload, useMessage } from 'naive-ui'
+  import { NButton, NModal, NSelect, NUpload, useMessage, NIcon } from 'naive-ui'
   import type { UploadFileInfo } from 'naive-ui'
   import axios from 'axios'
   import { getServiceBaseURL } from '@/utils/service'
@@ -228,8 +233,8 @@ const fetchData = async () => {
         // tableData.value = data.list;
          // 假设返回 res.data 是上面的数组
       siteOptions.value = data.list.map((item: any) => ({
-        label: item.Name,
-        value: item.ID
+        label: item.name,
+        value: item.id
       }))
 
     }else{

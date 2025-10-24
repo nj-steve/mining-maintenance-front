@@ -10,6 +10,9 @@ import {fetchOrdersStatus} from '@/service/api/workflow';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
 import {fetchSites} from '@/service/api/site';
+import FaultsSearchCard from './components/FaultsSearchCard.vue'
+import BindWorkOrderModal from './components/BindWorkOrderModal.vue'
+import UnbindWorkOrderModal from './components/UnbindWorkOrderModal.vue'
 
 
 interface Faults {
@@ -138,8 +141,8 @@ const fetchSiteData = async () => {
     const { data, error } = await fetchSites({page:1,page_size:1000});
     if (!error && data) {
       siteOptions.value = data.list.map((site: any) => ({
-        label: site.Name,
-        value: site.ID,
+        label: site.name,
+        value: site.id,
       }));
     }
   } catch (err) {
@@ -317,18 +320,40 @@ const handleSelectionChange = (keys: (string | number)[], rows: any[]) => {
 
 // 创建工单
 const handleCreateWorkOrder = () => {
-  // 只选择状态为"新下架"的机器
-  const downCheckMachines = selectedRows.value.filter(row => 
-    row.Status?.name === '新下架' || row.status_text === '新下架'
-  );
-  
-  if (downCheckMachines.length === 0) {
-    message.warning('请选择状态为"新下架"的机器');
+  if (selectedRows.value.length === 0) {
+    message.warning('请先选择机器');
     return;
   }
+  // 统计选中机器所属的唯一场地名数量（去重）
+  const uniqueSiteNames = Array.from(
+    new Set(
+      selectedRows.value
+        .map(row => row.Site?.name || row.site_name)
+        .filter(Boolean)
+    )
+  );
+  if (uniqueSiteNames.length > 1) {
+    message.warning('仅可选择一个场地的机器');
+    return;
+  }
+  console.log('选中的场地:', uniqueSiteNames[0]);
+
+  // 只选择状态为"新下架"的机器
+  const downCheckMachines = selectedRows.value.filter(row => 
+     row.status_text === '新下架'
+  );
+  // 只选择状态为"新下架"的机器
+  const failureCheckMachines = selectedRows.value.filter(row => 
+    row.status_text !== '新下架'
+  );
+   if (failureCheckMachines.length > 0 || downCheckMachines.length === 0) {
+    message.warning('仅可选择“新下架”设备');
+    return;
+  }
+
   
   // 生成工单编号
-  const workOrderNo = `WO${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+  const workOrderNo = `${uniqueSiteNames[0]}${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
   
   // 获取场地信息（取第一个选中机器的场地）
   const site = downCheckMachines[0]?.Site?.name || downCheckMachines[0]?.site_name || '';
@@ -398,19 +423,38 @@ const handleRefresh = () => {
 </script>
 
 <template>
+
   <div>
+    <n-card title="数据搜索" style="margin-bottom: 24px;">
+        <FaultsSearchCard 
+          v-model:serial="searchSerial"
+          v-model:workOrderNo="searchWorkOrderNo"
+          v-model:siteId="searchSiteId"
+          v-model:startDate="searchStartDate"
+          v-model:endDate="searchEndDate"
+          v-model:status="searchStatus"
+          :site-options="siteOptions"
+          :status-options="statusOptions"
+          @search="fetchData"
+        />
+</n-card>
     <!-- 查询框 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
+   
+  <n-card title="数据展示">
+   <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
       <div style="display: flex; align-items: center; gap: 12px;">
         <UploadSiteMachineExcel buttonText="导入" @success="fetchData"/>
         <NButton 
           type="primary" 
+          ghost
           size="small"
           :disabled="selectedRows.length === 0"
           @click="handleCreateWorkOrder"
         >
           创建工单 ({{ selectedRows.length }})
         </NButton>
+        <BindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
+        
         <!-- 批量修改状态组件 -->
         <BatchStatusModal 
           :status-options="statusOptions"
@@ -421,89 +465,8 @@ const handleRefresh = () => {
           :status-options="statusOptions"
           @refresh="handleRefresh"
         />
-      </div>
-
-      <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
-        <NInput 
-          v-model:value="searchSerial" 
-          size="small"
-          @change="fetchData" 
-          placeholder="请输入机器SN" 
-          clearable 
-          style="width: 120px" 
-        />
-
-         <NInput 
-          v-model:value="searchWorkOrderNo" 
-          size="small"
-          @change="fetchData" 
-          placeholder="请输入工单号" 
-          clearable 
-          style="width: 120px" 
-        />
-        <!-- 场地筛选 -->
-        <NSelect 
-          size="small"
-          v-model:value="searchSiteId" 
-          :options="siteOptions" 
-          placeholder="请选择场地" 
-          class="site-select"
-          clearable 
-          filterable
-          style="width: 120px;font-size: 12px;"
-        />
-          <!-- 开始时间 -->
-         <NDatePicker 
-           v-model:value="searchStartDate" 
-           type="date" 
-           placeholder="开始时间" 
-           clearable 
-           size="small"
-           style="width: 110px"
-         />
-         
-         <!-- 结束时间 -->
-         <NDatePicker 
-           v-model:value="searchEndDate" 
-           type="date" 
-           size="small"
-           placeholder="结束时间" 
-           clearable 
-           style="width: 110px"
-         />
-        <NSelect 
-        size="small"
-          v-model:value="searchStatus" 
-          :options="statusOptions" 
-          placeholder="状态" 
-          clearable 
-          style="width: 100px;font-size: 12px;" 
-        />
-
+        <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
         
-        <!-- <NDatePicker 
-          v-model:value="searchStartDate" 
-          type="date" 
-          placeholder="开始日期" 
-          clearable 
-          style="width: 150px" 
-        />
-        
-        <NDatePicker 
-          v-model:value="searchEndDate" 
-          type="date" 
-          placeholder="结束日期" 
-          clearable 
-          style="width: 150px" 
-        /> -->
-        
-        <!-- <NSelect 
-          v-model:value="searchModel" 
-          :options="modelOptions" 
-          placeholder="机器类型" 
-          clearable 
-          style="width: 150px" 
-        /> -->
       </div>
     </div>
 
@@ -519,6 +482,8 @@ const handleRefresh = () => {
       :scroll-x="1400"
       striped
     />
+      
+  </n-card>
 
     <!-- 修改弹框 -->
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">

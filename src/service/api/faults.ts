@@ -56,6 +56,32 @@ export function updateFaultsStatus(params: {[key: string]: any }) {
   });
 }
 
+//绑定故障机到工单
+// api/faults/bind_order
+// params:
+//   fault_ids: []
+//   order_no: string
+export function bindFaultsToOrder(params: {[key: string]: any }) {
+  return request({
+    url: '/api/faults/bind_order',
+    method: 'post',
+    data:params
+  });
+}
+
+// 解绑工单
+// api/faults/unbind_order
+// params:
+//   fault_ids: []
+export function unbindFaultsToOrder(params: {[key: string]: any }) {
+  return request({
+    url: '/api/faults/unbind_order',
+    method: 'post',
+    data:params
+  });
+}
+
+
 // 上传文件批量修改状态
 // /api/faults/batch_update_status
 // params:

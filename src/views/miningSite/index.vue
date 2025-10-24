@@ -1,25 +1,31 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, h } from 'vue';
+import { onMounted, ref, watch, h, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
+import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchSites,updateSites } from '@/service/api/site';
+import { fetchSites,updateSites,fetchUser } from '@/service/api';
+import { siteStatusRecord } from '@/constants/business';
 
 interface Site {
-  ID: number;
-  Name: string;
-  Address: string;
-  AssetCount: number;
-  OffShelfCount: number;
-  InLogisticsCount: number;
-  UnderRepairCount: number;
-  ToBePutOnShelfCount: number;
-  TotalHistoricalRepairs: number;
-  IsOnsiteDefault: number;
-  // 场地状态
-  contact_person: string;
-  contact_phone: string;
-  contact_email: string;
+  id: number;
+  name: string;
+  address?: string;
+  asset_count: number;
+  off_shelf_count: number;
+  in_logistics_count: number;
+  under_repair_count: number;
+  to_be_put_on_shelf_count: number;
+  site_status: number;
+  saler_name: string;
+  saler_id: number;
+  director_name: string;
+  phone: string;
+  email: string;
+  repairing: number;
+  repairing_rate: number;
+  wait_repair: number;
+  wait_repair_rate: number;
+  is_onsite_default?: number;
 }
 
 const dialog = useDialog()
@@ -29,7 +35,6 @@ const router = useRouter();
 const tableData = ref<Site[]>([]);
 const loading = ref(false);
 const searchSerial = ref<string>('');
-const modelOptions = ref<{ label: string; value: number }[]>([{label:'是',value:1},{label:'否',value:0}])
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -51,25 +56,30 @@ const pagination = ref<PaginationProps>({
   }
 });
 
+type EditForm = Pick<Site, 'id' | 'name' | 'address' | 'asset_count' | 'is_onsite_default' | 'site_status' | 'saler_id'>
 // ---------------- 修改弹框 ----------------
 const showEditModal = ref(false);
-const editForm = ref({
+const salerMap = ref<Record<number, string>>({});
+const editForm = ref<EditForm>({
   id: 0,
   name: '',
   address: '',
   asset_count: 0,
-  is_onsite_default: 0
+  is_onsite_default: 0,
+  site_status: 0,
+  saler_id: 0
 });
-
 
 // 打开修改弹框
 const handleOpenEdit = (row: Site) => {
   editForm.value = {
-    id: row.ID,
-    name: row.Name || '',
-    address: row.Address || '',
-    asset_count: row.AssetCount ?? 0,
-    is_onsite_default: row.IsOnsiteDefault ?? 0,
+    id: row.id,
+    name: row.name || '',
+    address: row.address || '',
+    asset_count: row.asset_count ?? 0,
+    is_onsite_default: row.is_onsite_default ?? 0,
+    site_status: row.site_status ?? 0,
+    saler_id: row.saler_id ?? 0,
   };
   // editForm.value = JSON.parse(JSON.stringify(row)); // 深拷贝
   showEditModal.value = true;
@@ -93,48 +103,47 @@ const handleSaveEdit = async () => {
   }
 };
 
+const fetchUsers = async () => {
+  const {data,error} = await fetchUser({
+    page: 1,
+    page_size: -1,
+    status: 1,
+    role: 2,
+  });
+  if(error==null){
+    console.log("data.list",data.list)
+    const salerMap_byId = data.list.reduce((acc:any, cur:any) => {
+      acc[cur.id] = cur.real_name;
+      return acc;
+    }, {} as Record<number, string>);
+    console.log("salerMap_byId",salerMap_byId)
+    salerMap.value = salerMap_byId;
+
+    // editForm.value.saler_id = data[0].id;
+  }else{
+    message.error('获取用户失败:' +error);
+  }
+}
 // ---------------- 表格列 ----------------
 const columns: DataTableColumns<Site> = [
-  { title: '场地名称', key: 'Name', width: 200 },
-  { title: '场地地址', key: 'Address' },
-  { title: '资产数', key: 'AssetCount'},
-  { title: '下架检查', key: 'OffShelfCount'},
-  { title: '物流中', key: 'InLogisticsCount' },
-  { title: '维修中', key: 'UnderRepairCount', 
-  // render: (row: Miner) => row.Status?.name ,
-  render: (row: any ) => {
-    if (row.Status?.name === null || row.Status?.name === undefined) {
-      return null;
-    }
+  { title: '场地名称', key: 'name', width: 200 },
+  { title: '资产数', key: 'asset_count'},
+  { title: '下架检查', key: 'off_shelf_count'},
+  { title: '物流中', key: 'in_logistics_count' },
+  { title: '维修数', key: 'repairing' },
+  { title: '维修率', key: 'repairing_rate' },
+  { title: '待维修数', key: 'wait_repair' },
+  { title: '待维修率', key: 'wait_repair_rate' },
+  { title: '站点状态', key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-      '在架': 'success',
-      '维修': 'warning',
-      '报废': 'error',
-      '下架':'info',
-    };
-    const label = row.Status?.name || '未知';
-    // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-    return h(NTag, {type: tagMap[row.Status?.name] }, () => label)
-  }
-  },
-  { title: '待上架', key: 'ToBePutOnShelfCount' },
-  { title: '历史维修数', key: 'TotalHistoricalRepairs' },
-  { title: '是否驻场', key: 'IsOnsiteDefault',render: (row: any ) => {
-
-    const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+      0: 'default',
       1: 'success',
-      // '维修': 'warning',
-      0: 'error',
-      // '下架':'info',
+      2: 'primary',
+      3: 'warning',
     };
-
-    // const label = (row?.IsOnsiteDefault==1? "是":"否") ?? '未知';
-    const label = row?.IsOnsiteDefault === 1 ? '是' 
-             : row?.IsOnsiteDefault === 0 ? '否' 
-             : '未知';
-    // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-    return h(NTag, {type: tagMap[row.IsOnsiteDefault] }, () => label)
+    return h(NTag, {type: tagMap[row.site_status] }, () => siteStatusRecord[row.site_status])
   } },
+   { title: '售后专员', key: 'saler_name' },
   {
     title: '操作',
     key: 'actions',
@@ -163,7 +172,7 @@ const columns: DataTableColumns<Site> = [
             size:'small',
             style: 'color: #1890ff;',
             onClick: () => {
-              router.push(`/miningsite/${row.ID}/info`);
+              router.push(`/miningsite/${row.id}/info`);
             }
             
           },
@@ -205,12 +214,32 @@ const fetchData = async () => {
 
 onMounted(() => {
   fetchData()
+  fetchUsers();
 });
 watch([searchSerial], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
+  fetchUsers();
   
+});
+const siteStatusOptions = computed(() => {
+  return Object.entries(siteStatusRecord).map(([value, label]) => ({ label, value: Number(value) }));
+});
+const salerOptions = computed(() => {
+  return Object.entries(salerMap.value).map(([id, name]) => ({ label: name, value: Number(id) }));
+});
+const siteStatusSelected = computed<number[]>({
+  get() {
+    const s = editForm.value.site_status ?? 0;
+    const selected: number[] = [];
+    if ((s & 1) !== 0) selected.push(1);
+    if ((s & 2) !== 0) selected.push(2);
+    return selected;
+  },
+  set(vals: number[]) {
+    editForm.value.site_status = vals.reduce((acc, v) => acc | v, 0);
+  }
 });
 </script>
 
@@ -231,14 +260,23 @@ watch([searchSerial], () => {
           <NInput v-model:value="editForm.name" disabled />
         </NFormItem>
         <NFormItem label="场地地址">
-          <NInput v-model:value="editForm.address" disabled />
+          <NInput v-model:value="editForm.address"  />
         </NFormItem>
         <NFormItem label="资产数">
           <NInputNumber v-model:value="editForm.asset_count" disabled />
         </NFormItem>
-        <NFormItem label="是否有驻场">
-          <NSelect v-model:value="editForm.is_onsite_default" :options="modelOptions" />
+        <NFormItem label="场地状态">
+          <n-checkbox-group v-model:value="siteStatusSelected">
+            <n-space item-style="display: flex;">
+              <n-checkbox :value="1" label="驻场" />
+              <n-checkbox :value="2" label="寄修" />
+            </n-space>
+          </n-checkbox-group>
         </NFormItem>
+        <NFormItem label="售后专员">
+          <NSelect v-model:value="editForm.saler_id" :options="salerOptions" />
+        </NFormItem>
+
        
       </NForm>
       <template #footer>

@@ -62,13 +62,16 @@ export function fetchLogin(userName: string, password: string) {
   });
 }
 
-/** Get user info */
-export function fetchGetUserInfo(id:number) {
+/** Get user info 
+ * 获取角色，token 
+ * 验证角色，token
+*/
+export function fetchGetUserInfo() {
   return request<Api.Auth.UserInfo>(
     { 
       // url: '/auth/getUserInfo' 
-      url: '/api/users/'+id 
-
+      url: '/api/getUserInfo',
+      method: 'get',
     });
 }
 

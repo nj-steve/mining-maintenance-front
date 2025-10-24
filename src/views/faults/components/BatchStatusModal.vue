@@ -3,6 +3,7 @@
   <NButton 
     type="warning" 
     size="small"
+    ghost
     :disabled="selectedRows.length === 0"
     @click="handleOpenModal"
   >

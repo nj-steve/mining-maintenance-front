@@ -2,9 +2,15 @@
   <!-- 触发按钮 -->
   <NButton 
     type="warning" 
+    ghost
     size="small"
     @click="handleOpenModal"
   >
+   <template #icon>
+          <NIcon>
+            <SvgIcon icon="material-symbols:upload" />
+          </NIcon>
+        </template>
     导入更新状态
   </NButton>
 

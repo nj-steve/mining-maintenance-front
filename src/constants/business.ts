@@ -5,6 +5,13 @@ export const enableStatusRecord:Record<string, string> = {
     'inactive': '暂停',
   };
 
+  export const siteStatusRecord:Record<number, string> = {
+    0: '空闲',
+    1: '驻场',
+    2: '寄修',
+    3: '驻场+寄修',
+  };
+
 export const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
     '在架': 'success',
     '维修': 'warning',
