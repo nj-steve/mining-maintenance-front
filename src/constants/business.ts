@@ -12,6 +12,19 @@ export const enableStatusRecord:Record<string, string> = {
     3: '驻场+寄修',
   };
 
+  // 维修方式
+  export const repairMethodRecord:Record<number, string> = {
+    1: '驻场',
+    2: '寄修',
+    3: '对发',
+  };
+    export const repairMethodOptions = [
+      { label: '驻场', value: 1 },
+      { label: '寄修', value: 2 },
+      { label: '对发', value: 3 },
+    ]
+
+
 export const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
     '在架': 'success',
     '维修': 'warning',

@@ -1,6 +1,11 @@
 <template>
     <div class="p-4 space-y-6">
       <!-- 基础信息 -->
+       <div class="flex justify-end gap-4 mt-4">
+        <n-button v-if="!isEdit" size="large" type="primary" @click="isEdit = true">编辑</n-button>
+        <n-button v-if="isEdit" type="primary" @click="save">保存</n-button>
+        <n-button v-if="isEdit" @click="cancel">取消</n-button>
+      </div>
       <n-card title="基础信息">
         <n-space vertical>
           <n-descriptions :column="2" label-placement="left" bordered>
@@ -34,6 +39,10 @@
             <template v-if="!isEdit">{{ form.device_sn }}</template>
             <n-input v-else v-model:value="form.device_sn" />
           </n-descriptions-item>
+           <n-descriptions-item label="控制板SN码">
+            <template v-if="!isEdit">{{ form.control_sn }}</template>
+            <n-input v-else v-model:value="form.control_sn" />
+          </n-descriptions-item>
   
           <n-descriptions-item label="电源SN码">
             <template v-if="!isEdit">
@@ -46,10 +55,18 @@
   
           <n-descriptions-item label="板卡SN码">
             <template v-if="!isEdit">
-              <div v-for="brd in form.boardSN" :key="brd">{{ brd }}</div>
+              <div>{{ form.board_sn_1 }}</div>
+              <div>{{ form.board_sn_2 }}</div>
+              <div>{{ form.board_sn_3 }}</div>
+              <!-- <div v-for="brd in form.boardSN" :key="brd">{{ brd }}</div> -->
             </template>
             <div v-else>
-              <n-dynamic-input v-model:value="form.boardSN" placeholder="请输入板卡SN" />
+               <n-input v-model:value="form.board_sn_1" placeholder="请输入板卡SN"  style="width: 100%; margin-bottom: 10px;" />
+               <n-input v-model:value="form.board_sn_2" placeholder="请输入板卡SN"  style="width: 100%; margin-bottom: 10px;" />
+               <n-input v-model:value="form.board_sn_3" placeholder="请输入板卡SN"  style="width: 100%; margin-bottom: 10px;" />
+              <!-- <n-dynamic-input v-model:value="form.boardSN1" placeholder="请输入板卡SN" />
+               <n-dynamic-input v-model:value="form.boardSN2" placeholder="请输入板卡SN" />
+                <n-dynamic-input v-model:value="form.boardSN3" placeholder="请输入板卡SN" /> -->
             </div>
           </n-descriptions-item>
         </n-descriptions>
@@ -122,9 +139,9 @@
   
       <!-- 操作按钮 -->
       <div class="flex justify-end gap-4 mt-4">
-        <n-button v-if="!isEdit" @click="isEdit = true">编辑</n-button>
-        <n-button v-else type="primary" @click="save">保存</n-button>
-        <n-button v-if="isEdit" @click="cancel">取消</n-button>
+        <!-- <n-button v-if="!isEdit" @click="isEdit = true">编辑</n-button> -->
+        <!-- <n-button v-if="isEdit" type="primary" @click="save">保存</n-button> -->
+        <!-- <n-button v-if="isEdit" @click="cancel">取消</n-button> -->
       </div>
     </div>
   </template>
@@ -151,23 +168,25 @@
     work_order_no: "",
     machine_model: "",
     repairStation: Number(route.params.repairStation),
-    device_sn: "SN2024011800001",
-    powerSN: ["PWR20240118001234556", "PWR20240118001234557", "PWR20240118001234558"],
-    boardSN: ["BRD120240118001234556", "BRD220240118001234556", "BRD320240118001234556"],
-    repair_component: "主板",
-    defect_reason: "无法开机",
+    device_sn: "",
+    powerSN: [""],
+    // boardSN: ["BRD120240118001234556", "BRD220240118001234556", "BRD320240118001234556"],
+    repair_component: "",
+    defect_reason: "",
     defect_code: "",
-    position: "C12, R45, Q78",
-    verify_defect: "主板供电异常",
+    control_sn: "",
+    board_sn_1: "",
+    board_sn_2: "",
+    board_sn_3: "",
+    position: "",
+    verify_defect: "",
     images: [
-      "https://placehold.co/200x200?text=主板照片",
-      "https://placehold.co/200x200?text=电源模块照片",
-      "https://placehold.co/200x200?text=风扇照片"
+      ""
     ],
     start_time: dayjs().format('YYYY-MM-DD HH:mm'),
     end_time: dayjs().format('YYYY-MM-DD HH:mm'),
-    repair_result: 1,
-    repairer_name: "刘工",
+    repair_result: 0,
+    repairer_name: "",
     power_sn: "",
     motherboard_sn: ""
   })
@@ -210,10 +229,14 @@
           repairStation: detail.RepairStationName || '',
           device_sn: detail.DeviceSN || '',
           powerSN: detail.PowerSN ? detail.PowerSN.split(',') : [],
-          boardSN: detail.BoardSN ? detail.BoardSN.split(',') : [],
+          // boardSN: detail.BoardSN ? detail.BoardSN.split(',') : [],
           repair_component: detail.RepairComponent || '',
           defect_reason: detail.DefectReason || '',
           defect_code: detail.DefectCode || '',
+          control_sn: detail.ControlSN || '',
+          board_sn_1: detail.BoardSN1 || '',
+          board_sn_2: detail.BoardSN2 || '',
+          board_sn_3: detail.BoardSN3 || '',
           position: detail.Position || '',
           verify_defect: detail.VerifyDefect || '',
           images: detail.Images ? detail.Images.split(',') : [],

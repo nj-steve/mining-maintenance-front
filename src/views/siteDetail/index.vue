@@ -113,7 +113,7 @@ onMounted(() => {
               <span class="stat-value">{{ siteData.asset_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label">下架检查:</span>
+              <span class="stat-label">24H故障数:</span>
               <span class="stat-value">{{ siteData.off_shelf_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
@@ -121,16 +121,20 @@ onMounted(() => {
               <span class="stat-value">{{ siteData.in_logistics_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label">维修中:</span>
+              <span class="stat-label">在修数:</span>
               <span class="stat-value">{{ siteData.under_repair_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label">待上线:</span>
+              <span class="stat-label">待修数:</span>
+              <span class="stat-value">{{ siteData.under_repair_count || 0 }} 台</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">待上架:</span>
               <span class="stat-value">{{ siteData.to_be_put_on_shelf_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
-               <span class="stat-label">历史总维修数:</span>
-               <span class="stat-value">{{ siteData.repairing_rate || 0 }} %</span>
+               <span class="stat-label">报废数:</span>
+               <span class="stat-value">{{ siteData.repairing || 0 }} 台</span>
              </div>
           </div>
         </NCard>

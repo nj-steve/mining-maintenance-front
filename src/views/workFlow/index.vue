@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
 import dayjs from 'dayjs';
-import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NCheckbox, NDatePicker, NIcon } from 'naive-ui';
+import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker } from 'naive-ui';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
-import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus,createOrdersLog } from '@/service/api/workflow';
-import {fetchRepairStations} from '@/service/api/repair';
-import {fetchSites} from '@/service/api/site';
-import SvgIcon from '@/components/custom/svg-icon.vue';
+import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus } from '@/service/api/workflow';
+import {fetchSites,gobackOrders,fetchRepairStations} from '@/service/api';
+// import SvgIcon from '@/components/custom/svg-icon.vue';
+import { repairMethodRecord,repairMethodOptions } from '@/constants/business';
+import SearchFilters from './components/SearchFilters.vue';
+import ActionButtons from './components/ActionButtons.vue'
+import AddLogModal from './components/AddLogModal.vue'
 
 interface Order {
   ID: number;                     // 工单ID
@@ -28,6 +31,7 @@ interface Order {
   CreatedBy: string | null;       // 创建人
   CreatedAt: string;              // 创建时间
   UpdatedAt: string;              // 更新时间
+  RepairMethod: number;           // 维修方式
 }
 
 const message = useMessage();
@@ -73,7 +77,8 @@ const editForm = ref({
   "payment_date": null as string | null,
   "repair_cost": 0,
   "settlement_status": 1,
-  "total_cost": 0
+  "total_cost": 0,
+  "repair_station_id": null as number | null,
 });
 
 // 状态下拉选项
@@ -102,7 +107,8 @@ const handleOpenEdit = (row: Order) => {
     // payment_date: row.PaymentDate && row.PaymentDate!=="" ? dayjs(row.PaymentDate).valueOf().toString() : null, 
     "repair_cost": row.RepairCost||0,
     "settlement_status": row.SettlementStatus||0,
-    "total_cost": row.TotalCost
+    "total_cost": row.TotalCost||0,
+    "repair_station_id": row.StationID || null as number | null,
   };
   // editForm.value = JSON.parse(JSON.stringify(row)); // 深拷贝
   showEditModal.value = true;
@@ -110,22 +116,17 @@ const handleOpenEdit = (row: Order) => {
 
 // 派单表单数据
 const dispatchForm = ref({
-  faultCount: 1,
-  onsite: null as null | number,
-  repairStation: null as null | number,
-  logisticsCompany: null as null | number,
-  logisticsInfo: '',
+  fault_count: 1,
+  repair_method: null as null | number,
+  repair_station_id: null as null | number,
+  // logisticsCompany: null as null | number,
+  // logisticsInfo: '',
+  order_ids: [] as number[],
   remark: ''
 });
 
 // 派单弹框显示状态
 const showDispatchModal = ref(false);
-
-// 选项数据
-const siteStationOptions = ref([
-  { label: '是', value: 1 },
-  { label: '否', value: 0 }
-]);
 
 // 当前操作的工单
 const currentOrder = ref<Order | null>(null);
@@ -135,11 +136,12 @@ const handleOpenDispatch = (row: Order) => {
   currentOrder.value = row;
   // 重置表单
   dispatchForm.value = {
-    faultCount: row.FaultCount,
-    onsite: row.Onsite || null as null | number,
-    repairStation: row.StationID || null as null | number,
-    logisticsCompany: row.LogisticsCompanyId || null as null | number,
-    logisticsInfo: '',
+    fault_count: row.FaultCount,
+    repair_method: row.RepairMethod || null as null | number,
+    repair_station_id: row.StationID || null as null | number,
+    order_ids: [row.ID],
+    // logisticsCompany: row.LogisticsCompanyId || null as null | number,
+    // logisticsInfo: '',
     remark: ''
   };
   showDispatchModal.value = true;
@@ -164,11 +166,10 @@ const handleBatchDispatch = () => {
   
   // 重置表单
   dispatchForm.value = {
-    faultCount: selectedOrders.value.reduce((sum, order) => sum + order.FaultCount, 0),
-    onsite: null as null | number,
-    repairStation: null as null | number,
-    logisticsCompany: null as null | number,
-    logisticsInfo: '',
+    fault_count: selectedOrders.value.reduce((sum, order) => sum + order.FaultCount, 0),
+    repair_method: null as null | number,
+    repair_station_id: null as null | number,
+    order_ids: selectedOrders.value.map(order => order.ID),
     remark: `批量派单 - 共${selectedOrders.value.length}个工单`
   };
   
@@ -179,13 +180,12 @@ const handleBatchDispatch = () => {
 const handleSubmitDispatch = async () => {
   if (!currentOrder.value) return;
 
-  // 表单验证
-  if (dispatchForm.value.onsite === null) {
-    message.error('请选择是否驻场');
+  if (dispatchForm.value.repair_method === null) {
+    message.error('请选择维修方式');
     return;
   }
 
-  if (dispatchForm.value.repairStation === null) {
+  if (dispatchForm.value.repair_station_id === null) {
     message.error('请选择维修站');
     return;
   }
@@ -194,9 +194,9 @@ const handleSubmitDispatch = async () => {
     const submitData: any = {
       // order_status: 2,
       order_ids: selectedOrders.value.length > 0 ? selectedOrders.value.map(order => order.ID) : [currentOrder.value.ID],
-      fault_count: dispatchForm.value.faultCount,
-      onsite: dispatchForm.value.onsite,
-      repair_station_id: dispatchForm.value.repairStation,
+      fault_count: dispatchForm.value.fault_count,
+      repair_method: dispatchForm.value.repair_method,
+      repair_station_id: dispatchForm.value.repair_station_id,
       remark: dispatchForm.value.remark
     };
 
@@ -237,6 +237,37 @@ const handleSubmitDispatch = async () => {
   }
 };
 
+const handleGoback=async(row: Order)=>{
+  // 确认退回（Naive UI 对话框）
+  const confirm = await new Promise<boolean>((resolve) => {
+    (window as any).$dialog?.warning({
+      title: '确认退回工单？',
+      content: `是否确认退回工单 ${row.OrderNo}？`,
+      positiveText: '确认',
+      negativeText: '取消',
+      onPositiveClick: () => resolve(true),
+      onNegativeClick: () => resolve(false)
+    });
+  });
+  if (!confirm) return;
+  
+  try {
+    const res = await gobackOrders(row.ID, {
+      order_status: 1,
+      remark: '用户退回工单'
+    });
+    
+    if (res.response?.data?.code == String(0)) {
+      message.success('退回成功！');
+      await fetchData(); // 刷新表格
+    } else {
+      message.error('退回失败:' + (res.response?.data?.msg || ''));
+    }
+  } catch (err) {
+    message.error('退回失败');
+  }
+};
+
 // 保存修改
 const handleSaveEdit = async () => {
   try {
@@ -266,24 +297,25 @@ const columns: DataTableColumns<Order> = [
   { title: '维修商', key: 'StationName' },
   { title: '场地', key: 'SiteName' },
   { title: '故障机数量', key: 'FaultCount'},
-  { title: '是否驻场', key: 'Onsite',
+  { title: '维修方式', key: 'RepairMethod',
     render: (row: any ) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         1: 'success',
-        0: 'error',
+        2: 'warning',
+        3: 'primary',
       };
-      const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, {type: tagMap[row.Onsite] }, () => label)
+      // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
+      return h(NTag, {type: tagMap[row.RepairMethod] }, () => repairMethodRecord[row.RepairMethod] || '未知')
     }
   },
-  { title: '总费用', key: 'RepairCost',
-    render: (row: any ) => {
-      if (row.RepairCost === null || row.RepairCost === undefined) {
-        return '未知';
-      }
-      return row.RepairCost || '未知';
-    }
-   },
+  // { title: '总费用', key: 'RepairCost',
+  //   render: (row: any ) => {
+  //     if (row.RepairCost === null || row.RepairCost === undefined) {
+  //       return '未知';
+  //     }
+  //     return row.RepairCost || '未知';
+  //   }
+  //  },
   { title: '付款状态', key: 'SettlementStatus', 
   render: (row: any ) => {
     if (row.SettlementStatusText === null || row.SettlementStatusText === undefined) {
@@ -323,88 +355,17 @@ const columns: DataTableColumns<Order> = [
    },
   // { title: '短保期开始', key: 'warranty_status_text' },
   // { title: '剩余短保期', key: 'warranty_status_text' },
-  { title: '操作',    key: 'actions',    align:'center',    fixed: 'right',    width: 180,    render: (row: Order) => {
-      return [
-        h(
-          NButton,
-          {
-            type: 'info',
-            ghost: true,
-            size: 'small',
-            style: "margin-right: 8px;font-size:12px",
-            onClick: () => handleOpenEdit(row)
-          },
-          {
-            icon: () => h(
-              NIcon,
-              null,
-              { default: () => h(SvgIcon, { icon: 'material-symbols:edit' }) }
-            ),
-            // default: () => '修改'
-          }
-        ), 
-        // h(
-        //   NButton,
-        //   {
-        //     type: 'info',
-        //     ghost: true,
-        //     size: 'small',
-        //     style: "margin-left: 8px;",
-        //     onClick: () => handleOpenDetail(row)
-        //   },
-        //   { default: () => '详情' }
-        // ),
-        h(
-          NButton,
-          {
-            type: 'success',
-            ghost: true,
-            size: 'small',
-            style: "margin-left: 8px; margin-top: 4px;font-size:12px",
-            onClick: () => handleOpenAddLog(row)
-          },
-          { default: () => '日志' }
-        ),
-         h(
-          NButton,
-          {
-            type: 'info',
-            ghost: true,
-            size: 'small',
-            style: "margin-left: 8px;margin-top: 4px;font-size:12px",
-            onClick: () => handleOpenDetail(row)
-          },
-          { default: () => '历史日志' }
-        ),
-         ...(row.StationID === 0 ? [h(
-          NButton,
-          {
-            type: 'info',
-            ghost: true,
-            size: 'small',
-            style: "margin-left: 8px;",
-            onClick: () => handleOpenDispatch(row)
-          },
-          { default: () => '派单' }
-        )] : []),
-        // h(
-        //   NButton,
-        //   {
-        //     type: 'error',
-        //     ghost: true,
-        //     onClick: () => {
-        //       dialog.warning({
-        //         title: '确认报废',
-        //         content: `你确定要报废矿机「${row.serial_number}」吗？`,
-        //         positiveText: '确定',
-        //         negativeText: '取消',
-        //         onPositiveClick: () => message.error("报废操作,暂未启用")
-        //       })
-        //     }
-        //   },
-        //   { default: () => '报废' }
-        // )
-      ]
+  { title: '操作',
+    key: 'actions',
+    render: (row: Order) => {
+      return h(ActionButtons, {
+        row,
+        onEdit: () => handleOpenEdit(row),
+        onAddLog: () => handleOpenAddLog(row),
+        onDetail: () => handleOpenDetail(row),
+        onDispatch: () => handleOpenDispatch(row),
+        onReturn: () => handleGoback(row)
+      })
     }
   }
 ];
@@ -459,8 +420,8 @@ const fetchSiteData = async () => {
     const { data, error } = await fetchSites({page:1,page_size:1000});
     if (!error && data) {
       siteOptions.value = data.list.map((site: any) => ({
-        label: site.Name,
-        value: site.ID,
+        label: site.name,
+        value: site.id,
       }));
     }
   } catch (err) {
@@ -518,71 +479,22 @@ const selectedRow = ref<Order | null>(null);
 
 // 添加操作日志弹框相关
 const showAddLogModal = ref(false);
-const addLogForm = ref({
-  order_status: null as null | number,
-  occurred_at: Date.now(),
-  description: ''
-});
-
+const handleOpenAddLog = (row: Order) => {
+  selectedRow.value = row;
+  showAddLogModal.value = true;
+};
+const handleLogSubmitted = async () => {
+  showAddLogModal.value = false;
+  if (selectedRow.value) {
+    await fetchDetailData(selectedRow.value.ID);
+  }
+  await fetchData();
+};
 // 打开详情弹框
 const handleOpenDetail = async (row: Order) => {
   selectedRow.value = row;
   showDetailModal.value = true;
   await fetchDetailData(row.ID);
-};
-
-// 打开添加操作日志弹框
-const handleOpenAddLog = (row: Order) => {
-  selectedRow.value = row;
-  addLogForm.value = {
-    order_status: row.OrderStatus,
-    occurred_at: Date.now(),
-    description: ''
-  };
-  showAddLogModal.value = true;
-};
-
-// 提交操作日志
-const handleSubmitLog = async () => {
-  if (!selectedRow.value) return;
-  
-  if (addLogForm.value.order_status === null) {
-    message.error('请选择工单状态');
-    return;
-  }
-  
-  if (!addLogForm.value.description.trim()) {
-    message.error('请填写操作描述');
-    return;
-  }
-  
-  try {
-    // 这里需要调用添加操作日志的API
-    // const { error } = await addOrderLog({
-    //   order_id: selectedRow.value.ID,
-    //   order_status: addLogForm.value.order_status,
-    //   occurred_at: dayjs(addLogForm.value.occurred_at).format('YYYY-MM-DD HH:mm:ss'),
-    //   description: addLogForm.value.description
-    // });
-    const { error } = await createOrdersLog(selectedRow.value.ID,{
-      status: addLogForm.value.order_status,
-      date_time: dayjs(addLogForm.value.occurred_at).format('YYYY-MM-DD HH:mm:ss'),
-      remark: addLogForm.value.description
-    });
-    if (error) {
-      message.error(`添加操作日志失败: ${error}`);
-      return;
-    }
-    
-    // 临时模拟成功
-    message.success('操作日志添加成功');
-    showAddLogModal.value = false;
-    
-    // 刷新操作日志
-    await fetchDetailData(selectedRow.value.ID);
-  } catch (err) {
-    message.error('添加操作日志失败');
-  }
 };
 
 // 获取工单详情（操作日志）
@@ -622,6 +534,21 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
 
 <template>
   <div>
+ <!-- 第二行：筛选条件 -->
+    <SearchFilters
+        v-model:serial="searchSerial"
+        v-model:siteId="searchSiteId"
+        v-model:stationId="searchStationId"
+        v-model:startDate="searchStartDate"
+        v-model:endDate="searchEndDate"
+        v-model:orderStatus="searchOrderStatus"
+        :siteOptions="siteOptions"
+        :stationOptions="stationOptions"
+        :statusOptions="statusOptions"
+        @search="fetchData"
+        @reset="handleReset"
+      />
+   <NCard size="small" :bordered="false" class="faults-search-card" style="margin-top: 24px;"> 
     <!-- 查询框和批量操作 -->
     <div class="mb-4" style="margin-bottom: 16px; display: flex; justify-content: space-between;">
       <!-- 第一行：批量操作按钮 -->
@@ -637,76 +564,8 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           批量派单 ({{ selectedOrders.length }})
         </NButton>
       </div>
-      
-      <!-- 第二行：筛选条件 -->
-      <div class="flex items-center gap-2 flex-wrap ">
-         <!-- 工单编号 -->
-        <NInput 
-          v-model:value="searchSerial" 
-          placeholder="工单号" 
-          clearable 
-          size="small"
-          style="width: 200px;font-size: 12px;"
-        />
-        <!-- 场地筛选 -->
-        <NSelect 
-          v-model:value="searchSiteId" 
-          :options="siteOptions" 
-          placeholder="请选择场地" 
-          clearable 
-          filterable
-          size="small"
-          style="width: 200px"
-        />
-        
-        <!-- 维修站筛选 -->
-        <NSelect 
-          v-model:value="searchStationId" 
-          :options="stationOptions" 
-          placeholder="请选择维修站" 
-          clearable 
-          filterable
-          size="small"
-          style="width: 160px"
-        />
-        
-       <!-- 开始时间 -->
-         <NDatePicker 
-           v-model:value="searchStartDate" 
-           type="date" 
-           placeholder="开始时间" 
-           clearable 
-           size="small"
-           style="width: 120px"
-         />
-         
-         <!-- 结束时间 -->
-         <NDatePicker 
-           v-model:value="searchEndDate" 
-           type="date" 
-           size="small"
-           placeholder="结束时间" 
-           clearable 
-           style="width: 120px"
-         />
-        
-        <!-- 工单状态 -->
-        <NSelect 
-          v-model:value="searchOrderStatus" 
-          :options="statusOptions" 
-          placeholder="工单状态" 
-          size="small"
-          clearable 
-          style="width: 120px;font-size: 12px;"
-        />
-        
-       
-        
-        <!-- 查询按钮 -->
-        <NButton type="primary" size="small"  @click="fetchData">查询</NButton>
-        <NButton size="small"  @click="handleReset">重置</NButton>
-      </div>
     </div>
+    </NCard>  
 
     <!-- 表格 -->
     <NDataTable 
@@ -730,8 +589,17 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       <NInput size="small" v-model:value="editForm.order_no" disabled />
     </NFormItem>
 
+      <!-- 选择维修站 -->
+        <NFormItem label="选择维修站" required>
+          <NSelect 
+            v-model:value="editForm.repair_station_id"
+            :options="stationOptions"
+            placeholder="请选择就近维修站"
+          />
+        </NFormItem>
+
     <!-- 是否驻场 -->
-    <NFormItem label="是否驻场">
+    <!-- <NFormItem label="是否驻场">
       <NSelect
         size="small"
         v-model:value="editForm.onsite"
@@ -740,22 +608,22 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           { label: '是', value: 1 }
         ]"
       />
-    </NFormItem>
+    </NFormItem> -->
 
     <!-- 维修费 + 物流费 -->
-    <div style="display: flex; gap: 16px;">
+    <!-- <div style="display: flex; gap: 16px;">
       <NFormItem label="维修费">
         <NInputNumber size="small" v-model:value="editForm.repair_cost" type="number" />
       </NFormItem>
       <NFormItem label="物流费">
         <NInputNumber size="small" v-model:value="editForm.logistics_cost" type="number" />
       </NFormItem>
-    </div>
+    </div> -->
 
     <!-- 总费用（自动计算） -->
-    <NFormItem label="总费用">
+    <!-- <NFormItem label="总费用">
       <NInputNumber size="small" :value="editForm.repair_cost + editForm.logistics_cost" disabled />
-    </NFormItem>
+    </NFormItem> -->
 
     <NFormItem label="付款状态">
         <NSelect size="small"
@@ -763,8 +631,10 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           :options="[{ label: '未付款', value: 1 }, { label: '已付款', value: 2 }]"
         />
       </NFormItem>
-      <NFormItem label="付款日期"> 
-        <!-- 使用 value-format 输出字符串（这里用 YYYY-MM-DD，与表单初始化格式一致） -->
+
+
+       <!-- 使用 value-format 输出字符串（这里用 YYYY-MM-DD，与表单初始化格式一致） -->
+      <!-- <NFormItem label="付款日期"> 
         <NDatePicker
           size="small"
           v-model:formatted-value="editForm.payment_date"
@@ -772,7 +642,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           value-format="yyyy-MM-dd"
           clearable
         />
-      </NFormItem>
+      </NFormItem> -->
 
       <NFormItem label="工单状态">
         <NSelect size="small"
@@ -820,22 +690,29 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       <NForm :model="dispatchForm" label-width="120">
         <!-- 选择故障机数量 -->
         <NFormItem label="选择故障机数量">
-          <NInputNumber disabled v-model:value="dispatchForm.faultCount" :min="1" />
+          <NInputNumber disabled v-model:value="dispatchForm.fault_count" :min="1" />
         </NFormItem>
 
         <!-- 是否驻场 -->
-        <NFormItem label="是否驻场" required>
+        <!-- <NFormItem label="是否驻场" required>
           <NSelect 
             v-model:value="dispatchForm.onsite"
             :options="siteStationOptions"
             placeholder="请选择"
           />
+        </NFormItem> -->
+        <NFormItem label="维修方式" required>
+          <NSelect 
+            v-model:value="dispatchForm.repair_method"
+            :options="repairMethodOptions"
+            placeholder="请选择维修方式"
+          />
         </NFormItem>
-
+        
         <!-- 选择维修站 -->
         <NFormItem label="选择维修站" required>
           <NSelect 
-            v-model:value="dispatchForm.repairStation"
+            v-model:value="dispatchForm.repair_station_id"
             :options="stationOptions"
             placeholder="请选择就近维修站"
           />
@@ -857,44 +734,13 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
     </NModal>
 
     <!-- 添加操作日志弹框 -->
-    <NModal v-model:show="showAddLogModal" style="width: 500px" preset="card" title="添加工单操作日志">
-      <NForm :model="addLogForm" label-width="100">
-        <!-- 工单状态 -->
-        <NFormItem label="工单状态" required>
-          <NSelect 
-            v-model:value="addLogForm.order_status"
-            :options="statusOptions"
-            placeholder="请选择工单状态"
-          />
-        </NFormItem>
-
-        <!-- 操作时间 -->
-        <NFormItem label="操作时间" required>
-          <NDatePicker 
-            v-model:value="addLogForm.occurred_at"
-            type="datetime"
-            placeholder="请选择操作时间"
-            style="width: 100%"
-          />
-        </NFormItem>
-
-        <!-- 操作描述 -->
-        <NFormItem label="操作描述" required>
-          <NInput 
-            v-model:value="addLogForm.description"
-            size="small"
-            type="textarea"
-            placeholder="请填写操作描述"
-            :rows="4"
-          />
-        </NFormItem>
-      </NForm>
-
-      <template #footer>
-        <NButton type="primary" @click="handleSubmitLog"  style="margin-right: 8px; font-size: 12px;">确认添加</NButton>
-        <NButton @click="showAddLogModal = false">取消</NButton>
-      </template>
-    </NModal>
+    <AddLogModal
+      v-model:show="showAddLogModal"
+      :order-id="selectedRow?.ID || 0"
+      :default-order-status="selectedRow?.OrderStatus ?? null"
+      :status-options="statusOptions"
+      @submitted="handleLogSubmitted"
+    />
     </div>
 </template>
 

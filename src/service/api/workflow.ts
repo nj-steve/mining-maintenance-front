@@ -101,6 +101,16 @@ export function dispatchOrders(params: {[key: string]: any }) {
   });
 }
 
+// 批量退回工单
+// /api/:id/goback/{id}
+export function gobackOrders(id:number,params: {[key: string]: any }) {
+  return request({
+    url: '/api/orders/goback/'+id,
+    method: 'put',
+    data:params
+  });
+}
+
 /**
  * 修改派遣工单
  * /orders/repair_station/:id

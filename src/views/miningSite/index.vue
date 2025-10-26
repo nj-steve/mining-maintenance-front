@@ -5,6 +5,7 @@ import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormIt
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchSites,updateSites,fetchUser } from '@/service/api';
 import { siteStatusRecord } from '@/constants/business';
+import SearchBar from './components/SearchBar.vue';
 
 interface Site {
   id: number;
@@ -35,6 +36,8 @@ const router = useRouter();
 const tableData = ref<Site[]>([]);
 const loading = ref(false);
 const searchSerial = ref<string>('');
+const selectedSalerId = ref<number | null>(null);
+const selectedSiteStatus = ref<number | null>(null);
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -128,12 +131,15 @@ const fetchUsers = async () => {
 const columns: DataTableColumns<Site> = [
   { title: '场地名称', key: 'name', width: 200 },
   { title: '资产数', key: 'asset_count'},
-  { title: '下架检查', key: 'off_shelf_count'},
+  { title: '24H故障数', key: 'off_shelf_count'},
   { title: '物流中', key: 'in_logistics_count' },
-  { title: '维修数', key: 'repairing' },
-  { title: '维修率', key: 'repairing_rate' },
-  { title: '待维修数', key: 'wait_repair' },
-  { title: '待维修率', key: 'wait_repair_rate' },
+  { title: '待上架', key: 'to_be_put_on_shelf_count' },
+
+  { title: '在修数', key: 'repairing' },
+  
+  { title: '待修数', key: 'wait_repair' },
+  { title: '待修率', key: 'wait_repair_rate' },
+  { title: '报废数', key: 'repairing_rate' },
   { title: '站点状态', key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',
@@ -189,10 +195,13 @@ const columns: DataTableColumns<Site> = [
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
   loading.value = true;
+  console.log("selectedSiteStatus.value",selectedSiteStatus.value)
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
-    filter: searchSerial.value || undefined
+    name: searchSerial.value || undefined,
+    saler_id: selectedSalerId.value || undefined,
+    site_status: selectedSiteStatus.value===0 ? 0 : selectedSiteStatus.value || undefined
   };
 
   try {
@@ -216,7 +225,7 @@ onMounted(() => {
   fetchData()
   fetchUsers();
 });
-watch([searchSerial], () => {
+watch([searchSerial, selectedSalerId, selectedSiteStatus], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
@@ -241,14 +250,24 @@ const siteStatusSelected = computed<number[]>({
     editForm.value.site_status = vals.reduce((acc, v) => acc | v, 0);
   }
 });
+const onSearch = () => {
+  tableData.value = [];
+  pagination.value.page = 1;
+  fetchData();
+};
 </script>
 
 <template>
   <div>
     <!-- 查询框 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
-      <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入场地名称" clearable style="width: 240px" />
-    </div>
+    <SearchBar
+      v-model:serial="searchSerial"
+      v-model:salerId="selectedSalerId"
+      v-model:siteStatus="selectedSiteStatus"
+      :salerOptions="salerOptions"
+      :siteStatusOptions="siteStatusOptions"
+      @search="onSearch"
+    />
 
     <!-- 表格 -->
     <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" remote />
