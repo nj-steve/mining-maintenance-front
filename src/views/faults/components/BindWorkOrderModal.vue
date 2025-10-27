@@ -23,14 +23,14 @@
           />
         </NFormItem>
 
-        <!-- <NFormItem label="工单日期" required>
+        <NFormItem label="工单日期" required>
           <NInput 
             size="small"
             v-model:value="form.workOrderDate"
             placeholder="YYYY-MM-DD"
             style="font-size: 12px;"
           />
-        </NFormItem> -->
+        </NFormItem>
 
         <NFormItem label="场地">
           <NInput size="small" :value="siteName" readonly />
@@ -62,8 +62,8 @@
     </NForm>
 
     <template #footer>
-      <NButton type="primary" size="medium" @click="handleSubmit" style="margin-right: 8px;">提交</NButton>
-      <NButton type="info" size="medium" @click="handleCancel">取消</NButton>
+      <NButton type="primary" @click="handleSubmit">提交</NButton>
+      <NButton @click="handleCancel">取消</NButton>
     </template>
   </NModal>
 </template>
@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { NButton, NModal, NForm, NFormItem, NInput, NTag, useMessage } from 'naive-ui';
-import { bindFaultsToOrder } from '@/service/api/faults';
+import { createOrder } from '@/service/api/workflow';
 
 const message = useMessage();
 
@@ -112,7 +112,7 @@ const emit = defineEmits<Emits>();
 const visible = ref(false);
 const form = ref({
   workOrderNo: '',
-  // workOrderDate: new Date().toISOString().split('T')[0]
+  workOrderDate: new Date().toISOString().split('T')[0]
 });
 
 const siteName = computed(() => {
@@ -127,25 +127,10 @@ const siteId = computed(() => {
 
 // 打开弹框
 const handleOpenModal = () => {
-
   if (!props.selectedRows.length) {
     message.warning('请先选择机器');
     return;
   }
-
-  // 只选择状态为"新下架"的机器
-  const downCheckMachines = props.selectedRows.filter(row => 
-     row.status_text === '新下架'
-  );
-  // 只选择状态为"新下架"的机器
-  const failureCheckMachines = props.selectedRows.filter(row => 
-     row.status_text !== '新下架'
-  );
-   if (failureCheckMachines.length > 0 || downCheckMachines.length === 0) {
-    message.warning('仅可选择“新下架”设备');
-    return;
-  }
-
 
   // 校验订单号一致性（如果已有订单号）
   const orderNoSet = new Set(props.selectedRows.map(row => row.order_no ?? null));
@@ -155,7 +140,8 @@ const handleOpenModal = () => {
   }
 
   // 默认生成一个工单号，用户可编辑
-  form.value.workOrderNo = ``
+  form.value.workOrderNo = `WO${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+  form.value.workOrderDate = new Date().toISOString().split('T')[0];
 
   visible.value = true;
 };
@@ -166,10 +152,10 @@ const handleSubmit = async () => {
     message.error('请输入工单号');
     return;
   }
-  // if (!form.value.workOrderDate.trim()) {
-  //   message.error('请输入工单日期');
-  //   return;
-  // }
+  if (!form.value.workOrderDate.trim()) {
+    message.error('请输入工单日期');
+    return;
+  }
 
   const faultIds = props.selectedRows.map(row => row.id);
   if (faultIds.length === 0) {
@@ -179,11 +165,13 @@ const handleSubmit = async () => {
 
   try {
     const submitData = {
+      date: form.value.workOrderDate,
       fault_ids: faultIds,
       order_no: form.value.workOrderNo,
+      site_id: siteId.value
     };
 
-    const { error } = await bindFaultsToOrder(submitData);
+    const { error } = await createOrder(submitData);
     if (error === null) {
       message.success('绑定工单成功！');
       visible.value = false;

@@ -1,10 +1,10 @@
 <template>
   <div class="action-buttons">
-    <NButton v-if="!shouldShowDispatch" type="info" ghost size="small" @click="emit('edit')">编辑</NButton>
-    <NButton type="success" ghost size="small" @click="emit('add-log')">日志</NButton>
+    <NButton v-if="!shouldShowDispatch && hasRole" type="info" ghost size="small" @click="emit('edit')" >编辑</NButton>
+    <NButton type="success" ghost size="small" @click="emit('add-log')" v-if="hasRole">日志</NButton>
     <NButton type="info" ghost size="small" @click="emit('detail')">历史日志</NButton>
     <!-- <NButton v-if="shouldShowDispatch" type="info" ghost size="small" @click="emit('dispatch')">派单</NButton> -->
-    <NButton v-if="shouldShowDispatch" type="error" ghost size="small" @click="emit('return')">撤销</NButton>
+    <NButton v-if="shouldShowDispatch && hasRole" type="error" ghost size="small" @click="emit('return')">撤销</NButton>
   </div>
 </template>
 
@@ -12,7 +12,7 @@
 import { computed } from 'vue';
 import { NButton } from 'naive-ui';
 
-const props = defineProps<{ row: any }>();
+const props = defineProps<{ row: any,hasRole:boolean }>();
 const emit = defineEmits<{
   (e: 'edit'): void;
   (e: 'add-log'): void;

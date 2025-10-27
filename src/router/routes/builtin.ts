@@ -2,10 +2,23 @@ import type { CustomRoute } from '@elegant-router/types';
 import { layouts, views } from '../elegant/imports';
 import { getRoutePath, transformElegantRoutesToVueRoutes } from '../elegant/transform';
 
+let redirectPath = getRoutePath(import.meta.env.VITE_ROUTE_HOME) || '/home';
+const userInfoStr = localStorage.getItem('userInfo');
+
+  let roles: string[] = [];
+  try {
+    roles = (userInfoStr ? JSON.parse(userInfoStr) : {}).roles || [];
+  } catch (e) {
+    roles = [];
+  }
+  redirectPath = roles.includes('4')
+    ? '/workflow'
+    : '/home';
+
 export const ROOT_ROUTE: CustomRoute = {
   name: 'root',
   path: '/',
-  redirect: getRoutePath(import.meta.env.VITE_ROUTE_HOME) || '/home',
+  redirect: redirectPath,
   meta: {
     title: 'root',
     constant: true

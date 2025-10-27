@@ -1,15 +1,15 @@
 <template>
   <!-- <div class="mb-2"> -->
-  <NCard size="small" :bordered="false" class="faults-search-card">
+  <NCard size="small"  :bordered="false" class="faults-search-card">
      <template #header>
       <!-- 工单编号 -->
-       <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
       <NInput 
         v-model:value="serialModel" 
         placeholder="工单号" 
         clearable 
         size="small"
-        style="width: 25%;font-size: 12px;"
+        style="width: 100%; font-size: 12px;"
       />
       <!-- 场地筛选 -->
       <NSelect 
@@ -19,7 +19,7 @@
         clearable 
         filterable
         size="small"
-        style="width: 25%;font-size: 12px;"
+        style="width: 100%; font-size: 12px;"
       />
       
       <!-- 维修站筛选 -->
@@ -30,12 +30,20 @@
         clearable 
         filterable
         size="small"
-        style="width: 25%;font-size: 12px;"
+        style="width: 100%; font-size: 12px;"
+      />
+
+        <NSelect 
+        v-model:value="orderStatusModel" 
+        :options="statusOptions" 
+        placeholder="工单状态" 
+        size="small"
+        clearable 
+        style="width: 100%; font-size: 12px;"
       />
       </div>
      </template>
-    <div v-show="!collapsed" class="flex items-center gap-2 flex-wrap" style="margin-top: 8px;">
-      
+    <div v-show="!collapsed" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
       <!-- 开始时间 -->
       <NDatePicker 
         v-model:value="startDateModel" 
@@ -43,7 +51,7 @@
         placeholder="开始时间" 
         clearable 
         size="small"
-        style="width: 25%;font-size: 12px;"
+        style="width: 100%; font-size: 12px;"
       />
       
       <!-- 结束时间 -->
@@ -53,18 +61,11 @@
         size="small"
         placeholder="结束时间" 
         clearable 
-        style="width: 25%;font-size: 12px;"
+        style="width: 100%; font-size: 12px;"
       />
       
       <!-- 工单状态 -->
-      <NSelect 
-        v-model:value="orderStatusModel" 
-        :options="statusOptions" 
-        placeholder="工单状态" 
-        size="small"
-        clearable 
-        style="width: 25%;font-size: 12px;"
-      />
+    
       
      
     </div>

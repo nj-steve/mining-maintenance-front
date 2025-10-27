@@ -13,6 +13,11 @@ import {fetchSites} from '@/service/api/site';
 import FaultsSearchCard from './components/FaultsSearchCard.vue'
 import BindWorkOrderModal from './components/BindWorkOrderModal.vue'
 import UnbindWorkOrderModal from './components/UnbindWorkOrderModal.vue'
+import { useAuthStore } from '@/store/modules/auth';
+const authStore = useAuthStore();
+const hasRole=!authStore.userInfo.roles.includes('3')
+
+console.log("Outer >> hasRole>>",hasRole)
 
 
 interface Faults {
@@ -136,9 +141,13 @@ const fetchOrderStatusData = async () => {
 
 // 获取场地数据
 const fetchSiteData = async () => {
+  // console.log("hasRole>>fetchSiteData >> ",hasRole)
+  if(!hasRole){
+    return
+  }
   try {
     // 这里需要根据实际的API接口来获取场地数据
-    const { data, error } = await fetchSites({page:1,page_size:1000});
+    const { data, error } = hasRole?await fetchSites({page:1,page_size:1000}):{data:[],error:null};
     if (!error && data) {
       siteOptions.value = data.list.map((site: any) => ({
         label: site.name,
@@ -229,7 +238,6 @@ const columns: DataTableColumns<Faults> = [
      }
   },
   { title: '型号', key: 'model', width: 120},
-  
   { title: '问题描述', key: 'description', width: 200},
   { title: '工单编号', key: 'order_no', width: 150},
   { title: '维修次数', key: 'repair_count', width: 100 },
@@ -303,7 +311,12 @@ const fetchData = async () => {
 onMounted(() => {
   fetchData()
   fetchOrderStatusData();
-  fetchSiteData();
+  if(hasRole){
+    console.log("hasRole>>onMounted",hasRole)
+    fetchSiteData();
+  }
+  
+  // fetchSiteData();
 });
 watch([searchSerial,searchWorkOrderNo, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
   tableData.value = [];
@@ -382,7 +395,7 @@ const handleConfirmWorkOrder = async () => {
       // site_id: workOrderForm.value.selectedMachines[0]?.Site?.id || 0 // 假设第一个机器的场地ID
     };
     
-    console.log('提交工单数据:', submitData);
+    // console.log('提交工单数据:', submitData);
     
     // 调用创建工单API
     const { data, error } = await createOrder(submitData);
@@ -425,7 +438,7 @@ const handleRefresh = () => {
 <template>
 
   <div>
-    <n-card title="数据搜索" style="margin-bottom: 24px;">
+    <n-card title="筛选条件" style="margin-bottom: 24px;">
         <FaultsSearchCard 
           v-model:serial="searchSerial"
           v-model:workOrderNo="searchWorkOrderNo"
@@ -435,6 +448,7 @@ const handleRefresh = () => {
           v-model:status="searchStatus"
           :site-options="siteOptions"
           :status-options="statusOptions"
+          :hasRole="hasRole"
           @search="fetchData"
         />
 </n-card>
@@ -443,29 +457,33 @@ const handleRefresh = () => {
   <n-card title="数据展示">
    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <UploadSiteMachineExcel buttonText="导入" @success="fetchData"/>
-        <NButton 
-          type="primary" 
-          ghost
-          size="small"
-          :disabled="selectedRows.length === 0"
-          @click="handleCreateWorkOrder"
-        >
-          创建工单 ({{ selectedRows.length }})
-        </NButton>
-        <BindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
+        <UploadSiteMachineExcel 
+        buttonText="导入" @success="fetchData"/>
         
-        <!-- 批量修改状态组件 -->
-        <BatchStatusModal 
-          :status-options="statusOptions"
-          :selectedRows="selectedRows"
-          @refresh="handleRefresh"
-        />
-        <UploadFileBathStatusModal 
-          :status-options="statusOptions"
-          @refresh="handleRefresh"
-        />
-        <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
+        <template v-if="hasRole">
+          <NButton 
+            type="primary" 
+            ghost
+            size="small"
+            :disabled="selectedRows.length === 0"
+            @click="handleCreateWorkOrder"
+          >
+            创建工单 ({{ selectedRows.length }})
+          </NButton>
+          <BindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
+          
+          <!-- 批量修改状态组件 -->
+          <BatchStatusModal 
+            :status-options="statusOptions"
+            :selectedRows="selectedRows"
+            @refresh="handleRefresh"
+          />
+          <UploadFileBathStatusModal 
+            :status-options="statusOptions"
+            @refresh="handleRefresh"
+          />
+          <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
+        </template>
         
       </div>
     </div>

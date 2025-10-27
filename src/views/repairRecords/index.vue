@@ -6,6 +6,8 @@ import { fetchRepairDetails } from '@/service/api/repair';
 import UploadExcel from "@/components/upload/UploadExcel.vue"
 import { useRouter } from 'vue-router';
 import { statusOptions } from '@/constants/business'
+import { useAuthStore } from '@/store/modules/auth';
+import RepairSearchBar from './components/RepairSearchBar.vue'
 const router = useRouter();
 
 
@@ -29,14 +31,12 @@ interface Faults {
   };
 }
 
-const dialog = useDialog()
 const message = useMessage();
 
 const tableData = ref<Faults[]>([]);
 const loading = ref(false);
 const work_order_no = ref<string>('');
 const sn = ref<string>('');
-const modelOptions = ref<{ label: string; value: number }[]>([])
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -59,44 +59,10 @@ const pagination = ref<PaginationProps>({
 });
 
 // ---------------- 修改弹框 ----------------
-const showEditModal = ref(false);
 const repair_result = ref<number>();
-const editForm = ref<Faults>({
-  id: 0,
-  Faults_type_id:0,
-  status_id:0,
-  serial_number: '',
-  serial_number_source: '',
-  contract_number: '',
-  // FaultsType: { name: '', hash_rate: 0 },
-  // Site: { name: '' },
-  
-});
-
-// 状态下拉选项
-// const statusOptions = [
-//   { label: '在架', value: 1 },
-//   { label: '维修', value: 2 },
-//   { label: '报废', value: 3 },
-//   { label: '下架', value: 4 }
-// ];
-
-// 打开修改弹框
-// const handleOpenEdit = (row: Faults) => {
-//   editForm.value = {
-//     id: row.id,
-//     Faults_type_id: row.Faults_type_id ?? 0,
-//     status_id: row.status_id ?? 0,
-//     serial_number: row.serial_number || '',
-//     serial_number_source: row.serial_number_source || '',
-//     contract_number: row.contract_number || ''
-//   };
-//   // editForm.value = JSON.parse(JSON.stringify(row)); // 深拷贝
-//   showEditModal.value = true;
-// };
 
 function goDetail(id: number | string) {
-  console.log("跳转到详情页，ID:", id);
+  // console.log("跳转到详情页，ID:", id);
   if (!id) {
     console.error("ID 为空，无法跳转");
     return;
@@ -182,13 +148,8 @@ const fetchData = async () => {
     repair_result: repair_result.value || undefined,
     work_order_no: work_order_no.value || undefined,
   };
-  // if(repair_result.value){
-  //   params.repair_result = repair_result.value;
-  // }
-  // if(work_order_no.value){
-  //   params.work_order_no = work_order_no.value;
-  // }
-  console.log("请求参数:", params);
+
+  // console.log("请求参数:", params);
   try {
     const {data,error} = await fetchRepairDetails(params);
     if(error==null){
@@ -205,32 +166,7 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
-// async function loadFaultsTypes() {
-//   loading.value = true
-//   try {
-//     const res = await fetchRepairDetailsTypes({})
-//     if (res && res.data.length>0) {
-//       // 明确 item 类型
-//       const arr = res.data as { id:number, name: string,hash_rate:string }[]
 
-//       // names.value = [arr.map(item => item.name+" _ "+item.hash_rate+" T")]
-
-//       modelOptions.value = arr.map(item => ({
-//         label:  item.name+" _ "+item.hash_rate+" T",
-//         value: item.id,
-//       }))
-      
-//     } else {
-//       // names.value = []
-//       modelOptions.value = []
-//     }
-//   } catch (err) {
-//     // console.error('获取场地数据失败:', err)
-//     message.error('加载场地数据失败')
-//   } finally {
-//     loading.value = false
-//   }
-// }
 
 onMounted(() => {
   fetchData()
@@ -250,7 +186,6 @@ const role = JSON.parse(localStorage.getItem('userInfo') ?? '{}')?.role;
 const isRepairStation = role === 4;
 
 
-
 // 下载模板
 const downloadTemplate = () => {
   // 创建一个临时链接来下载模板文件
@@ -266,6 +201,20 @@ const downloadTemplate = () => {
 
 <template>
   <div>
+    <NCard title="筛选条件" style="margin-bottom: 20px;">
+<RepairSearchBar
+        :work-order-no="work_order_no"
+        :sn="sn"
+        :repair-result="repair_result"
+        :status-options="statusOptions"
+        @update:work-order-no="work_order_no = $event"
+        @update:sn="sn = $event"
+        @update:repair-result="repair_result = $event"
+      />
+    </NCard>
+
+    <NCard title="数据展示">
+
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
       <div  style="display: flex; gap: 8px; align-items: center;">
@@ -282,15 +231,12 @@ const downloadTemplate = () => {
         </NButton>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-
-      <NInput v-model:value="work_order_no"  placeholder="请输入工单号" clearable style="width: 150px" />
-      <NInput v-model:value="sn"  placeholder="请输入机器SN" clearable style="width: 150px" />
-      <NSelect v-model:value="repair_result"   :options="statusOptions" clearable style="width: 150px" />
+      
       </div>
     </div>
 
     <!-- 表格 -->
     <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" :scroll-x="1400" remote />
-
+</NCard>
   </div>
 </template>

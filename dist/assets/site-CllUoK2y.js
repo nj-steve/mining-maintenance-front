@@ -1,1 +1,0 @@
-import{am as e}from"./index-Cc87Da4y.js";function i(){return e({url:"/api/statistics/dashboard",method:"get"})}function r(t){return e({url:"/api/sites",method:"get",params:t})}function u(t){return e({url:"/api/sites/"+t,method:"get"})}function o(t,a){return e({url:"/api/sites/"+t,method:"put",data:a})}export{i as a,u as b,r as f,o as u};

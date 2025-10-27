@@ -10,7 +10,7 @@ const startDate = defineModel<number | null>('startDate', { default: null });
 const endDate = defineModel<number | null>('endDate', { default: null });
 const status = defineModel<number | null>('status', { default: null });
 
-const props = defineProps<{ siteOptions: SelectOption[]; statusOptions: SelectOption[] }>();
+const props = defineProps<{ siteOptions: SelectOption[]; statusOptions: SelectOption[],hasRole:boolean }>();
 const emit = defineEmits<{ (e: 'search'): void }>();
 
 const expanded = ref(false);
@@ -28,40 +28,40 @@ function toggleExpand() {
   <NCard size="small" :bordered="false" class="faults-search-card">
     <template #header>
       <!-- <span></span> -->
-       <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
       <NInput
         v-model:value="serial"
         size="medium"
         placeholder="请输入机器SN"
         clearable
-        style="width: 30%"
+        style="width: 100%"
       />
       <NInput
         v-model:value="workOrderNo"
         size="medium"
         placeholder="请输入工单号"
         clearable
-        style="width: 30%"
+        style="width: 100%"
       />
-      <NSelect
+       <NSelect
         size="medium"
-        v-model:value="siteId"
-        :options="props.siteOptions"
-        placeholder="请选择场地"
-        class="site-select"
+        v-model:value="status"
+        :options="props.statusOptions"
+        placeholder="状态"
         clearable
-        filterable
-        style="width: 30%; font-size: 12px;"
+        style="width: 100%"
       />
-    </div>
-      <div v-if="expanded" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 8px;">
+      
+
+      </div>
+      <div v-if="expanded" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; align-items: center; margin-top: 8px;">
       <NDatePicker
         v-model:value="startDate"
         type="date"
         placeholder="开始时间"
         clearable
         size="medium"
-        style="width: 30%"
+        style="width: 100%"
       />
 
       <NDatePicker
@@ -70,17 +70,20 @@ function toggleExpand() {
         size="medium"
         placeholder="结束时间"
         clearable
-        style="width: 30%"
+        style="width: 100%"
       />
-
       <NSelect
         size="medium"
-        v-model:value="status"
-        :options="props.statusOptions"
-        placeholder="状态"
+        v-model:value="siteId"
+        :options="props.siteOptions"
+        placeholder="请选择场地"
+        v-if="hasRole"
+        class="site-select"
         clearable
-        style="width: 30%; font-size: 12px;"
+        filterable
+        style="width: 100%"
       />
+     
     </div>
     </template>
     <template #header-extra>

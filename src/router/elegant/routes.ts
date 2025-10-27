@@ -51,7 +51,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'faults',
       i18nKey: 'route.faults',
       icon: 'mdi:alert-circle-outline',
-      order: 4
+      order: 4,
+      roles: ['1', '2', '3']
     }
   },
   {
@@ -62,7 +63,8 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'home',
       i18nKey: 'route.home',
       icon: 'mdi:monitor-dashboard',
-      order: 1
+      order: 1,
+      roles: ['1', '2']
     }
   },
   {
@@ -99,7 +101,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.miningsite',
       icon: 'mdi:factory',
       order: 2,
-      role: ['1', '2', '3']
+      roles: ['1', '2']
     }
   },
   {
@@ -111,7 +113,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.repairrecords',
       icon: 'mdi:file-cog',
       order: 5,
-      role: ['1', '2', '3', '4']
+      roles: ['1', '2', '4']
     },
     props: true
   },
@@ -124,7 +126,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.repairrecordsdetail',
       props: true,
       hideInMenu: true,
-      role: ['1', '2', '3', '4']
+      roles: ['1', '2', '4']
     },
     props: true
   },
@@ -137,7 +139,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.repairstation',
       icon: 'mdi:office-building-cog',
       order: 6,
-      role: ['1', '2', '3', '4']
+      roles: ['1', '2']
     }
   },
   {
@@ -149,7 +151,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.sitedetail',
       props: true,
       hideInMenu: true,
-      role: ['1', '2', '3']
+      roles: ['1', '2']
     },
     props: true
   },
@@ -162,7 +164,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.users',
       icon: 'mdi:lock',
       order: 7,
-      role: ['1', '2', '3']
+      roles: ['1', '2']
     }
   },
   {
@@ -174,7 +176,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.workflow',
       icon: 'mdi:flowchart',
       order: 3,
-      role: ['1', '2', '3']
+      roles: ['1', '2', '4']
     }
   }
 ];

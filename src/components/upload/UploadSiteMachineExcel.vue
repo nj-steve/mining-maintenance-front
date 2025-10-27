@@ -15,6 +15,7 @@
         <div style="display: flex; flex-direction: column; gap: 16px;">
           <!-- 场地下拉选择 -->
           <n-select
+            v-if="hasRole"
             v-model:value="selectedSite"
             :options="siteOptions"
             size="small"
@@ -39,7 +40,6 @@
               📥 下载模板
             </n-button>
           </div>
-          
         </div>
   
         <template #action>
@@ -96,6 +96,9 @@
   import { getServiceBaseURL } from '@/utils/service'
   import { localStg } from '@/utils/storage'
   import {fetchSites} from "@/service/api/site"
+  import { useAuthStore } from '@/store/modules/auth';
+const authStore = useAuthStore();
+const hasRole=!authStore.userInfo.roles.includes('3')
   
   // ---------------- Props ----------------
   interface Props {
@@ -121,6 +124,9 @@
     import.meta.env.DEV && import.meta.env.VITE_HTTP_PROXY === 'Y'
   )
   onMounted(() => {
+    if(!hasRole){
+      return
+    }
     fetchData() 
   });
 
@@ -143,7 +149,7 @@
   }
   
   const handleSubmit = async () => {
-    if (!selectedSite.value) {
+    if (!selectedSite.value && hasRole) {
       message.warning('请选择场地')
       return
     }
@@ -221,6 +227,9 @@
 
   // ---------------- 数据获取 ----------------
 const fetchData = async () => {
+  if(!hasRole){
+    return
+  }
   const params: any = {
     page: 1,
     page_size: 1000,

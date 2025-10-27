@@ -198,8 +198,7 @@
   // ]
   
   function save() {
-    console.log("保存数据", form.value)
-
+    // console.log("保存数据", form.value)
     form.value.date = dayjs(form.value.date).format('YYYY-MM-DD')
     form.value.start_time = String(form.value.start_time)
     form.value.end_time = String(form.value.end_time)
@@ -219,7 +218,7 @@
     loading.value = true;
     try {
       const { data, error } = await fetchRepairDetailsByID(Number(id.value));
-      console.log("data",data)
+      // console.log("data",data)
       if (error === null && data !== null) {
         const detail = data; // 假设返回的是数组，取第一个
         form.value = {

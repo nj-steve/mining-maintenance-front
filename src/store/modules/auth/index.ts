@@ -100,7 +100,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     startLoading();
 
     const { data, error } = await fetchLogin(userName, password);
-    console.log("login", data, error);
+    // console.log("login", data, error);
     if (error) {
       window.$notification?.error({
         title: "登陆错误",
@@ -137,7 +137,13 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
           content: $t('page.login.common.welcomeBack', { userName: data?.username??"" }),
           duration: 4500
         });
-        window.location.href="/home"
+        if (userInfo.roles.includes('1') || userInfo.roles.includes('2')) {
+          window.location.href="/home"
+        } else if (userInfo.roles.includes('4')) {
+          window.location.href="/workflow"
+        }else{
+          window.location.href="/faults"
+        }
         
       }else{
         window.$notification?.error({

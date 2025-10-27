@@ -10,6 +10,7 @@ import { repairMethodRecord,repairMethodOptions } from '@/constants/business';
 import SearchFilters from './components/SearchFilters.vue';
 import ActionButtons from './components/ActionButtons.vue'
 import AddLogModal from './components/AddLogModal.vue'
+import { useAuthStore } from '@/store/modules/auth';
 
 interface Order {
   ID: number;                     // 工单ID
@@ -35,6 +36,11 @@ interface Order {
 }
 
 const message = useMessage();
+const authStore = useAuthStore();
+const routeRoles=["1","2"]
+const hasRole = authStore.userInfo.roles.some(role => routeRoles.includes(role));
+console.log("hasRole---",hasRole);
+// const isRepair = computed(() => authStore.userInfo.roles.some('1','2'));// 判断用户是不是维修用户
 const tableData = ref<Order[]>([]);
 const loading = ref(false);
 const searchSerial = ref<string>('');
@@ -206,7 +212,7 @@ const handleSubmitDispatch = async () => {
     let successCount = 0;
     let failCount = 0;
     
-    for (const order of ordersToDispatch) {
+    // for (const order of ordersToDispatch) {
       try {
         const res = await dispatchOrders(submitData);
         
@@ -218,8 +224,7 @@ const handleSubmitDispatch = async () => {
       } catch {
         failCount++;
       }
-    }
-    
+    // }
     if (failCount === 0) {
       message.success(`派单成功！共处理${successCount}个工单`);
     } else if (successCount === 0) {
@@ -301,7 +306,7 @@ const columns: DataTableColumns<Order> = [
     render: (row: any ) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         1: 'success',
-        2: 'warning',
+        2: 'primary',
         3: 'primary',
       };
       // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
@@ -348,6 +353,7 @@ const columns: DataTableColumns<Order> = [
       '维修': 'primary',
       '未解决': 'error',
       '待处理':'warning',
+      '处理中':'primary',
       };
       const label = row.OrderStatusText || '未知';
       return h(NTag, {type: tagMap[row.OrderStatusText] }, () => label)
@@ -360,6 +366,7 @@ const columns: DataTableColumns<Order> = [
     render: (row: Order) => {
       return h(ActionButtons, {
         row,
+        hasRole,
         onEdit: () => handleOpenEdit(row),
         onAddLog: () => handleOpenAddLog(row),
         onDetail: () => handleOpenDetail(row),
@@ -372,6 +379,7 @@ const columns: DataTableColumns<Order> = [
 
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
+  // console.log("authStore.userInfo.roles---",authStore.userInfo.roles,authStore.userInfo.roles[0]);
   loading.value = true;
   const params: any = {
     page: pagination.value.page,
@@ -523,6 +531,7 @@ onMounted(() => {
   fetchOrderStatusData()
   fetchSiteData()
   fetchStationData()
+
 //   loadFaultsTypes();
 });
 watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchStartDate, searchEndDate], () => {
@@ -535,6 +544,8 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
 <template>
   <div>
  <!-- 第二行：筛选条件 -->
+    <NCard size="small" title="筛选条件" :bordered="false" class="faults-search-card" style="margin-top: 24px;"> 
+
     <SearchFilters
         v-model:serial="searchSerial"
         v-model:siteId="searchSiteId"
@@ -548,11 +559,13 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
         @search="fetchData"
         @reset="handleReset"
       />
-   <NCard size="small" :bordered="false" class="faults-search-card" style="margin-top: 24px;"> 
+    </NCard>
+   <NCard size="small" title="数据展示" :bordered="false" class="faults-search-card" style="margin-top: 24px;"> 
     <!-- 查询框和批量操作 -->
-    <div class="mb-4" style="margin-bottom: 16px; display: flex; justify-content: space-between;">
+
+    <div class="mb-4" style="margin-bottom: 16px; display: flex; justify-content: flex-end;">
       <!-- 第一行：批量操作按钮 -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2" v-if="hasRole">
         <NButton 
           type="primary" 
           ghost
@@ -565,7 +578,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
         </NButton>
       </div>
     </div>
-    </NCard>  
+ 
 
     <!-- 表格 -->
     <NDataTable 
@@ -580,6 +593,8 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       :scroll-x="1400"
       striped
     />
+
+       </NCard>  
 
     <!-- 修改弹框 -->
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
@@ -598,51 +613,12 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
           />
         </NFormItem>
 
-    <!-- 是否驻场 -->
-    <!-- <NFormItem label="是否驻场">
-      <NSelect
-        size="small"
-        v-model:value="editForm.onsite"
-        :options="[
-          { label: '否', value: 0 },
-          { label: '是', value: 1 }
-        ]"
-      />
-    </NFormItem> -->
-
-    <!-- 维修费 + 物流费 -->
-    <!-- <div style="display: flex; gap: 16px;">
-      <NFormItem label="维修费">
-        <NInputNumber size="small" v-model:value="editForm.repair_cost" type="number" />
-      </NFormItem>
-      <NFormItem label="物流费">
-        <NInputNumber size="small" v-model:value="editForm.logistics_cost" type="number" />
-      </NFormItem>
-    </div> -->
-
-    <!-- 总费用（自动计算） -->
-    <!-- <NFormItem label="总费用">
-      <NInputNumber size="small" :value="editForm.repair_cost + editForm.logistics_cost" disabled />
-    </NFormItem> -->
-
     <NFormItem label="付款状态">
         <NSelect size="small"
           v-model:value="editForm.settlement_status"
           :options="[{ label: '未付款', value: 1 }, { label: '已付款', value: 2 }]"
         />
       </NFormItem>
-
-
-       <!-- 使用 value-format 输出字符串（这里用 YYYY-MM-DD，与表单初始化格式一致） -->
-      <!-- <NFormItem label="付款日期"> 
-        <NDatePicker
-          size="small"
-          v-model:formatted-value="editForm.payment_date"
-          type="date"
-          value-format="yyyy-MM-dd"
-          clearable
-        />
-      </NFormItem> -->
 
       <NFormItem label="工单状态">
         <NSelect size="small"
