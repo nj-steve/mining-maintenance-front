@@ -197,24 +197,57 @@ const downloadTemplate = () => {
   document.body.removeChild(link);
   message.success('模板下载已开始');
 };
+const exportCsv = () => {
+  const headers = ['日期','工单号','维修站点','机型','整机SN码','损坏部件','初测不良原因','查证缺陷','维修结果'];
+  const formatCell = (val: any) => {
+    const s = val === undefined || val === null ? '' : String(val);
+    const needsQuote = /[",\n]/.test(s);
+    const escaped = s.replace(/"/g, '""');
+    return needsQuote ? `"${escaped}"` : escaped;
+  };
+  const rows = tableData.value.map((row: any) => [
+    row.Date,
+    row.WorkOrderNo,
+    row.RepairStationName ?? '-',
+    row.MachineModel,
+    row.DeviceSN,
+    row.RepairComponent,
+    row.DefectReason,
+    row.VerifyDefect,
+    repairResultMap[row.RepairResult] ?? '未知'
+  ]);
+  const csv = [headers, ...rows]
+    .map(r => r.map(formatCell).join(','))
+    .join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  link.href = url;
+  link.download = `维修明细_导出_${date}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  message.success('导出成功，下载已开始');
+};
 </script>
 
 <template>
   <div>
-    <NCard title="筛选条件" style="margin-bottom: 20px;">
-<RepairSearchBar
-        :work-order-no="work_order_no"
-        :sn="sn"
-        :repair-result="repair_result"
-        :status-options="statusOptions"
-        @update:work-order-no="work_order_no = $event"
-        @update:sn="sn = $event"
-        @update:repair-result="repair_result = $event"
-      />
+    <NCard style="margin-bottom: 20px;">
+      <RepairSearchBar
+              :work-order-no="work_order_no"
+              :sn="sn"
+              :repair-result="repair_result"
+              :status-options="statusOptions"
+              @update:work-order-no="work_order_no = $event"
+              @update:sn="sn = $event"
+              @update:repair-result="repair_result = $event"
+            />
     </NCard>
 
-    <NCard title="数据展示">
-
+    <NCard>
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
       <div  style="display: flex; gap: 8px; align-items: center;">
@@ -231,12 +264,41 @@ const downloadTemplate = () => {
         </NButton>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-      
+        <NButton   circle size="small" ghost @click="exportCsv" title="导出 CSV">
+          <template #icon>
+            <icon-ant-design-download-outlined />
+          </template>
+        </NButton>
       </div>
     </div>
 
     <!-- 表格 -->
     <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" :scroll-x="1400" remote />
+
 </NCard>
   </div>
 </template>
+
+<style scoped>
+.floating-export {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--n-primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  cursor: pointer;
+  user-select: none;
+  font-size: 20px;
+  z-index: 1000;
+}
+.floating-export:hover {
+  filter: brightness(1.05);
+}
+</style>

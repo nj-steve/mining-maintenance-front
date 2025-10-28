@@ -14,7 +14,6 @@ import { round } from 'echarts/types/src/util/number.js';
 
 const appStore = useAppStore();
 
-
 const dashboardData = ref<any>({});
 
 const orders = computed(() => dashboardData.value.recent_orders || []);
@@ -24,19 +23,22 @@ const cardDataForChild = computed(() => {
   if (!data || Object.keys(data).length === 0) {
     return [];
   }
+  const today_data = data.today_data || {};
   const result = [
     {
       key: 'assetCount',
       title: '待修数',
-      value: Math.floor(Math.random() * 800) || 0,
+      value: today_data.wait_repair_count || 0,
+      rate: today_data.wait_repair_rate || 0,
       unit: '',
       color: { start: '#ec4786', end: '#b955a4' },
-      icon: 'ant-design:bar-chart-outlined'
+      icon: 'ant-design:bar-chart-outlined' 
     },
     {
       key: 'todayOffShelfCount',
       title: '今日下架',
-      value: Math.floor(Math.random() * 200) || 0,
+      value: today_data.off_shelf_count || 0,
+      rate: today_data.off_shelf_rate || 0,
       unit: '',
       color: { start: '#865ec0', end: '#5144b4' },
       icon: 'ant-design:money-collect-outlined'
@@ -44,7 +46,9 @@ const cardDataForChild = computed(() => {
     {
       key: 'pendingCount',
       title: '待处理',
-      value: Math.floor(Math.random() * 500) || 0,
+      // value: Math.floor(Math.random() * 500) || 0,
+      value: today_data.pending_count || 0,
+      rate: today_data.pending_rate || 0,
       unit: '',
       color: { start: '#56cdf3', end: '#719de3' },
       icon: 'carbon:document-download'
@@ -52,7 +56,9 @@ const cardDataForChild = computed(() => {
     {
       key: 'inTransitCount',
       title: '物流中',
-      value: data.in_transit_count || 0,
+      value: today_data.logistics_count || 0,
+      rate: today_data.logistics_rate || 0,
+      // value: data.in_transit_count || 0,
       unit: '',
       color: { start: '#fcbc25', end: '#f68057' },
       icon: 'ant-design:trademark-circle-outlined'
@@ -60,7 +66,9 @@ const cardDataForChild = computed(() => {
     {
       key: 'repairingCount',
       title: '在修设备',
-      value: Math.floor(Math.random() * 200) || 0,
+      // value: Math.floor(Math.random() * 200) || 0,
+      value:today_data.repairing_count,
+      rate: today_data.repairing_rate || 0,
       unit: '',
       color: { start: '#ec4786', end: '#b955a4' },
       icon: 'ant-design:bar-chart-outlined'
@@ -68,7 +76,9 @@ const cardDataForChild = computed(() => {
     {
       key: 'todayRepairedCount',
       title: '今日维修',
-      value: Math.floor(Math.random() * 300) || 0,
+      // value: Math.floor(Math.random() * 300) || 0,
+      value: today_data.repaired_count || 0,
+      rate: today_data.repaired_rate || 0,
       unit: '',
       color: { start: '#865ec0', end: '#5144b4' },
       icon: 'ant-design:money-collect-outlined'
@@ -76,7 +86,9 @@ const cardDataForChild = computed(() => {
     {
       key: 'toBeShelvedCount',
       title: '待上架',
-      value: Math.floor(Math.random() * 200) || 0,
+      // value: Math.floor(Math.random() * 200) || 0,
+      value: today_data.wait_on_shelf_count || 0,
+      rate: today_data.wait_on_shelf_rate || 0,
       unit: '',
       color: { start: '#56cdf3', end: '#719de3' },
       icon: 'carbon:document-download'
@@ -84,8 +96,9 @@ const cardDataForChild = computed(() => {
     {
       key: 'totalOffShelfCount',
       title: '报废数',
-      value:Math.floor(Math.random() * 100) ,
-      // value: data.history_off_shelf_total || 0,
+      // value:Math.floor(Math.random() * 100) ,
+      value: today_data.scrapped_count || 0,
+      rate: today_data.scrapped_rate || 0,
       unit: '',
       color: { start: '#fcbc25', end: '#f68057' },
       icon: 'ant-design:trademark-circle-outlined'

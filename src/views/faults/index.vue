@@ -436,26 +436,22 @@ const handleRefresh = () => {
 </script>
 
 <template>
-
-  <div>
-    <n-card title="筛选条件" style="margin-bottom: 24px;">
-        <FaultsSearchCard 
-          v-model:serial="searchSerial"
-          v-model:workOrderNo="searchWorkOrderNo"
-          v-model:siteId="searchSiteId"
-          v-model:startDate="searchStartDate"
-          v-model:endDate="searchEndDate"
-          v-model:status="searchStatus"
-          :site-options="siteOptions"
-          :status-options="statusOptions"
-          :hasRole="hasRole"
-          @search="fetchData"
-        />
-</n-card>
+  <div class="flex  gap-16px flex-col-stretch  lt-sm:overflow-auto">
+    <FaultsSearchCard 
+      v-model:serial="searchSerial"
+      v-model:workOrderNo="searchWorkOrderNo"
+      v-model:siteId="searchSiteId"
+      v-model:startDate="searchStartDate"
+      v-model:endDate="searchEndDate"
+      v-model:status="searchStatus"
+      :site-options="siteOptions"
+      :status-options="statusOptions"
+      :hasRole="hasRole"
+      @search="fetchData"
+    />
     <!-- 查询框 -->
-   
-  <n-card title="数据展示">
-   <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
+  <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: 50px;">
+    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
       <div style="display: flex; align-items: center; gap: 12px;">
         <UploadSiteMachineExcel 
         buttonText="导入" @success="fetchData"/>
@@ -484,23 +480,23 @@ const handleRefresh = () => {
           />
           <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
         </template>
-        
       </div>
     </div>
-
+  
     <!-- 表格 -->
-    <NDataTable 
-      :columns="columns" 
-      :data="tableData" 
-      :pagination="pagination" 
-      :loading="loading" 
-      remote
-      :row-key="(row: Faults) => row.id"
-      @update:checked-row-keys="handleSelectionChange"
-      :scroll-x="1400"
-      striped
-    />
-      
+      <NDataTable 
+        flex-height
+        :columns="columns" 
+        :data="tableData" 
+        :pagination="pagination" 
+        :loading="loading" 
+        remote
+        :row-key="(row: Faults) => row.id"
+        @update:checked-row-keys="handleSelectionChange"
+        :scroll-x="1400"
+        striped
+        class="sm:h-full"
+      />
   </n-card>
 
     <!-- 修改弹框 -->
@@ -559,9 +555,6 @@ const handleRefresh = () => {
         <NButton @click="handleCancelWorkOrder">取消</NButton>
       </template>
     </NModal>
-
-
-
     
   </div>
 </template>

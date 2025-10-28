@@ -3,7 +3,7 @@ import { request } from '../request';
 
 export function fetchDashboard() {
   return request({
-    url: '/api/statistics/dashboard',
+    url: '/api/dashboard',
     method: 'get',
   });
 }

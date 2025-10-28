@@ -11,6 +11,7 @@ interface CardData {
   key: string;
   title: string;
   value: number;
+  rate: number;
   unit: string;
   color: {
     start: string;
@@ -52,12 +53,16 @@ function getGradientColor(color: CardData['color']) {
           <h3 class="text-16px">{{ item.title }}</h3>
           <div class="flex justify-between pt-12px">
             <SvgIcon :icon="item.icon" class="text-32px" />
-            <CountTo
+            <div>
+<CountTo
               :prefix="item.unit"
               :start-value="1"
               :end-value="item.value"
               class="text-30px text-white dark:text-dark"
             />
+            <span class="text-14px" style="margin-left: 20px;">{{ item.rate.toFixed(2) }}%</span>
+            </div>
+            
           </div>
         </GradientBg>
       </NGi>

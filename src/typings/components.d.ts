@@ -17,6 +17,7 @@ declare module 'vue' {
     EditRepairStationModal: typeof import('./../components/custom/EditRepairStationModal.vue')['default']
     ExceptionBase: typeof import('./../components/common/exception-base.vue')['default']
     FullScreen: typeof import('./../components/common/full-screen.vue')['default']
+    IconAntDesignDownloadOutlined: typeof import('~icons/ant-design/download-outlined')['default']
     IconAntDesignEnterOutlined: typeof import('~icons/ant-design/enter-outlined')['default']
     IconAntDesignReloadOutlined: typeof import('~icons/ant-design/reload-outlined')['default']
     IconGridiconsFullscreen: typeof import('~icons/gridicons/fullscreen')['default']

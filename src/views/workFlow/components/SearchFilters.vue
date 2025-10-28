@@ -1,6 +1,6 @@
 <template>
   <!-- <div class="mb-2"> -->
-  <NCard size="small"  :bordered="false" class="faults-search-card">
+  <NCard size="medium"  :bordered="false" class="faults-search-card">
      <template #header>
       <!-- 工单编号 -->
        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
@@ -8,7 +8,7 @@
         v-model:value="serialModel" 
         placeholder="工单号" 
         clearable 
-        size="small"
+        size="medium"
         style="width: 100%; font-size: 12px;"
       />
       <!-- 场地筛选 -->
@@ -18,7 +18,7 @@
         placeholder="请选择场地" 
         clearable 
         filterable
-        size="small"
+        size="medium"
         style="width: 100%; font-size: 12px;"
       />
       
@@ -29,7 +29,7 @@
         placeholder="请选择维修站" 
         clearable 
         filterable
-        size="small"
+        size="medium"
         style="width: 100%; font-size: 12px;"
       />
 
@@ -37,7 +37,7 @@
         v-model:value="orderStatusModel" 
         :options="statusOptions" 
         placeholder="工单状态" 
-        size="small"
+        size="medium"
         clearable 
         style="width: 100%; font-size: 12px;"
       />
@@ -50,31 +50,26 @@
         type="date" 
         placeholder="开始时间" 
         clearable 
-        size="small"
+        size="medium"
         style="width: 100%; font-size: 12px;"
       />
-      
       <!-- 结束时间 -->
       <NDatePicker 
         v-model:value="endDateModel" 
         type="date" 
-        size="small"
+        size="medium"
         placeholder="结束时间" 
         clearable 
         style="width: 100%; font-size: 12px;"
       />
-      
       <!-- 工单状态 -->
-    
-      
-     
     </div>
     <template #header-extra>
       <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
         <!-- 查询按钮 -->
-      <NButton type="primary" size="small"  @click="emit('search')">查询</NButton>
-      <NButton size="small"  @click="emit('reset')">重置</NButton>
-       <NButton quaternary size="small" @click="collapsed = !collapsed">
+      <NButton type="primary" size="medium"  @click="emit('search')">查询</NButton>
+      <NButton size="medium"  @click="emit('reset')">重置</NButton>
+       <NButton quaternary size="medium" @click="collapsed = !collapsed">
         {{ collapsed ? '展开' : '收起' }}
       </NButton>
       </div>
@@ -141,6 +136,6 @@ const orderStatusModel = computed({
 
 <style scoped>
 .faults-search-card :deep(.n-card-header__main){
-  width: calc(100% - 220px);
+  width: calc(100% - 200px);
 }
 </style>

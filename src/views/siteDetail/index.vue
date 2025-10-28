@@ -18,13 +18,18 @@ interface SiteDetail {
   saler_name: string;
   saler_id: number;
   director_name: string;
+  wait_repair_count: number;
   phone: string;
   email: string;
   repairing: number;
   repairing_rate: number;
   wait_repair: number;
   wait_repair_rate: number;
+  scrapped_count: number;
+  fault_count: number;
+  fault_rate: number;
   is_onsite_default?: number;
+  wait_on_shelf_count: number;
 }
 
 
@@ -114,7 +119,7 @@ onMounted(() => {
             </div>
             <div class="stat-item">
               <span class="stat-label">24H故障数:</span>
-              <span class="stat-value">{{ siteData.off_shelf_count || 0 }} 台</span>
+              <span class="stat-value">{{ siteData.fault_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">物流中:</span>
@@ -122,19 +127,19 @@ onMounted(() => {
             </div>
             <div class="stat-item">
               <span class="stat-label">在修数:</span>
-              <span class="stat-value">{{ siteData.under_repair_count || 0 }} 台</span>
+              <span class="stat-value">{{ siteData.repairing || 0 }} 台</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">待修数:</span>
-              <span class="stat-value">{{ siteData.under_repair_count || 0 }} 台</span>
+              <span class="stat-value">{{ siteData.wait_repair_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">待上架:</span>
-              <span class="stat-value">{{ siteData.to_be_put_on_shelf_count || 0 }} 台</span>
+              <span class="stat-value">{{ siteData.wait_on_shelf_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
                <span class="stat-label">报废数:</span>
-               <span class="stat-value">{{ siteData.repairing || 0 }} 台</span>
+               <span class="stat-value">{{ siteData.scrapped_count || 0 }} 台</span>
              </div>
           </div>
         </NCard>

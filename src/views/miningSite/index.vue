@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber } from 'naive-ui';
+import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchSites,updateSites,fetchUser } from '@/service/api';
 import { siteStatusRecord } from '@/constants/business';
@@ -131,15 +131,13 @@ const fetchUsers = async () => {
 const columns: DataTableColumns<Site> = [
   { title: '场地名称', key: 'name', width: 200 },
   { title: '资产数', key: 'asset_count'},
-  { title: '24H故障数', key: 'off_shelf_count'},
+  { title: '24H故障数', key: 'fault_count'},
   { title: '物流中', key: 'in_logistics_count' },
-  { title: '待上架', key: 'to_be_put_on_shelf_count' },
-
+  { title: '待上架', key: 'wait_on_shelf_count' },
   { title: '在修数', key: 'repairing' },
-  
-  { title: '待修数', key: 'wait_repair' },
+  { title: '待修数', key: 'wait_repair_count' },
   { title: '待修率', key: 'wait_repair_rate' },
-  { title: '报废数', key: 'repairing_rate' },
+  { title: '报废数', key: 'scrapped_count' },
   { title: '站点状态', key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',
@@ -258,9 +256,10 @@ const onSearch = () => {
 </script>
 
 <template>
-  <div>
+  <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <!-- 查询框 -->
-    <SearchBar
+     <div class="flex"> 
+      <SearchBar
       v-model:serial="searchSerial"
       v-model:salerId="selectedSalerId"
       v-model:siteStatus="selectedSiteStatus"
@@ -268,9 +267,19 @@ const onSearch = () => {
       :siteStatusOptions="siteStatusOptions"
       @search="onSearch"
     />
-
+     </div>
+    <NCard class="card-wrapper sm:flex-1-hidden">
     <!-- 表格 -->
-    <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" remote />
+    <NDataTable 
+    flex-height
+    :scroll-x="962"
+    :columns="columns" 
+    :data="tableData" 
+    :pagination="pagination" 
+    :row-key="row => row.id"
+    class="sm:h-full"
+    :loading="loading" remote />
+    </NCard>
 
     <!-- 修改弹框 -->
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改场地信息">
@@ -299,9 +308,22 @@ const onSearch = () => {
        
       </NForm>
       <template #footer>
-        <NButton type="primary" @click="handleSaveEdit">保存</NButton>
-        <NButton @click="showEditModal = false">取消</NButton>
+        <NSpace :size="12">
+          <NButton class="min-w-96px" type="primary" size="medium" @click="handleSaveEdit">保存</NButton>
+          <NButton class="min-w-96px" size="medium" @click="showEditModal = false">取消</NButton>
+        </NSpace>
       </template>
     </NModal>
   </div>
 </template>
+
+<style scoped lang="scss">
+.card-wrapper {
+  flex: 1;
+  padding: 0 !important;
+  .n-card__content {
+    padding: 0px !important;
+  }
+}
+
+</style>

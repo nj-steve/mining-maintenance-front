@@ -542,10 +542,9 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
 </script>
 
 <template>
-  <div>
+  <div class="flex gap-16px flex-col-stretch overflow-hidden lt-sm:overflow-auto">
  <!-- 第二行：筛选条件 -->
-    <NCard size="small" title="筛选条件" :bordered="false" class="faults-search-card" style="margin-top: 24px;"> 
-
+   
     <SearchFilters
         v-model:serial="searchSerial"
         v-model:siteId="searchSiteId"
@@ -559,8 +558,9 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
         @search="fetchData"
         @reset="handleReset"
       />
-    </NCard>
-   <NCard size="small" title="数据展示" :bordered="false" class="faults-search-card" style="margin-top: 24px;"> 
+    
+    <div class="min-h-550px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto"> 
+   <!-- <NCard size="medium"  :bordered="false"  class="card-wrapper sm:flex-1-hidden" style="margin-top: 12px;">  -->
     <!-- 查询框和批量操作 -->
 
     <div class="mb-4" style="margin-bottom: 16px; display: flex; justify-content: flex-end;">
@@ -569,7 +569,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
         <NButton 
           type="primary" 
           ghost
-          size="small"
+          size="medium"
           :disabled="!isBatchDispatchEnabled"
           :class="{ 'batch-dispatch-disabled': !isBatchDispatchEnabled, 'batch-dispatch-enabled': isBatchDispatchEnabled }"
           @click="handleBatchDispatch"
@@ -579,9 +579,9 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       </div>
     </div>
  
-
     <!-- 表格 -->
     <NDataTable 
+      flex-height
       :columns="columns" 
       :data="tableData" 
       :pagination="pagination" 
@@ -592,9 +592,10 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       remote 
       :scroll-x="1400"
       striped
+      class="sm:h-full"
     />
-
-       </NCard>  
+       <!-- </NCard>   -->
+       </div>
 
     <!-- 修改弹框 -->
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
