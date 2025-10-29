@@ -9,7 +9,7 @@
         placeholder="工单号" 
         clearable 
         size="medium"
-        style="width: 100%; font-size: 12px;"
+        style="width: 95%; font-size: 12px;"
       />
       <!-- 场地筛选 -->
       <NSelect 
@@ -19,7 +19,7 @@
         clearable 
         filterable
         size="medium"
-        style="width: 100%; font-size: 12px;"
+        style="width: 95%; font-size: 12px;"
       />
       
       <!-- 维修站筛选 -->
@@ -30,7 +30,7 @@
         clearable 
         filterable
         size="medium"
-        style="width: 100%; font-size: 12px;"
+        style="width: 95%; font-size: 12px;"
       />
 
         <NSelect 
@@ -39,11 +39,11 @@
         placeholder="工单状态" 
         size="medium"
         clearable 
-        style="width: 100%; font-size: 12px;"
+        style="width: 90%; font-size: 12px;"
       />
       </div>
      </template>
-    <div v-show="!collapsed" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
+    <div v-show="!collapsed" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
       <!-- 开始时间 -->
       <NDatePicker 
         v-model:value="startDateModel" 

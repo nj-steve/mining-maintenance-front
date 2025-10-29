@@ -174,6 +174,7 @@ const local: App.I18n.Schema = {
     miningsite:"矿场列表",
     users:"权限管理",
     repairrecordsdetail:"维修明细",
+    workflowdetail:"工单详情",
     sitedetail:"矿场详情",
   },
   page: {

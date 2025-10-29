@@ -31,6 +31,7 @@ declare module "@elegant-router/types" {
     "sitedetail": "/miningsite/:id/info";
     "users": "/users";
     "workflow": "/workflow";
+    "workflowdetail": "/workflowdetail/:id";
   };
 
   /**
@@ -76,6 +77,7 @@ declare module "@elegant-router/types" {
     | "sitedetail"
     | "users"
     | "workflow"
+    | "workflowdetail"
   >;
 
   /**
@@ -106,6 +108,7 @@ declare module "@elegant-router/types" {
     | "sitedetail"
     | "users"
     | "workflow"
+    | "workflowdetail"
   >;
 
   /**

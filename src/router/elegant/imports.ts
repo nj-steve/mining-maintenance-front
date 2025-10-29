@@ -29,4 +29,5 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   sitedetail: () => import("@/views/siteDetail/index.vue"),
   users: () => import("@/views/users/index.vue"),
   workflow: () => import("@/views/workFlow/index.vue"),
+  workflowdetail: () => import("@/views/workFlowDetail/index.vue"),
 };

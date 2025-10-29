@@ -178,5 +178,18 @@ export const generatedRoutes: GeneratedRoute[] = [
       order: 3,
       roles: ['1', '2', '4']
     }
+  },
+  {
+    name: 'workflowdetail',
+    path: '/workflowdetail/:id',
+    component: 'layout.base$view.workflowdetail',
+    meta: {
+      title: '工单明细',
+      hideInMenu: true,
+      props: true,
+      i18nKey: 'route.workflowdetail',
+      roles: ['1', '2', '4']
+    },
+    props: true
   }
 ];

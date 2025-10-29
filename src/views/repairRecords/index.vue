@@ -6,7 +6,6 @@ import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
 import UploadExcel from "@/components/upload/UploadExcel.vue"
 import { useRouter } from 'vue-router';
 import { statusOptions } from '@/constants/business'
-import { useAuthStore } from '@/store/modules/auth';
 import RepairSearchBar from './components/RepairSearchBar.vue'
 
 const router = useRouter();
@@ -208,7 +207,7 @@ const exportCsv = async () => {
       work_order_no: work_order_no.value || undefined,
     };
     const {data,error} = await exportRepairDetails(params);
-    console.log("导出数据:", data);
+    // console.log("导出数据:", data);
     if(error==null){
         exportData.value = data;
         exportExcel();
@@ -302,11 +301,11 @@ const exportExcel=async () => {
           @click="downloadTemplate"
           style="font-size: 12px;"
         >
-          📥 下载模板
+          📥 导入模板下载
         </NButton>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <NButton   circle size="small" ghost @click="exportCsv" title="导出 CSV">
+        <NButton   circle size="medium" ghost @click="exportCsv" title="导出 CSV">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>

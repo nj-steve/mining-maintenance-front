@@ -23,6 +23,10 @@ export function setupElegantRouter() {
       if (key === 'repairrecordsdetail') {
         return '/repairrecords/:id/detail';
       }
+      // 工单详情
+      if (key === 'workflowdetail') {
+        return '/workflowdetail/:id';
+      }
 
       if (key === 'sitedetail') {
         return '/miningsite/:id/info';

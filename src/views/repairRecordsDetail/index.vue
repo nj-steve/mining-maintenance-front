@@ -35,40 +35,52 @@
       <!-- 设备信息 -->
       <n-card title="设备信息">
         <n-descriptions :column="1" label-placement="left" bordered>
-          <n-descriptions-item label="整机SN码">
+          <n-descriptions-item label="整机 SN">
             <template v-if="!isEdit">{{ form.device_sn }}</template>
             <n-input v-else v-model:value="form.device_sn" />
           </n-descriptions-item>
-           <n-descriptions-item label="控制板SN码">
+           <n-descriptions-item label="控制板 SN">
             <template v-if="!isEdit">{{ form.control_sn }}</template>
             <n-input v-else v-model:value="form.control_sn" />
           </n-descriptions-item>
   
-          <n-descriptions-item label="电源SN码">
+          <n-descriptions-item label="电源 SN">
             <template v-if="!isEdit">
               <div v-for="pwr in form.powerSN" :key="pwr">{{ pwr }}</div>
             </template>
             <div v-else>
-              <n-dynamic-input v-model:value="form.powerSN" placeholder="请输入电源SN" />
+              <!-- <n-dynamic-input v-model:value="form.powerSN" placeholder="请输入电源 SN" /> -->
+               <n-input v-model:value="form.powerSN" placeholder="请输入电源SN"  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
   
-          <n-descriptions-item label="板卡SN码">
+          <n-descriptions-item label="板1 SN">
             <template v-if="!isEdit">
               <div>{{ form.board_sn_1 }}</div>
-              <div>{{ form.board_sn_2 }}</div>
-              <div>{{ form.board_sn_3 }}</div>
-              <!-- <div v-for="brd in form.boardSN" :key="brd">{{ brd }}</div> -->
             </template>
             <div v-else>
-               <n-input v-model:value="form.board_sn_1" placeholder="请输入板卡SN"  style="width: 100%; margin-bottom: 10px;" />
-               <n-input v-model:value="form.board_sn_2" placeholder="请输入板卡SN"  style="width: 100%; margin-bottom: 10px;" />
-               <n-input v-model:value="form.board_sn_3" placeholder="请输入板卡SN"  style="width: 100%; margin-bottom: 10px;" />
-              <!-- <n-dynamic-input v-model:value="form.boardSN1" placeholder="请输入板卡SN" />
-               <n-dynamic-input v-model:value="form.boardSN2" placeholder="请输入板卡SN" />
-                <n-dynamic-input v-model:value="form.boardSN3" placeholder="请输入板卡SN" /> -->
+               <n-input v-model:value="form.board_sn_1" placeholder="请输入板1 码"  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
+           <n-descriptions-item label="板2 SN">
+            <template v-if="!isEdit">
+              <div>{{ form.board_sn_2 }}</div>
+            </template>
+            <div v-else>
+               <n-input v-model:value="form.board_sn_2" placeholder="请输入板2 码 "  style="width: 100%; margin-bottom: 10px;" />
+            </div>
+          </n-descriptions-item>
+           <n-descriptions-item label="板3 SN">
+            <template v-if="!isEdit">
+              <div>{{ form.board_sn_3 }}</div>
+            </template>
+            <div v-else>
+               <n-input v-model:value="form.board_sn_3" placeholder="请输入板3 码 "  style="width: 100%; margin-bottom: 10px;" />
+            </div>
+          </n-descriptions-item>
+
+
+
         </n-descriptions>
       </n-card>
   
@@ -169,7 +181,7 @@
     machine_model: "",
     repairStation: Number(route.params.repairStation),
     device_sn: "",
-    powerSN: [""],
+    powerSN: "",
     // boardSN: ["BRD120240118001234556", "BRD220240118001234556", "BRD320240118001234556"],
     repair_component: "",
     defect_reason: "",
@@ -199,7 +211,6 @@
   
   function save() {
     console.log("保存数据", form.value)
-
     form.value.date = dayjs(form.value.date).format('YYYY-MM-DD')
     form.value.start_time = String(form.value.start_time)
     form.value.end_time = String(form.value.end_time)
@@ -219,7 +230,7 @@
     loading.value = true;
     try {
       const { data, error } = await fetchRepairDetailsByID(Number(id.value));
-      console.log("data",data)
+      // console.log("data",data)
       if (error === null && data !== null) {
         const detail = data; // 假设返回的是数组，取第一个
         form.value = {
@@ -228,7 +239,7 @@
           machine_model: detail.MachineModel || '',
           repairStation: detail.RepairStationName || '',
           device_sn: detail.DeviceSN || '',
-          powerSN: detail.PowerSN ? detail.PowerSN.split(',') : [],
+          powerSN: detail.PowerSN || '',
           // boardSN: detail.BoardSN ? detail.BoardSN.split(',') : [],
           repair_component: detail.RepairComponent || '',
           defect_reason: detail.DefectReason || '',

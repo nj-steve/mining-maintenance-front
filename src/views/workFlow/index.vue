@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
 import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip } from 'naive-ui';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
@@ -12,6 +13,7 @@ import ActionButtons from './components/ActionButtons.vue'
 import AddLogModal from './components/AddLogModal.vue'
 import { useAuthStore } from '@/store/modules/auth';
 
+const router = useRouter();
 interface Order {
   ID: number;                     // 工单ID
   OrderNo: string;                // 工单编号
@@ -309,7 +311,14 @@ const columns: DataTableColumns<Order> = [
         NTooltip,
         null,
         {
-          trigger: () => h('div', { style: 'max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
+          trigger: () => h(
+            'div', 
+            { 
+              style: 'max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;',
+              onClick: () => router.push({ name: 'workflowdetail', params: { id: row.ID } })
+            }, 
+            text
+          ),
           default: () => text
         }
       );
@@ -352,44 +361,46 @@ const columns: DataTableColumns<Order> = [
   //     return row.RepairCost || '未知';
   //   }
   //  },
-  { title: '付款状态', key: 'SettlementStatus', 
-  render: (row: any ) => {
-    if (row.SettlementStatusText === null || row.SettlementStatusText === undefined) {
-      return null;
-    }
-    //待处理，处理中，已完成，未解决
-    const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-      '已付款': 'success',
-      '未付款': 'warning',
-      '未申请': 'default',
-    };
+  ...(hasRole ? [
+    { title: '付款状态', key: 'SettlementStatus', 
+      render: (row: any ) => {
+        if (row.SettlementStatusText === null || row.SettlementStatusText === undefined) {
+          return null;
+        }
+        //待处理，处理中，已完成，未解决
+        const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+          '已付款': 'success',
+          '未付款': 'warning',
+          '未申请': 'default',
+        };
 
-    const label = row.SettlementStatusText || '未知';
-    // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-    return h(NTag, {type: tagMap[row.SettlementStatusText] }, () => label)
-  }
-  },
-  { title: '付款日期', key: 'PaymentDate',
-    render: (row: Order) => {
-      if (!row.PaymentDate) {
-        return '-';
+        const label = row.SettlementStatusText || '未知';
+        // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
+        return h(NTag, {type: tagMap[row.SettlementStatusText] }, () => label)
       }
-      return dayjs(row.PaymentDate).format('YYYY-MM-DD');
-    }
-  },
+    },
+    { title: '付款日期', key: 'PaymentDate',
+      render: (row: Order) => {
+        if (!row.PaymentDate) {
+          return '-';
+        }
+        return dayjs(row.PaymentDate).format('YYYY-MM-DD');
+      }
+    },
+  ] : []),
   { title: '工单状态', key: 'OrderStatusText',
-    render: (row: any) => {
-      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-      '已完成': 'success',
-      '维修': 'primary',
-      '未解决': 'error',
-      '待处理':'warning',
-      '处理中':'primary',
-      };
-      const label = row.OrderStatusText || '未知';
-      return h(NTag, {type: tagMap[row.OrderStatusText] }, () => label)
-    }
-   },
+      render: (row: any) => {
+        const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        '已完成': 'success',
+        '维修': 'primary',
+        '未解决': 'error',
+        '待处理':'warning',
+        '处理中':'primary',
+        };
+        const label = row.OrderStatusText || '未知';
+        return h(NTag, {type: tagMap[row.OrderStatusText] }, () => label)
+      }
+     },
   // { title: '短保期开始', key: 'warranty_status_text' },
   // { title: '剩余短保期', key: 'warranty_status_text' },
   { title: '操作',
@@ -509,6 +520,19 @@ const fetchOrderStatusData = async () => {
     loading.value = false;
   }
 };
+
+function goDetail(id: number | string) {
+  // console.log("跳转到详情页，ID:", id);
+  if (!id) {
+    console.error("ID 为空，无法跳转");
+    return;
+  }
+  try {
+    router.push({ name: 'workflowdetail', params: { id: String(id) } });
+  } catch (error) {
+    console.error("路由跳转失败:", error);
+  }
+}
 
 // ---------------- 查看详情弹框 ----------------// 详情弹框相关
 const showDetailModal = ref(false);

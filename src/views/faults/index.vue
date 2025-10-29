@@ -22,6 +22,7 @@ const hasRole=!authStore.userInfo.roles.includes('3')
 
 interface Faults {
   id: number;
+  sn: string;
   serial_number: string;
   serial_number_source: string;
   Faults_type_id:number;
@@ -101,12 +102,14 @@ const pagination = ref<PaginationProps>({
 const showEditModal = ref(false);
 const editForm = ref<Faults>({
   id: 0,
+  sn: '',
   Faults_type_id:0,
   status_value:0,
   serial_number: '',
   serial_number_source: '',
   contract_number: '',
-  site_id:0
+  site_id:0,
+
   // FaultsType: { name: '', hash_rate: 0 },
   // Site: { name: '' },
   
@@ -163,6 +166,7 @@ const fetchSiteData = async () => {
 const handleOpenEdit = (row: Faults) => {
   editForm.value = {
     id: row.id,
+    sn: row.sn || '',
     Faults_type_id: row.Faults_type_id ?? 0,
     status_value: row.status_value ?? 0,
     serial_number: row.serial_number || '',
@@ -267,6 +271,7 @@ const columns: DataTableColumns<Faults> = [
         '维修': 'info',
         '报废': 'error',
         '新下架':'warning',
+        
       };
       const label = row.status_text || '未知';
       return h(NTag, {type: tagMap[row.status_text || '未知'] }, () => label)
@@ -485,6 +490,7 @@ const handleRefresh = () => {
           >
             创建工单 ({{ selectedRows.length }})
           </NButton>
+          
           <BindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
           
           <!-- 批量修改状态组件 -->
@@ -493,6 +499,7 @@ const handleRefresh = () => {
             :selectedRows="selectedRows"
             @refresh="handleRefresh"
           />
+
           <UploadFileBathStatusModal 
             :status-options="statusOptions"
             @refresh="handleRefresh"
@@ -554,17 +561,17 @@ const handleRefresh = () => {
         </div>
         
         <NFormItem label="选中故障机列表">
-          <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px;">
+          <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px; width: 100%;">
             <div v-for="(machine, index) in workOrderForm.selectedMachines" :key="machine.id" 
                  style="display: flex; justify-content: space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 100%;">
               <div>
-                <div style="font-weight: 500;">{{ machine.serial_number }}</div>
-                <div style="font-size: 12px; color: #666;">
+                <div style="font-weight: 500;width:30%" >{{ machine.sn }}</div>
+                <div style="font-size: 12px; width:30%;color: #666;">
                   {{ machine.FaultsType?.name || machine.model }} | 
                   {{ machine.Site?.name || machine.site_name }}
                 </div>
               </div>
-              <NTag type="warning">{{ machine.Status?.name || machine.status_text }}</NTag>
+              <NTag type="warning" style="width:30%">{{ machine.Status?.name || machine.status_text }}</NTag>
             </div>
           </div>
         </NFormItem>
