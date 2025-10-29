@@ -33,6 +33,16 @@ export function fetchRepairDetails(params: { page?: number; limit?: number; [key
 }
 
 // 维修明细列表
+export function exportRepairDetails(params: {[key: string]: any }) {
+  return request({
+    url: `/api/repair_details/export`,
+    method: 'get',
+    params
+
+  });
+}
+
+// 维修明细列表
 export function fetchRepairDetailsByID(id: number) {
   return request({
     url: `/api/repair_details/${id}`,

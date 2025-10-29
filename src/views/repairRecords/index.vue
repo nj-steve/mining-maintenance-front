@@ -2,12 +2,13 @@
 import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchRepairDetails } from '@/service/api/repair';
+import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
 import UploadExcel from "@/components/upload/UploadExcel.vue"
 import { useRouter } from 'vue-router';
 import { statusOptions } from '@/constants/business'
 import { useAuthStore } from '@/store/modules/auth';
 import RepairSearchBar from './components/RepairSearchBar.vue'
+
 const router = useRouter();
 
 
@@ -34,6 +35,7 @@ interface Faults {
 const message = useMessage();
 
 const tableData = ref<Faults[]>([]);
+const exportData = ref<Faults[]>([]);
 const loading = ref(false);
 const work_order_no = ref<string>('');
 const sn = ref<string>('');
@@ -197,15 +199,54 @@ const downloadTemplate = () => {
   document.body.removeChild(link);
   message.success('模板下载已开始');
 };
-const exportCsv = () => {
-  const headers = ['日期','工单号','维修站点','机型','整机SN码','损坏部件','初测不良原因','查证缺陷','维修结果'];
+const exportCsv = async () => {
+  loading.value = true;
+  try {
+    const params: any = {
+      sn: sn.value || undefined,
+      repair_result: repair_result.value || undefined,
+      work_order_no: work_order_no.value || undefined,
+    };
+    const {data,error} = await exportRepairDetails(params);
+    console.log("导出数据:", data);
+    if(error==null){
+        exportData.value = data;
+        exportExcel();
+        // 处理导出成功逻辑
+        
+        // const blob = new Blob([data], { type: 'application/vnd.ms-excel' });
+        // const url = URL.createObjectURL(blob);
+        // const link = document.createElement('a');
+        // link.href = url;
+        // link.download = `维修明细_导出_${new Date().toISOString().slice(0,10)}.xlsx`;
+        // document.body.appendChild(link);
+        // link.click();
+        // document.body.removeChild(link);
+        // URL.revokeObjectURL(url);
+        // message.success('导出成功，下载已开始');
+    }else{
+        message.error(`导出失败: ${error}`);
+    }
+  } catch (err) {
+    message.error(`导出失败: ${err}`);
+  } finally {
+    loading.value = false;
+  }
+
+  // 获取所有待导出数据
+ 
+};
+const exportExcel=async () => {
+
+        // 处理导出成功逻辑
+ const headers = ['日期','工单号','维修站点','机型','整机SN码','损坏部件','初测不良原因','查证缺陷','维修结果'];
   const formatCell = (val: any) => {
     const s = val === undefined || val === null ? '' : String(val);
     const needsQuote = /[",\n]/.test(s);
     const escaped = s.replace(/"/g, '""');
     return needsQuote ? `"${escaped}"` : escaped;
   };
-  const rows = tableData.value.map((row: any) => [
+  const rows = exportData.value.map((row: any) => [
     row.Date,
     row.WorkOrderNo,
     row.RepairStationName ?? '-',
@@ -230,7 +271,8 @@ const exportCsv = () => {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
   message.success('导出成功，下载已开始');
-};
+}
+
 </script>
 
 <template>

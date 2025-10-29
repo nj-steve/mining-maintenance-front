@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { watch,computed } from 'vue';
 import { useAppStore } from '@/store/modules/app';
 import { useEcharts } from '@/hooks/common/echarts';
 import { $t } from '@/locales';
@@ -9,6 +9,26 @@ defineOptions({
 });
 
 const appStore = useAppStore();
+
+// const props = defineProps<{
+//   // data: {
+//   //   xAxisData: string[];
+//   //   seriesData: number[][];
+//   // };
+// }>();
+
+const props = defineProps<{
+  data: [];
+}>();
+
+const cardData = computed<any[]>(() => props.data);
+const xAxisData = computed<string[]>(() => cardData.value.map(item => item.day.slice(0, 10)));
+const seriesOff_shelfData = computed<number[][]>(() => cardData.value.map(item => [item.off_shelf]));
+const seriesPendingData = computed<number[][]>(() => cardData.value.map(item => [item.pending]));
+const seriesRepairingData = computed<number[][]>(() => cardData.value.map(item => [item.repairing]));
+const seriesCompletedData = computed<number[][]>(() => cardData.value.map(item => [item.completed]));
+
+
 
 const { domRef, updateOptions } = useEcharts(() => ({
   tooltip: {
@@ -32,7 +52,8 @@ const { domRef, updateOptions } = useEcharts(() => ({
   xAxis: {
     type: 'category',
     boundaryGap: false,
-    data: [] as string[]
+    // data: [] as string[]
+    data: xAxisData.value
   },
   yAxis: {
     type: 'value'
@@ -66,7 +87,8 @@ const { domRef, updateOptions } = useEcharts(() => ({
       emphasis: {
         focus: 'series'
       },
-      data: [] as number[]
+      // data: [] as number[]
+      data: seriesOff_shelfData.value.map(item => item[0])
     },
     {
       color: '#26deca',
@@ -96,7 +118,8 @@ const { domRef, updateOptions } = useEcharts(() => ({
       emphasis: {
         focus: 'series'
       },
-      data: []
+      // data: [] as number[]
+      data: seriesPendingData.value.map(item => item[0])
     },
     {
       color: '#ff9f7f',
@@ -126,7 +149,8 @@ const { domRef, updateOptions } = useEcharts(() => ({
       emphasis: {
         focus: 'series'
       },
-      data: []
+      // data: [] as number[]
+      data: seriesRepairingData.value.map(item => item[0])
     },
     {
       color: '#ffc658',
@@ -156,7 +180,8 @@ const { domRef, updateOptions } = useEcharts(() => ({
       emphasis: {
         focus: 'series'
       },
-      data: []
+      // data: [] as number[]
+      data: seriesCompletedData.value.map(item => item[0])
     }
   ]
 }));
@@ -167,11 +192,12 @@ async function mockData() {
   });
 
   updateOptions(opts => {
-    opts.xAxis.data = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '24:00'];
-    opts.series[0].data = [ 3251, 2978, 2880, 1606, 4268, 3411, 2890, 2311,4623, 5145];
-    opts.series[1].data = [ 1963, 1367, 1956, 678,2208, 816, 1916, 2512, 1281, 1008];
-    opts.series[2].data = [ 251, 978, 880, 606, 4311, 1623, 145, 268, 411, 890, ];
-    opts.series[3].data = [ 4281, 1008, 963, 367, 956, 878,208, 116, 916, 512,];
+    opts.xAxis.data = xAxisData.value;
+    // opts.xAxis.data = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '24:00'];
+    opts.series[0].data = seriesOff_shelfData.value.map(item => item[0]);
+    opts.series[1].data = seriesPendingData.value.map(item => item[0]);
+    opts.series[2].data = seriesRepairingData.value.map(item => item[0]);
+    opts.series[3].data = seriesCompletedData.value.map(item => item[0]);
 
     return opts;
   });
@@ -198,7 +224,7 @@ async function init() {
 watch(
   () => appStore.locale,
   () => {
-    updateLocale();
+    // updateLocale();
   }
 );
 

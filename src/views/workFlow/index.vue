@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
 import dayjs from 'dayjs';
-import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker } from 'naive-ui';
+import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip } from 'naive-ui';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
 import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus } from '@/service/api/workflow';
 import {fetchSites,gobackOrders,fetchRepairStations} from '@/service/api';
@@ -18,6 +18,7 @@ interface Order {
   SiteID: number;                 // 场地ID
   StationID: number;              // 维修站ID
   Onsite: number;                 // 是否驻场（0/1）
+  StationName: string | null;     // 维修站名称
   OrderStatus: number;            // 工单状态
   FaultCount: number;             // 故障机数量
   InWarrantyCount: number;        // 短保期内数量
@@ -298,8 +299,38 @@ const columns: DataTableColumns<Order> = [
     type: 'selection',
     width: 50
   },
-  { title: '工单编号', key: 'OrderNo', width: 200 },
-  { title: '维修商', key: 'StationName' },
+  { 
+    title: '工单编号', 
+    key: 'OrderNo', 
+    width: 160,
+    render: (row: Order) => {
+      const text = row.OrderNo || '';
+      return h(
+        NTooltip,
+        null,
+        {
+          trigger: () => h('div', { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
+          default: () => text
+        }
+      );
+    }
+  },
+  { 
+    title: '维修商', 
+    key: 'StationName', 
+    width: 150,
+    render: (row: any) => {
+      const text = row.StationName || '';
+      return h(
+        NTooltip,
+        null,
+        {
+          trigger: () => h('div', { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
+          default: () => text
+        }
+      );
+    }
+  },
   { title: '场地', key: 'SiteName' },
   { title: '故障机数量', key: 'FaultCount'},
   { title: '维修方式', key: 'RepairMethod',
@@ -590,7 +621,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       :row-key="(row: Order) => row.ID"
       v-model:checked-row-keys="checkedRowKeys"
       remote 
-      :scroll-x="1400"
+      :scroll-x="1800"
       striped
       class="sm:h-full"
     />

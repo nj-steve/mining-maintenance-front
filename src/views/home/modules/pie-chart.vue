@@ -9,6 +9,45 @@ defineOptions({
 });
 
 const appStore = useAppStore();
+interface CardData {
+  key: string;
+  title: string;
+  value: number;
+  rate: number;
+  unit: string;
+  color: {
+    start: string;
+    end: string;
+  };
+  icon: string;
+}
+
+interface TodayData {
+  wait_repair_count: number;
+  wait_repair_rate: number;
+  off_shelf_count: number;
+  off_shelf_rate: number;
+  pending_count: number;
+  pending_rate: number;
+  logistics_count: number;
+  logistics_rate: number;
+  repairing_count: number;
+  repairing_rate: number;
+  repaired_count: number;
+  repaired_rate: number;
+  wait_on_shelf_count: number;
+  wait_on_shelf_rate: number;
+  scrapped_count: number;
+  scrapped_rate: number;
+}
+
+const props = defineProps<{
+  data: { today_data?: Partial<TodayData> };
+}>();
+
+// 移除旧的 CardData 及错误的 cardData 计算
+// interface CardData { /* removed */ }
+// const cardData = computed<TodayData[]>(() => props.data);
 
 const { domRef, updateOptions } = useEcharts(() => ({
   tooltip: {
@@ -51,57 +90,56 @@ const { domRef, updateOptions } = useEcharts(() => ({
   ]
 }));
 
-async function mockData() {
-  await new Promise(resolve => {
-    setTimeout(resolve, 1000);
-  });
+// 根据传入的 dashboard 数据更新饼图
+watch(
+  () => props.data,
+  val => {
+    const today = (val?.today_data || {}) as Partial<TodayData>;
+    updateOptions(opts => {
+      opts.series[0].data = [
+        { name: '待修数', value: today.wait_repair_count ?? 0 },
+        { name: '今日下架', value: today.off_shelf_count ?? 0 },
+        { name: '待处理', value: today.pending_count ?? 0 },
+        { name: '物流中', value: today.logistics_count ?? 0 },
+        { name: '在修设备', value: today.repairing_count ?? 0 },
+        { name: '今日维修', value: today.repaired_count ?? 0 },
+        { name: '待上架', value: today.wait_on_shelf_count ?? 0 },
+        { name: '报废数', value: today.scrapped_count ?? 0 }
+      ];
+      return opts;
+    });
+  },
+  { immediate: true, deep: true }
+);
 
-  updateOptions(opts => {
-    opts.series[0].data = [
-      { name: '今日下架', value: 15 },
-      { name: '待处理', value: 25 },
-      { name: '在修设备', value: 20 },
-      { name: '今日维修', value: 18 },
-      { name: '待上架', value: 12 },
-      { name: '物流中', value: 10 }
-    ];
-
-    return opts;
-  });
-}
+// 删除无用的 mockData 与 init
+// async function mockData() { /* removed */ }
+// async function init() { /* removed */ }
+// init();
 
 function updateLocale() {
   updateOptions((opts, factory) => {
     const originOpts = factory();
-
     opts.series[0].name = originOpts.series[0].name;
-
-    opts.series[0].data = [
-      { name: '今日下架', value: 15 },
-       { name: '待处理', value: 25 },
-       { name: '在修设备', value: 20 },
-       { name: '今日维修', value: 18 },
-       { name: '待上架', value: 12 },
-       { name: '物流中', value: 10 }
-    ];
-
     return opts;
   });
 }
 
-async function init() {
-  mockData();
-}
+// 移除 init 和 mockData 调用，改为根据 props 变化驱动
+// 删除 init 与 mockData 调用
+// async function init() {
+//   mockData();
+// }
 
 watch(
   () => appStore.locale,
   () => {
-    updateLocale();
+    // updateLocale();
   }
 );
 
-// init
-init();
+// 删除 init 调用
+// init();
 </script>
 
 <template>

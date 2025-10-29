@@ -268,7 +268,10 @@ const onSearch = () => {
       @search="onSearch"
     />
      </div>
-    <NCard class="card-wrapper sm:flex-1-hidden">
+     <div class="card-wrapper sm:flex-1-hidden">
+
+     
+    <!-- <NCard class="card-wrapper sm:flex-1-hidden"> -->
     <!-- 表格 -->
     <NDataTable 
     flex-height
@@ -279,7 +282,8 @@ const onSearch = () => {
     :row-key="row => row.id"
     class="sm:h-full"
     :loading="loading" remote />
-    </NCard>
+    <!-- </NCard> -->
+    </div>
 
     <!-- 修改弹框 -->
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改场地信息">

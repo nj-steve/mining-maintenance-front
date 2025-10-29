@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h } from 'vue';
-import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker } from 'naive-ui';
+import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip } from 'naive-ui';
 import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
@@ -239,7 +239,22 @@ const columns: DataTableColumns<Faults> = [
   },
   { title: '型号', key: 'model', width: 120},
   { title: '问题描述', key: 'description', width: 200},
-  { title: '工单编号', key: 'order_no', width: 150},
+  { 
+    title: '工单编号', 
+    key: 'order_no', 
+    width: 150,
+    render: (row: Faults) => {
+      const text = (row as any).order_no || '';
+      return h(
+        NTooltip,
+        null,
+        {
+          trigger: () => h('div', { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
+          default: () => text
+        }
+      );
+    }
+  },
   { title: '维修次数', key: 'repair_count', width: 100 },
   { title: '状态', key: 'status_text', width: 100,
     render: (row: Faults) => {

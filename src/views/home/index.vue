@@ -15,8 +15,9 @@ import { round } from 'echarts/types/src/util/number.js';
 const appStore = useAppStore();
 
 const dashboardData = ref<any>({});
+// const chartData = ref<any>({});
 
-const orders = computed(() => dashboardData.value.recent_orders || []);
+const chartData = computed(() => dashboardData.value.chart_data || []);
 
 const cardDataForChild = computed(() => {
   const data = dashboardData.value;
@@ -112,7 +113,7 @@ const gap = computed(() => (appStore.isMobile ? 0 : 16));
 onMounted(async () => {
   const { data, error } = await fetchDashboard();
   console.log('res', data);
-  console.log('error', error);
+  // console.log('error', error);
   if (error === null) {
     // console.log('res~~~', data);
     dashboardData.value = data;
@@ -130,12 +131,12 @@ onMounted(async () => {
     <NGrid :x-gap="gap" :y-gap="16" responsive="screen" item-responsive>
       <NGi span="24 s:24 m:14">
         <NCard :bordered="false" class="card-wrapper">
-          <LineChart />
+          <LineChart :data="chartData" />
         </NCard>
       </NGi>
       <NGi span="24 s:24 m:10">
         <NCard :bordered="false" class="card-wrapper">
-          <PieChart />
+          <PieChart :data="dashboardData" />
         </NCard>
       </NGi>
     </NGrid>
