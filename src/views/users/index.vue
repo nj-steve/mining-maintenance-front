@@ -441,15 +441,16 @@ watch([searchSerial,searchRole], () => {
       </NFormItem>
 
       <!-- <NFormItem label="权限分配"> -->
-
         <!-- <NSelect v-model:value="editForm.role" placeholder="请输入权限分配" /> -->
       <!-- </NFormItem> -->
     </div>
   </NForm>
 
   <template #footer>
-    <NButton type="primary" @click="handleSave">保存</NButton>
-    <NButton @click="showModal = false">取消</NButton>
+    <NSpace>
+      <NButton size="medium" type="primary" @click="handleSave">保存</NButton>
+      <NButton size="medium" @click="showModal = false">取消</NButton>
+    </NSpace>
   </template>
 </NModal>
     <!-- <NModal v-model:show="showModal" style="width: 600px" preset="card" :title="dialogMode==='add' ? '添加用户' : '编辑用户'">

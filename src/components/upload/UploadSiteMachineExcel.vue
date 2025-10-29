@@ -218,7 +218,7 @@ const hasRole=!authStore.userInfo.roles.includes('3')
     // 创建一个临时链接来下载模板文件
     const link = document.createElement('a')
     link.href = '/template/site_machine_template.xlsx' // 模板文件路径
-    link.download = '场地矿机导入模板.xlsx'
+    link.download = '场地故障机导入模板.xlsx'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

@@ -5,7 +5,7 @@ import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { fetchFaults,updateFaultsStatus } from '@/service/api/faults';
+import { fetchFaults,updateFaultsStatus,updateFaults } from '@/service/api/faults';
 import {fetchOrdersStatus} from '@/service/api/workflow';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
@@ -17,7 +17,7 @@ import { useAuthStore } from '@/store/modules/auth';
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
 
-console.log("Outer >> hasRole>>",hasRole)
+// console.log("Outer >> hasRole>>",hasRole)
 
 
 interface Faults {
@@ -174,6 +174,8 @@ const handleOpenEdit = (row: Faults) => {
   showEditModal.value = true;
 };
 
+
+
 // 保存修改
 const handleSaveEdit = async () => {
   try {
@@ -204,6 +206,8 @@ const handleSaveEdit = async () => {
     showEditModal.value = false;
   }
 };
+
+
 
 // ---------------- 表格列 ----------------
 const columns: DataTableColumns<Faults> = [
@@ -497,7 +501,6 @@ const handleRefresh = () => {
         </template>
       </div>
     </div>
-  
     <!-- 表格 -->
       <NDataTable 
         flex-height
@@ -522,8 +525,10 @@ const handleRefresh = () => {
         </NFormItem>
       </NForm>
       <template #footer>
-        <NButton type="primary" @click="handleSaveEdit">保存</NButton>
-        <NButton @click="showEditModal = false">取消</NButton>
+        <NSpace>
+          <NButton type="primary" @click="handleSaveEdit">保存</NButton>
+          <NButton @click="showEditModal = false">取消</NButton>
+        </NSpace>
       </template>
     </NModal>
 
@@ -551,7 +556,7 @@ const handleRefresh = () => {
         <NFormItem label="选中故障机列表">
           <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px;">
             <div v-for="(machine, index) in workOrderForm.selectedMachines" :key="machine.id" 
-                 style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+                 style="display: flex; justify-content: space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 100%;">
               <div>
                 <div style="font-weight: 500;">{{ machine.serial_number }}</div>
                 <div style="font-size: 12px; color: #666;">
@@ -566,8 +571,10 @@ const handleRefresh = () => {
       </NForm>
       
       <template #footer>
-        <NButton type="primary" @click="handleConfirmWorkOrder">创建</NButton>
-        <NButton @click="handleCancelWorkOrder">取消</NButton>
+        <NSpace>
+          <NButton type="primary" @click="handleConfirmWorkOrder">创建</NButton>
+          <NButton @click="handleCancelWorkOrder">取消</NButton>
+        </NSpace>
       </template>
     </NModal>
     

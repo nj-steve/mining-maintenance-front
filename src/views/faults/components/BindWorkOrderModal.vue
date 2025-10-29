@@ -62,8 +62,10 @@
     </NForm>
 
     <template #footer>
-      <NButton type="primary" @click="handleSubmit">提交</NButton>
-      <NButton @click="handleCancel">取消</NButton>
+      <NSpace>
+        <NButton size="medium" type="primary" @click="handleSubmit">提交</NButton>
+        <NButton size="medium" @click="handleCancel">取消</NButton>
+      </NSpace>
     </template>
   </NModal>
 </template>

@@ -64,7 +64,6 @@ async function handleSubmit() {
       <NButton type="primary" size="large" round block :loading="authStore.loginLoading" @click="handleSubmit">
         {{ $t('common.confirm') }}
       </NButton>
-     
     </NSpace>
   </NForm>
 </template>

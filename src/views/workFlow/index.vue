@@ -302,14 +302,14 @@ const columns: DataTableColumns<Order> = [
   { 
     title: '工单编号', 
     key: 'OrderNo', 
-    width: 160,
+    width: 220,
     render: (row: Order) => {
       const text = row.OrderNo || '';
       return h(
         NTooltip,
         null,
         {
-          trigger: () => h('div', { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
+          trigger: () => h('div', { style: 'max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
           default: () => text
         }
       );
@@ -626,14 +626,14 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       class="sm:h-full"
     />
        <!-- </NCard>   -->
-       </div>
+    </div>
 
     <!-- 修改弹框 -->
     <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
       <NForm :model="editForm" label-width="100">
         <!-- 工单编号 -->
     <NFormItem label="工单编号">
-      <NInput size="small" v-model:value="editForm.order_no" disabled />
+      <NInput size="medium" v-model:value="editForm.order_no" disabled />
     </NFormItem>
 
       <!-- 选择维修站 -->
@@ -646,22 +646,24 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
         </NFormItem>
 
     <NFormItem label="付款状态">
-        <NSelect size="small"
+        <NSelect size="medium"
           v-model:value="editForm.settlement_status"
           :options="[{ label: '未付款', value: 1 }, { label: '已付款', value: 2 }]"
         />
       </NFormItem>
 
       <NFormItem label="工单状态">
-        <NSelect size="small"
+        <NSelect size="medium"
           v-model:value="editForm.order_status"
           :options="statusOptions"
         />
       </NFormItem>
       </NForm> 
       <template #footer>
-        <NButton size="small" type="primary" @click="handleSaveEdit" style="margin-right: 8px;">保存</NButton>
-        <NButton size="small" @click="showEditModal = false">取消</NButton>
+        <n-space item-style="display: flex;">
+        <NButton size="medium" type="primary" @click="handleSaveEdit" style="margin-right: 8px;">保存</NButton>
+        <NButton size="medium" @click="showEditModal = false">取消</NButton>
+        </n-space>
       </template>
     </NModal>
 

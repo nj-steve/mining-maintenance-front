@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace } from 'naive-ui';
+import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace, NTooltip } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchSites,updateSites,fetchUser } from '@/service/api';
 import { siteStatusRecord } from '@/constants/business';
@@ -24,9 +24,12 @@ interface Site {
   email: string;
   repairing: number;
   repairing_rate: number;
-  wait_repair: number;
+  fault_count: number;
+  scrapped_count: number;
+  wait_repair_count: number;
   wait_repair_rate: number;
   is_onsite_default?: number;
+  wait_on_shelf_count: number;
 }
 
 const dialog = useDialog()
@@ -129,15 +132,43 @@ const fetchUsers = async () => {
 }
 // ---------------- 表格列 ----------------
 const columns: DataTableColumns<Site> = [
-  { title: '场地名称', key: 'name', width: 200 },
-  { title: '资产数', key: 'asset_count'},
-  { title: '24H故障数', key: 'fault_count'},
-  { title: '物流中', key: 'in_logistics_count' },
-  { title: '待上架', key: 'wait_on_shelf_count' },
-  { title: '在修数', key: 'repairing' },
-  { title: '待修数', key: 'wait_repair_count' },
-  { title: '待修率', key: 'wait_repair_rate' },
-  { title: '报废数', key: 'scrapped_count' },
+  {
+    title: '场地名称',
+    key: 'name',
+    width: 200,
+    render: (row: Site) => {
+      const content = row.name || '';
+      return h(
+        NTooltip,
+        { placement: 'top' },
+        {
+          default: () => content,
+          trigger: () =>
+            h(
+              'div',
+              {
+                style: {
+                  width: '200px',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis'
+                },
+                title: content
+              },
+              content
+            )
+        }
+      );
+    }
+  },
+  { title: '资产数', key: 'asset_count',render: (row: Site) => row.asset_count.toLocaleString() || 0 },
+  { title: '24H故障数', width: 120, key: 'fault_count',render: (row: Site) => row.fault_count.toLocaleString() || 0 },
+  { title: '物流中', key: 'in_logistics_count',render: (row: Site) => row.in_logistics_count.toLocaleString() || 0 },
+  { title: '待上架', key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
+  { title: '在修数', key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
+  { title: '待修数', key: 'wait_repair_count',render: (row: Site) => row.wait_repair_count.toLocaleString() || 0 },
+  { title: '待修率', key: 'wait_repair_rate',render: (row: Site) => (row.wait_repair_rate || 0).toFixed(2) + "%" },
+  { title: '报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
   { title: '站点状态', key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',
@@ -151,6 +182,7 @@ const columns: DataTableColumns<Site> = [
   {
     title: '操作',
     key: 'actions',
+    width: 180,
     align:'center',
     render: (row: Site) => {
       return [
@@ -270,19 +302,16 @@ const onSearch = () => {
      </div>
      <div class="card-wrapper sm:flex-1-hidden">
 
-     
-    <!-- <NCard class="card-wrapper sm:flex-1-hidden"> -->
     <!-- 表格 -->
     <NDataTable 
     flex-height
-    :scroll-x="962"
+    :scroll-x="1400"
     :columns="columns" 
     :data="tableData" 
     :pagination="pagination" 
     :row-key="row => row.id"
     class="sm:h-full"
     :loading="loading" remote />
-    <!-- </NCard> -->
     </div>
 
     <!-- 修改弹框 -->
