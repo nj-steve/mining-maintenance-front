@@ -26,25 +26,26 @@
       </div>
 
       <NFormItem label="待解绑列表">
-        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px;">
+        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px; width: 100%;">
           <div 
             v-for="machine in withOrderRows" 
             :key="machine.id" 
-            style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;"
+            style="display: flex; justify-content: space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 100%;"
           >
-            <div>
-              <div style="font-weight: 500;">{{ machine.serial_number }}</div>
+            <!-- <div> -->
+              <div style="font-weight: 500;font-size: 12px; color: #666;">{{ machine.sn }}</div>
               <div style="font-size: 12px; color: #666;">
                 工单：{{ machine.order_no }} | 场地：{{ machine.Site?.name || machine.site_name }}
               </div>
-            </div>
-            <NTag type="error">待解绑</NTag>
+            <!-- </div> -->
+            <NTag type="error" size="small">待解绑</NTag>
           </div>
         </div>
       </NFormItem>
     </NForm>
 
     <template #footer>
+      <NSpace>
       <NPopconfirm
         :negative-text="'取消'"
         :positive-text="'确认解绑'"
@@ -56,6 +57,7 @@
         是否确认解绑这些机器的工单？
       </NPopconfirm>
       <NButton @click="handleCancel">关闭</NButton>
+      </NSpace>
     </template>
   </NModal>
 </template>
@@ -70,6 +72,8 @@ const message = useMessage();
 interface Faults {
   id: number;
   serial_number: string;
+  sn?: string;
+  serial_number_source?: string;
   order_no?: string;
   status_text?: string;
   site_name?: string;

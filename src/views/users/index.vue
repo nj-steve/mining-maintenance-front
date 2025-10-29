@@ -5,6 +5,9 @@ import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchUser, updateUser, createUser,fetchCompanies } from '@/service/api/auth';
 import { roleTagMap, roleRecord, userStatusMap, userStatusRecord } from "@/constants/business"
 import { REG_EMAIL } from '@/constants/reg';
+import { useAuthStore } from '@/store/modules/auth';
+const authStore = useAuthStore();
+const isAdmin = authStore.userInfo?.roles?.includes('1') ?? false;
 
 interface Company {
   id: number;
@@ -247,15 +250,17 @@ const columns: DataTableColumns<User> = [
     key: 'actions',
     align:'center',
     render: (row: User) => {
-      return h(
-        NButton,
-        {
-          type: 'info',
-          ghost: true,
-          onClick: () => handleOpenEdit(row)
-        },
-        { default: () => '编辑' }
-      )
+      return isAdmin
+        ? h(
+            NButton,
+            {
+              type: 'info',
+              ghost: true,
+              onClick: () => handleOpenEdit(row)
+            },
+            { default: () => '编辑' }
+          )
+        : null
     }
   }
 ];
@@ -371,7 +376,7 @@ watch([searchSerial,searchRole], () => {
   <div>
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
-      <NButton type="primary" ghost size="small" @click="handleOpenAdd"> + 新增人员</NButton>
+      <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenAdd"> + 新增人员</NButton>
       <div style="display: flex; align-items: center; gap: 12px;">
         <NSelect v-model:value="searchRole" :options="modelOptions"  placeholder="角色筛选" clearable />
         <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入姓名" clearable style="width: 240px" />

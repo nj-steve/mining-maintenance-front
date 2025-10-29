@@ -24,8 +24,10 @@
     </NForm>
     
     <template #footer>
+      <NSpace>
       <NButton type="primary" @click="handleSubmit">提交</NButton>
       <NButton @click="handleCancel">取消</NButton>
+      </NSpace>
     </template>
   </NModal>
 </template>

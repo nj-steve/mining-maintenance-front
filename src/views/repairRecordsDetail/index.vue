@@ -79,8 +79,6 @@
             </div>
           </n-descriptions-item>
 
-
-
         </n-descriptions>
       </n-card>
   
@@ -97,11 +95,17 @@
             <n-input v-else v-model:value="form.defect_reason" />
           </n-descriptions-item>
   
-          <n-descriptions-item label="不良代码">
+          <n-descriptions-item label="不良代码L2">
             <template v-if="!isEdit">
-              <div>{{ form.defect_code }}</div>
+              <div>{{ form.defect_code_2 }}</div>
             </template>
-            <n-input v-else v-model:value="form.defect_code" placeholder="请输入不良代码" />
+            <n-input v-else v-model:value="form.defect_code_2" placeholder="请输入不良代码L2" />
+          </n-descriptions-item>
+           <n-descriptions-item label="不良代码L3">
+            <template v-if="!isEdit">
+              <div>{{ form.defect_code_3 }}</div>
+            </template>
+            <n-input v-else v-model:value="form.defect_code_3" placeholder="请输入不良代码L3" />
           </n-descriptions-item>
   
           <n-descriptions-item label="位号信息">
@@ -182,6 +186,8 @@
     repairStation: Number(route.params.repairStation),
     device_sn: "",
     powerSN: "",
+    defect_code_2: "",
+    defect_code_3: "",
     // boardSN: ["BRD120240118001234556", "BRD220240118001234556", "BRD320240118001234556"],
     repair_component: "",
     defect_reason: "",
@@ -240,6 +246,8 @@
           repairStation: detail.RepairStationName || '',
           device_sn: detail.DeviceSN || '',
           powerSN: detail.PowerSN || '',
+          defect_code_2: detail.DefectCode2 || '',
+          defect_code_3: detail.DefectCode3 || '',
           // boardSN: detail.BoardSN ? detail.BoardSN.split(',') : [],
           repair_component: detail.RepairComponent || '',
           defect_reason: detail.DefectReason || '',

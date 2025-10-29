@@ -42,19 +42,21 @@
       </div>
 
       <NFormItem label="选中故障机列表">
-        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px;">
+        
+        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px;width: 100%;">
           <div 
             v-for="machine in selectedRows" 
             :key="machine.id" 
-            style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;"
+            style="display: flex; justify-content:space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;width: 100%;"
           >
-            <div>
-              <div style="font-weight: 500;">{{ machine.serial_number }}</div>
+            <!-- <div> -->
+              <div style="font-weight: 500;font-size: 12px; color: #666;">{{ machine.sn }}</div>
+ <div style="font-size: 12px; color: #666;">{{ machine.FaultsType?.name || machine.model }}</div>
               <div style="font-size: 12px; color: #666;">
-                {{ machine.FaultsType?.name || machine.model }} | 
+                 <!-- |  -->
                 {{ machine.Site?.name || machine.site_name }}
               </div>
-            </div>
+            <!-- </div> -->
             <NTag type="warning">{{ machine.Status?.name || machine.status_text }}</NTag>
           </div>
         </div>
@@ -73,13 +75,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { NButton, NModal, NForm, NFormItem, NInput, NTag, useMessage } from 'naive-ui';
-import { createOrder } from '@/service/api/workflow';
+import { bindFaultsToOrder } from '@/service/api/faults';
 
 const message = useMessage();
 
 interface Faults {
   id: number;
   serial_number: string;
+  sn?: string;
   serial_number_source?: string;
   status_text?: string;
   site_name?: string;
@@ -142,7 +145,8 @@ const handleOpenModal = () => {
   }
 
   // 默认生成一个工单号，用户可编辑
-  form.value.workOrderNo = `WO${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+  // form.value.workOrderNo = `WO${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+  form.value.workOrderNo="";
   form.value.workOrderDate = new Date().toISOString().split('T')[0];
 
   visible.value = true;
@@ -173,7 +177,7 @@ const handleSubmit = async () => {
       site_id: siteId.value
     };
 
-    const { error } = await createOrder(submitData);
+    const { error } = await bindFaultsToOrder(submitData);
     if (error === null) {
       message.success('绑定工单成功！');
       visible.value = false;

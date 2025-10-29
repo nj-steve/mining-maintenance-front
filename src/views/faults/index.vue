@@ -14,6 +14,9 @@ import FaultsSearchCard from './components/FaultsSearchCard.vue'
 import BindWorkOrderModal from './components/BindWorkOrderModal.vue'
 import UnbindWorkOrderModal from './components/UnbindWorkOrderModal.vue'
 import { useAuthStore } from '@/store/modules/auth';
+import EditFaultModalButton from './components/EditFaultModalButtonShouhou.vue'
+import EditFaultModalButtonYunwei from './components/EditFaultModalButtonYunwei.vue'
+
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
 
@@ -77,6 +80,41 @@ const workOrderForm = ref({
   selectedMachines: [] as Faults[],
   site_id:0
 });
+
+// ---------------- 数据获取 ----------------
+const fetchData = async () => {
+  loading.value = true;
+  const params: any = {
+    page: pagination.value.page,
+    page_size: pagination.value.pageSize,
+    sn: searchSerial.value || undefined,
+    order_no: searchWorkOrderNo.value || undefined,
+    site_id: searchSiteId.value || undefined,
+    status: searchStatus.value || undefined,
+    start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
+    end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
+    model: searchModel.value || undefined
+  };
+
+  try {
+    const {data,error} = await fetchFaults(params);
+    if(error==null){
+        tableData.value = data.list;
+        pagination.value.itemCount = data.pagination.total;
+        pagination.value.page =  data.pagination.page;
+        pagination.value.pageSize =  data.pagination.page_size;
+    }else{
+        message.error(`加载失败: ${error}`);
+    }
+  } catch (err) {
+    message.error(`加载失败${err}`);
+  } finally {
+    loading.value = false;
+  }
+};
+
+
+
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -99,21 +137,7 @@ const pagination = ref<PaginationProps>({
 });
 
 // ---------------- 修改弹框 ----------------
-const showEditModal = ref(false);
-const editForm = ref<Faults>({
-  id: 0,
-  sn: '',
-  Faults_type_id:0,
-  status_value:0,
-  serial_number: '',
-  serial_number_source: '',
-  contract_number: '',
-  site_id:0,
-
-  // FaultsType: { name: '', hash_rate: 0 },
-  // Site: { name: '' },
-  
-});
+// 已封装到组件 EditFaultModalButton 内，无需在此维护本地编辑状态
 
 // 批量修改状态弹框相关
 
@@ -161,57 +185,6 @@ const fetchSiteData = async () => {
     message.error('获取场地数据失败');
   }
 };
-
-// 打开修改弹框
-const handleOpenEdit = (row: Faults) => {
-  editForm.value = {
-    id: row.id,
-    sn: row.sn || '',
-    Faults_type_id: row.Faults_type_id ?? 0,
-    status_value: row.status_value ?? 0,
-    serial_number: row.serial_number || '',
-    serial_number_source: row.serial_number_source || '',
-    contract_number: row.contract_number || '',
-    site_id: row.site_id || 0,
-  };
-  // editForm.value = JSON.parse(JSON.stringify(row)); // 深拷贝
-  showEditModal.value = true;
-};
-
-
-
-// 保存修改
-const handleSaveEdit = async () => {
-  try {
-    // TODO: 调用后端接口 updateFaults(editForm.value)
-    // console.log('修改提交:', editForm.value);
-    const params={
-      status:editForm.value.status_value,
-      fault_ids:[editForm.value.id]
-    }
-    const { error } =await updateFaultsStatus(params);
-    if(error==null){
-      message.success('修改成功！');
-      fetchData(); // 刷新表格
-    }else{
-      message.error('修改失败:' +error);
-    }
-    
-    // const res = await updateFaults(editForm.value.id, editForm.value);
-    // if(res.response?.data?.msg=="success"){
-    //     message.success('修改成功！');
-    //     fetchData(); // 刷新表格
-    //   }else{
-    //     message.error('修改失败:' +res.response?.data?.msg);
-    //   }
-  } catch (err) {
-    message.error('修改失败');
-  }finally{
-    showEditModal.value = false;
-  }
-};
-
-
 
 // ---------------- 表格列 ----------------
 const columns: DataTableColumns<Faults> = [
@@ -284,58 +257,35 @@ const columns: DataTableColumns<Faults> = [
     fixed: 'right',
     render: (row: Faults) => {
       return [
-        h(
-          NButton,
-          {
-            type: 'info',
-            ghost: true,
-            style: "margin-right: 8px;",
-            onClick: () => handleOpenEdit(row)
-          },
-          { default: () => '修改' }
-        ),
+        hasRole
+          ? h(
+              EditFaultModalButton,
+              {
+                row,
+                sites: siteOptions.value,
+                statusOptions: statusOptions.value,
+                onUpdated: () => fetchData()
+              }
+            )
+          : h(
+              EditFaultModalButtonYunwei,
+              {
+                row,
+                onUpdated: () => fetchData()
+              }
+            )
       ]
     }
   }
 ];
 
-// ---------------- 数据获取 ----------------
-const fetchData = async () => {
-  loading.value = true;
-  const params: any = {
-    page: pagination.value.page,
-    page_size: pagination.value.pageSize,
-    sn: searchSerial.value || undefined,
-    order_no: searchWorkOrderNo.value || undefined,
-    site_id: searchSiteId.value || undefined,
-    status: searchStatus.value || undefined,
-    start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
-    end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
-    model: searchModel.value || undefined
-  };
 
-  try {
-    const {data,error} = await fetchFaults(params);
-    if(error==null){
-        tableData.value = data.list;
-        pagination.value.itemCount = data.pagination.total;
-        pagination.value.page =  data.pagination.page;
-        pagination.value.pageSize =  data.pagination.page_size;
-    }else{
-        message.error(`加载失败: ${error}`);
-    }
-  } catch (err) {
-    message.error(`加载失败${err}`);
-  } finally {
-    loading.value = false;
-  }
-};
 
 onMounted(() => {
   fetchData()
   fetchOrderStatusData();
   if(hasRole){
-    console.log("hasRole>>onMounted",hasRole)
+    // console.log("hasRole>>onMounted",hasRole)
     fetchSiteData();
   }
   
@@ -523,20 +473,6 @@ const handleRefresh = () => {
       />
   </n-card>
 
-    <!-- 修改弹框 -->
-    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
-      <NForm :model="editForm" label-width="100">
-        <NFormItem label="状态">
-          <NSelect v-model:value="editForm.status_value" :options="statusOptions" />
-        </NFormItem>
-      </NForm>
-      <template #footer>
-        <NSpace>
-          <NButton type="primary" @click="handleSaveEdit">保存</NButton>
-          <NButton @click="showEditModal = false">取消</NButton>
-        </NSpace>
-      </template>
-    </NModal>
 
     <!-- 创建工单弹框 -->
     <NModal v-model:show="showWorkOrderModal" style="width: 800px" preset="card" title="创建工单">
@@ -563,14 +499,15 @@ const handleRefresh = () => {
           <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px; width: 100%;">
             <div v-for="(machine, index) in workOrderForm.selectedMachines" :key="machine.id" 
                  style="display: flex; justify-content: space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 100%;">
-              <div>
-                <div style="font-weight: 500;width:30%" >{{ machine.sn }}</div>
+              <!-- <div> -->
+                <div style="font-weight: 500;font-size: 12px; width:30%;color: #666;" >{{ machine.sn }}</div>
+                <div style="font-size: 12px; width:30%;color: #666;"> {{ machine.FaultsType?.name || machine.model }}</div>
                 <div style="font-size: 12px; width:30%;color: #666;">
-                  {{ machine.FaultsType?.name || machine.model }} | 
+                  <!-- |  -->
                   {{ machine.Site?.name || machine.site_name }}
                 </div>
-              </div>
-              <NTag type="warning" style="width:30%">{{ machine.Status?.name || machine.status_text }}</NTag>
+              <!-- </div> -->
+              <NTag type="warning">{{ machine.Status?.name || machine.status_text }}</NTag>
             </div>
           </div>
         </NFormItem>
