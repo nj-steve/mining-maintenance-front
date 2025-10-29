@@ -3,13 +3,13 @@ import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
-import UploadExcel from "@/components/upload/UploadExcel.vue"
+
 import { useRouter } from 'vue-router';
 import { statusOptions } from '@/constants/business'
 import RepairSearchBar from './components/RepairSearchBar.vue'
+import UploadRepairDetailsExcel from "@/components/upload/UploadRepairDetailsExcel.vue"
 
 const router = useRouter();
-
 
 interface Faults {
   id: number;
@@ -271,6 +271,9 @@ const exportExcel=async () => {
   URL.revokeObjectURL(url);
   message.success('导出成功，下载已开始');
 }
+const handleFail = () => {
+  message.error('导入失败，请检查文件格式');
+}
 
 </script>
 
@@ -292,17 +295,8 @@ const exportExcel=async () => {
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
       <div  style="display: flex; gap: 8px; align-items: center;">
-        <UploadExcel v-if="isRepairStation" uploadUrl="/api/repair_stations/import_repair_details" />
-        <!-- 下载模板按钮 -->
-        <NButton 
-          v-if="isRepairStation"
-          text 
-          type="primary" 
-          @click="downloadTemplate"
-          style="font-size: 12px;"
-        >
-          📥 导入模板下载
-        </NButton>
+        <UploadRepairDetailsExcel v-if="isRepairStation" @success="fetchData" @fail="handleFail"/>
+
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
         <NButton   circle size="medium" ghost @click="exportCsv" title="导出 CSV">

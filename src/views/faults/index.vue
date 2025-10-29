@@ -271,7 +271,6 @@ const columns: DataTableColumns<Faults> = [
         '维修': 'info',
         '报废': 'error',
         '新下架':'warning',
-        
       };
       const label = row.status_text || '未知';
       return h(NTag, {type: tagMap[row.status_text || '未知'] }, () => label)
