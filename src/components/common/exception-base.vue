@@ -2,10 +2,17 @@
 import { computed } from 'vue';
 import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
-
+import { useAuthStore } from '@/store/modules/auth';
 defineOptions({ name: 'ExceptionBase' });
 
 type ExceptionType = '403' | '404' | '500';
+const authStore = useAuthStore();
+const redirectPath = computed(() => {
+  if (authStore.userInfo.roles.includes("1") || authStore.userInfo.roles.includes("2")) {
+    return '/';
+  }
+  return authStore.userInfo.roles.includes('3') ? '/faults' : '/workflow';
+});
 
 interface Props {
   /**
@@ -20,7 +27,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { routerPushByKey } = useRouterPush();
+const { routerPush } = useRouterPush();
 
 const iconMap: Record<ExceptionType, string> = {
   '403': 'no-permission',
@@ -36,7 +43,12 @@ const icon = computed(() => iconMap[props.type]);
     <div class="flex text-400px text-primary">
       <SvgIcon :local-icon="icon" />
     </div>
-    <NButton type="primary" @click="routerPushByKey('root')">{{ $t('common.backToHome') }}</NButton>
+
+
+    <!-- <NButton type="primary" @click="routerPushByKey('root')">{{ $t('common.backToHome') }}</NButton> -->
+
+    <NButton type="primary" @click="routerPush(redirectPath)">{{ $t('common.backToHome') }}</NButton>
+    
   </div>
 </template>
 

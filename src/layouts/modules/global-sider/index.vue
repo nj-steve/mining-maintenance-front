@@ -5,12 +5,16 @@ import { useAppStore } from '@/store/modules/app';
 import { useThemeStore } from '@/store/modules/theme';
 import GlobalLogo from '../global-logo/index.vue';
 
+
 defineOptions({
   name: 'GlobalSider'
 });
 
 const appStore = useAppStore();
 const themeStore = useThemeStore();
+
+
+
 
 const isVerticalMix = computed(() => themeStore.layout.mode === 'vertical-mix');
 const isHorizontalMix = computed(() => themeStore.layout.mode === 'horizontal-mix');
