@@ -6,7 +6,7 @@ export const enableStatusRecord:Record<string, string> = {
   };
 
   export const siteStatusRecord:Record<number, string> = {
-    0: '空闲',
+    0: '暂无',
     1: '驻场',
     2: '寄修',
     3: '驻场+寄修',

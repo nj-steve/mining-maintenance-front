@@ -161,7 +161,7 @@ const handleSubmit = async () => {
       emit('success')
     } else {
       // message.error(`文件 ${selectedFile.value.name} 上传失败！`)
-      message.error('文件上传失败，请检查文件格式')
+      message.error(`文件 ${selectedFile.value.name} 导入失败！`+response.data.msg)
       showModal.value = false
       // emit('fail')
     }

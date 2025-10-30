@@ -32,9 +32,12 @@ interface Faults {
   status_value:number,
   contract_number: string;
   status_text?: string;
+  warranty_status?: number;
+  warranty_status_text?: string;
   site_name?: string;
   site_id?:number;
   model?: string;
+  order_id?: number;
   FaultsType?: {
     name?: string;
     hash_rate?: number;
@@ -78,7 +81,8 @@ const workOrderForm = ref({
   site: '',
   faultMachineCount: 0,
   selectedMachines: [] as Faults[],
-  site_id:0
+  site_id:0,
+  
 });
 
 // ---------------- 数据获取 ----------------
@@ -226,14 +230,20 @@ const columns: DataTableColumns<Faults> = [
     width: 150,
     render: (row: Faults) => {
       const text = (row as any).order_no || '';
-      return h(
+      return hasRole
+          ? h(
         NTooltip,
         null,
         {
-          trigger: () => h('div', { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
+          trigger: () => h('div',
+           { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' ,
+            onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
+           }, 
+           text),
           default: () => text
         }
-      );
+      )
+      : text;
     }
   },
   { title: '维修次数', key: 'repair_count', width: 100 },
@@ -253,6 +263,16 @@ const columns: DataTableColumns<Faults> = [
       };
       const label = row.status_text || '未知';
       return h(NTag, {type: tagMap[row.status_text || '未知'] }, () => label)
+    }
+  },
+  { title: '质保', key: 'warranty_status', width: 100,
+    render: (row: Faults) => {
+      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        '短保中': 'success',
+        '已过保': 'error',
+      };
+      const label = row.warranty_status_text || '未知';
+      return h(NTag, {type: tagMap[row.warranty_status_text || '未知'] }, () => label)
     }
   },
   {
@@ -478,7 +498,6 @@ const handleRefresh = () => {
         class="sm:h-full"
       />
   </n-card>
-
 
     <!-- 创建工单弹框 -->
     <NModal v-model:show="showWorkOrderModal" style="width: 800px" preset="card" title="创建工单">

@@ -181,7 +181,6 @@ const hasRole=!authStore.userInfo.roles.includes('3')
           'Authorization': Authorization
         }
       })
-  
       // 处理导入结果
       if (response.data && response.data.data) {
         importResult.value = response.data.data
@@ -190,7 +189,7 @@ const hasRole=!authStore.userInfo.roles.includes('3')
         // 触发成功事件，通知父组件刷新数据
         emit('success')
       } else {
-        message.success(`文件 ${selectedFile.value.name} 上传成功！`)
+        message.error(`文件 ${selectedFile.value.name} 导入失败！`+response.data.msg)
         showModal.value = false
         // 触发成功事件，通知父组件刷新数据
         emit('success')
