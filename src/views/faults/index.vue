@@ -240,9 +240,15 @@ const columns: DataTableColumns<Faults> = [
   { title: '状态', key: 'status_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '在架': 'success',
-        '维修': 'info',
+        '已修复': 'success',
+        '物流出': 'primary',
+        '物流进': 'primary',
+        '维修中': 'info',
+        '维修完成': 'success',
+        '待上架': 'warning',
         '报废': 'error',
+        '未修复': 'error',
+        '待处理': 'warning',
         '新下架':'warning',
       };
       const label = row.status_text || '未知';
@@ -301,7 +307,7 @@ watch([searchSerial,searchWorkOrderNo, searchSiteId, searchStatus, searchStartDa
 const handleSelectionChange = (keys: (string | number)[], rows: any[]) => {
   selectedRowKeys.value = keys.map(key => Number(key));
   selectedRows.value = rows as Faults[];
-  console.log('选中的记录:', keys, rows);
+  // console.log('选中的记录:', keys, rows);
 };
 
 // 创建工单

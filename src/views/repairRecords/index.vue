@@ -299,7 +299,7 @@ const handleFail = () => {
 
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <NButton   circle size="medium" ghost @click="exportCsv" title="导出 CSV">
+        <NButton   circle size="medium" ghost @click="exportCsv" title="导出 CSV"  style="margin-right: 80px;">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>

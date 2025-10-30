@@ -60,7 +60,7 @@
       <!-- 故障设备列表 -->
       <n-card title="">
       <n-space justify="end" class="mb-2">
-        <NButton   circle size="medium" ghost @click="exportFaultDevicesCsv" title="导出 CSV">
+        <NButton   circle size="medium" ghost @click="exportFaultDevicesCsv" title="导出 CSV"  style="margin-right: 50px;">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>
@@ -168,15 +168,23 @@
   // 列定义：故障设备
   const faultDeviceColumns: DataTableColumns<any> = [
     { title: '序号', key: 'sequence', width: 80 },
-    { title: '场地', key: 'site_name' },
-    { title: '机型', key: 'model' },
     { title: '设备SN', key: 'sn' },
+
+    { title: '机型', key: 'model' },
+    { title: '场地', key: 'site_name' },
+    
     { title: '状态', key: 'current_status_text', width: 100,
     render: (row: any) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '在架': 'success',
-        '维修': 'info',
+        '已修复': 'success',
+        '物流出': 'primary',
+        '物流进': 'primary',
+        '维修中': 'info',
+        '维修完成': 'success',
+        '待上架': 'warning',
         '报废': 'error',
+        '未修复': 'error',
+        '待处理': 'warning',
         '新下架':'warning',
       };
       const label = row.current_status_text || '未知';
