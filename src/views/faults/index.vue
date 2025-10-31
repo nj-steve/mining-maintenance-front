@@ -32,6 +32,8 @@ interface Faults {
   status_value:number,
   contract_number: string;
   status_text?: string;
+  repair_result?: number;
+  repair_result_text?: string;
   warranty_status?: number;
   warranty_status_text?: string;
   site_name?: string;
@@ -65,6 +67,8 @@ const searchStartDate = ref<number | null>(null);
 const searchEndDate = ref<number | null>(null);
 const searchModel = ref<number | null>(null);
 const searchWorkOrderNo = ref<string>('');
+const searchResultStatus = ref<number | null>(null);
+
 
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
 const statusOptions = ref<{ label: string; value: number }[]>([]);
@@ -82,7 +86,6 @@ const workOrderForm = ref({
   faultMachineCount: 0,
   selectedMachines: [] as Faults[],
   site_id:0,
-  
 });
 
 // ---------------- 数据获取 ----------------
@@ -116,7 +119,6 @@ const fetchData = async () => {
     loading.value = false;
   }
 };
-
 
 
 // 分页
@@ -247,7 +249,7 @@ const columns: DataTableColumns<Faults> = [
     }
   },
   { title: '维修次数', key: 'repair_count', width: 100 },
-  { title: '状态', key: 'status_text', width: 100,
+  { title: '流转状态', key: 'status_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         '已修复': 'success',
@@ -263,6 +265,18 @@ const columns: DataTableColumns<Faults> = [
       };
       const label = row.status_text || '未知';
       return h(NTag, {type: tagMap[row.status_text || '未知'] }, () => label)
+    }
+  },
+  { title: '维修状态', key: 'status_text', width: 100,
+    render: (row: Faults) => {
+      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        '已修复': 'success',
+        '报废': 'error',
+        '未修复': 'error',
+        '待修复': 'warning',
+      };
+      const label = row.repair_result_text || '未知';
+      return h(NTag, {type: tagMap[row.repair_result_text || '未知'] }, () => label)
     }
   },
   { title: '质保', key: 'warranty_status', width: 100,
@@ -443,6 +457,7 @@ const handleRefresh = () => {
       v-model:startDate="searchStartDate"
       v-model:endDate="searchEndDate"
       v-model:status="searchStatus"
+      v-model:resultStatus="searchResultStatus"
       :site-options="siteOptions"
       :status-options="statusOptions"
       :hasRole="hasRole"

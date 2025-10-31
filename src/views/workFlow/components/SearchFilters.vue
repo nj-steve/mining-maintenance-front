@@ -44,6 +44,14 @@
       </div>
      </template>
     <div v-show="!collapsed" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
+      <NSelect 
+        v-model:value="salerIdModel" 
+        :options="salerOptions" 
+        placeholder="售后专员" 
+        size="medium"
+        clearable 
+        style="width: 90%; font-size: 12px;"
+      />
       <!-- 开始时间 -->
       <NDatePicker 
         v-model:value="startDateModel" 
@@ -63,6 +71,12 @@
         style="width: 100%; font-size: 12px;"
       />
       <!-- 工单状态 -->
+       
+    <div>
+     <NSwitch v-model:value="onlyMySite" size="medium" />
+    <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
+    </div>
+
     </div>
     <template #header-extra>
       <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
@@ -79,34 +93,81 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { NCard, NInput, NSelect, NDatePicker, NButton } from 'naive-ui';
-import type { SelectOption } from 'naive-ui';
+import { computed, ref, onMounted, watch } from 'vue';  
 
+import { NCard, NInput, NSelect, NDatePicker, NButton, NSwitch } from 'naive-ui';
+import type { SelectOption } from 'naive-ui';
+import { fetchUser } from '@/service/api';
+// import local from '@/locales/langs/zh-cn';
+const salerMap = ref<Record<number, string>>({});
+// import { useAuthStore } from '@/stores/auth';
+const onlyMySite = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
+watch(onlyMySite, v =>
+ localStorage.setItem('onlyMySite', v.toString()
+));
+onMounted(() => {
+  fetchUsers();
+});
+
+const fetchUsers = async () => {
+  const {data,error} = await fetchUser({
+    page: 1,
+    page_size: -1,
+    status: 1,
+    role: 2,
+  });
+  if(error==null){
+    console.log("data.list",data.list)
+    const salerMap_byId = data.list.reduce((acc:any, cur:any) => {
+      acc[cur.id] = cur.real_name;
+      return acc;
+    }, {} as Record<number, string>);
+    console.log("salerMap_byId",salerMap_byId)
+    salerMap.value = salerMap_byId;
+
+    // editForm.value.saler_id = data[0].id;
+  }else{
+    // message.error('获取用户失败:' +error);
+  }
+}
+
+const salerOptions = computed(() => {
+  return Object.entries(salerMap.value).map(([id, name]) => ({ label: name, value: Number(id) }));
+});
 const props = defineProps<{
   serial: string;
   siteId: number | null;
   stationId: number | null;
   startDate: number | null;
+  salerId: number | null;
   endDate: number | null;
   orderStatus: number | undefined;
   siteOptions: SelectOption[];
   stationOptions: SelectOption[];
   statusOptions: SelectOption[];
+  onlyMySite?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:serial', v: string): void;
   (e: 'update:siteId', v: number | null): void;
   (e: 'update:stationId', v: number | null): void;
+  (e: 'update:salerId', v: number | null): void;
   (e: 'update:startDate', v: number | null): void;
   (e: 'update:endDate', v: number | null): void;
   (e: 'update:orderStatus', v: number | undefined): void;
+  (e: 'update:onlyMySite', v: boolean): void;
   (e: 'search'): void;
   (e: 'reset'): void;
 }>();
 
+// 删除重复的 onlyMySite 计算属性
+// const onlyMySite = computed({
+//   get: () => props.onlyMySite ?? false,
+//   set: v => emit('update:onlyMySite', !!v)
+// });
 const collapsed = ref(true);
+// 初始化内部内存状态，并与 props 同步
 
 const serialModel = computed({
   get: () => props.serial,
@@ -123,6 +184,10 @@ const stationIdModel = computed({
 const startDateModel = computed({
   get: () => props.startDate,
   set: v => emit('update:startDate', v as number | null)
+});
+const salerIdModel = computed({
+  get: () => props.salerId,
+  set: v => emit('update:salerId', v as number | null)
 });
 const endDateModel = computed({
   get: () => props.endDate,

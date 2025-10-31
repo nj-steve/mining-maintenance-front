@@ -42,7 +42,7 @@ const message = useMessage();
 const authStore = useAuthStore();
 const routeRoles=["1","2"]
 const hasRole = authStore.userInfo.roles.some(role => routeRoles.includes(role));
-console.log("hasRole---",hasRole);
+// console.log("hasRole---",hasRole);
 // const isRepair = computed(() => authStore.userInfo.roles.some('1','2'));// 判断用户是不是维修用户
 const tableData = ref<Order[]>([]);
 const loading = ref(false);
@@ -96,9 +96,11 @@ const searchOrderStatus = ref<number | undefined>(undefined);
 
 // 新增筛选项
 const searchSiteId = ref<number | null>(null);  // 场地筛选
+const searchSalerId = ref<number | null>(null);  // 售后专员筛选
 const searchStationId = ref<number | null>(null);  // 维修站筛选
 const searchStartDate = ref<number | null>(null);  // 开始时间
 const searchEndDate = ref<number | null>(null);  // 结束时间
+
 
 // 场地和维修站选项
 const siteOptions = ref<{ label: string; value: number }[]>([]);
@@ -341,6 +343,7 @@ const columns: DataTableColumns<Order> = [
     }
   },
   { title: '场地', key: 'SiteName' },
+  { title: '售后专员', key: 'salerName' },
   { title: '故障机数量', key: 'FaultCount'},
   { title: '维修方式', key: 'RepairMethod',
     render: (row: any ) => {
@@ -353,6 +356,7 @@ const columns: DataTableColumns<Order> = [
       return h(NTag, {type: tagMap[row.RepairMethod] }, () => repairMethodRecord[row.RepairMethod] || '未知')
     }
   },
+
   // { title: '总费用', key: 'RepairCost',
   //   render: (row: any ) => {
   //     if (row.RepairCost === null || row.RepairCost === undefined) {
@@ -429,6 +433,7 @@ const fetchData = async () => {
     order_no: searchSerial.value || undefined,
     order_status: searchOrderStatus.value || undefined,
     site_id: searchSiteId.value || undefined,
+    saler_id: searchSalerId.value || undefined,
     station_id: searchStationId.value || undefined,
     start_date: searchStartDate.value ? dayjs(searchStartDate.value).format('YYYY-MM-DD') : undefined,
     end_date: searchEndDate.value ? dayjs(searchEndDate.value).format('YYYY-MM-DD') : undefined
@@ -456,6 +461,7 @@ const handleReset = () => {
   searchSerial.value = '';
   searchOrderStatus.value = undefined;
   searchSiteId.value = null;
+  searchSalerId.value = null;
   searchStationId.value = null;
   searchStartDate.value = null;
   searchEndDate.value = null;
@@ -521,19 +527,6 @@ const fetchOrderStatusData = async () => {
   }
 };
 
-function goDetail(id: number | string) {
-  // console.log("跳转到详情页，ID:", id);
-  if (!id) {
-    console.error("ID 为空，无法跳转");
-    return;
-  }
-  try {
-    router.push({ name: 'workflowdetail', params: { id: String(id) } });
-  } catch (error) {
-    console.error("路由跳转失败:", error);
-  }
-}
-
 // ---------------- 查看详情弹框 ----------------// 详情弹框相关
 const showDetailModal = ref(false);
 const detailData = ref({order_no:""}); // 工单操作日志
@@ -546,6 +539,7 @@ const handleOpenAddLog = (row: Order) => {
   selectedRow.value = row;
   showAddLogModal.value = true;
 };
+
 const handleLogSubmitted = async () => {
   showAddLogModal.value = false;
   if (selectedRow.value) {
@@ -586,7 +580,6 @@ onMounted(() => {
   fetchOrderStatusData()
   fetchSiteData()
   fetchStationData()
-
 //   loadFaultsTypes();
 });
 watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchStartDate, searchEndDate], () => {
@@ -599,7 +592,6 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
 <template>
   <div class="flex gap-16px flex-col-stretch overflow-hidden lt-sm:overflow-auto">
  <!-- 第二行：筛选条件 -->
-   
     <SearchFilters
         v-model:serial="searchSerial"
         v-model:siteId="searchSiteId"
@@ -607,6 +599,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
         v-model:startDate="searchStartDate"
         v-model:endDate="searchEndDate"
         v-model:orderStatus="searchOrderStatus"
+        v-model:salerId="searchSalerId"
         :siteOptions="siteOptions"
         :stationOptions="stationOptions"
         :statusOptions="statusOptions"
@@ -615,9 +608,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       />
     
     <div class="min-h-550px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto"> 
-   <!-- <NCard size="medium"  :bordered="false"  class="card-wrapper sm:flex-1-hidden" style="margin-top: 12px;">  -->
     <!-- 查询框和批量操作 -->
-
     <div class="mb-4" style="margin-bottom: 16px; display: flex; justify-content: flex-end;">
       <!-- 第一行：批量操作按钮 -->
       <div class="flex items-center gap-2" v-if="hasRole">
@@ -633,7 +624,6 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
         </NButton>
       </div>
     </div>
- 
     <!-- 表格 -->
     <NDataTable 
       flex-height
@@ -649,7 +639,6 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSta
       striped
       class="sm:h-full"
     />
-       <!-- </NCard>   -->
     </div>
 
     <!-- 修改弹框 -->

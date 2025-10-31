@@ -173,22 +173,30 @@
     { title: '机型', key: 'model' },
     { title: '场地', key: 'site_name' },
     
-    { title: '状态', key: 'current_status_text', width: 100,
+    { title: '流转状态', key: 'current_status_text', width: 100,
     render: (row: any) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '已修复': 'success',
         '物流出': 'primary',
         '物流进': 'primary',
         '维修中': 'info',
         '维修完成': 'success',
         '待上架': 'warning',
-        '报废': 'error',
-        '未修复': 'error',
-        '待处理': 'warning',
         '新下架':'warning',
       };
       const label = row.current_status_text || '未知';
       return h(NTag, {type: tagMap[row.current_status_text || '未知'] }, () => label)
+    }
+  },
+   { title: '维修状态', key: 'status_text', width: 100,
+    render: (row: any) => {
+      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        '已修复': 'success',
+        '报废': 'error',
+        '未修复': 'default',
+        '待修复': 'warning',
+      };
+      const label = row.repair_result_text || '未知';
+      return h(NTag, {type: tagMap[row.repair_result_text || '未知'] }, () => label)
     }
   },
     // { title: '当前状态', key: 'current_status_text',

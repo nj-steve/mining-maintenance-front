@@ -23,6 +23,12 @@ export const enableStatusRecord:Record<string, string> = {
       { label: '寄修', value: 2 },
       { label: '对发', value: 3 },
     ]
+    export const repairResultOptions = [
+      { label: '待修复', value:1 },
+      { label: '未修复', value:2  },
+      { label: '已修复', value:3  },
+      { label: '报废', value: 4 },
+    ]
 
 
 export const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {

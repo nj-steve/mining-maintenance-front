@@ -169,7 +169,7 @@ const columns: DataTableColumns<Site> = [
   { title: '待修数', key: 'wait_repair_count',render: (row: Site) => row.wait_repair_count.toLocaleString() || 0 },
   { title: '待修率', key: 'wait_repair_rate',render: (row: Site) => (row.wait_repair_rate || 0).toFixed(2) + "%" },
   { title: '报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
-  { title: '场地维修状态', key: 'site_status',render: (row: any ) => {
+  { title: '维修状态', key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',
       1: 'success',
