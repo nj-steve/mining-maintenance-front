@@ -236,7 +236,7 @@ const exportCsv = async () => {
 };
 const exportExcel=async () => {
 
-        // 处理导出成功逻辑
+// 处理导出成功逻辑
  const headers = ['日期','工单号','维修站点','机型','整机SN码','损坏部件','初测不良原因','查证缺陷','维修结果'];
   const formatCell = (val: any) => {
     const s = val === undefined || val === null ? '' : String(val);
@@ -294,7 +294,6 @@ const handleFail = () => {
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
       <div  style="display: flex; gap: 8px; align-items: center;">
         <UploadRepairDetailsExcel v-if="isRepairStation" @success="fetchData" @fail="handleFail"/>
-
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
         <NButton   circle size="medium" ghost @click="exportCsv" title="导出 CSV"  style="margin-right: 80px;">
@@ -302,9 +301,9 @@ const handleFail = () => {
             <icon-ant-design-download-outlined />
           </template>
         </NButton>
+        
       </div>
     </div>
-
     <!-- 表格 -->
     <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" :scroll-x="1400" remote />
 
