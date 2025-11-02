@@ -582,7 +582,7 @@ onMounted(() => {
   fetchStationData()
 //   loadFaultsTypes();
 });
-watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchStartDate, searchEndDate], () => {
+watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSalerId, searchStartDate, searchEndDate], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();

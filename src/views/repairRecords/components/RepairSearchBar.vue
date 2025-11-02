@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { NInput, NSelect } from 'naive-ui';
+import { repairResultOptions } from '@/constants/business'
 
 const props = defineProps<{
   workOrderNo: string;
   sn: string;
   repairResult?: number;
-  statusOptions: Array<{ label: string; value: number }>;
 }>();
 
 const emit = defineEmits<{
@@ -33,7 +33,7 @@ const emit = defineEmits<{
     />
     <NSelect
       :value="repairResult"
-      :options="statusOptions"
+      :options="repairResultOptions"
       clearable
       style="width: 150px"
       @update:value="emit('update:repair-result', $event)"

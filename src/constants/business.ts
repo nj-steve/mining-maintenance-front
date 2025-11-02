@@ -23,6 +23,13 @@ export const enableStatusRecord:Record<string, string> = {
       { label: '寄修', value: 2 },
       { label: '对发', value: 3 },
     ]
+    // 维修结果
+    export const repairResultMap:Record<number, string> = {
+    3: '已修复',
+    2: '未修复',
+    4: '报废',
+    1:'待修复'
+  };
     export const repairResultOptions = [
       { label: '待修复', value:1 },
       { label: '未修复', value:2  },
@@ -75,17 +82,12 @@ export const roleRecord:Record<number, string> = {
     4: '维修人员',
   };
 
-export const statusOptionsMap:Record<number, string> = {
-    9: '已修复',
-    10: '未修复',
-    11: '报废',
-    0:'其他'
-  };
-export  const statusOptions = [
-    { label: "已修复", value: 9 },
-    { label: "未修复", value: 10 },
-    { label: "报废", value: 11 }
-  ]
+
+// export  const statusOptions = [
+//     { label: "已修复", value: 9 },
+//     { label: "未修复", value: 10 },
+//     { label: "报废", value: 11 }
+//   ]
 
 
   

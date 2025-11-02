@@ -98,6 +98,7 @@ const fetchData = async () => {
     order_no: searchWorkOrderNo.value || undefined,
     site_id: searchSiteId.value || undefined,
     status: searchStatus.value || undefined,
+    repair_result: searchResultStatus.value || undefined,
     start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
     end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
     model: searchModel.value || undefined
@@ -331,7 +332,7 @@ onMounted(() => {
   
   // fetchSiteData();
 });
-watch([searchSerial,searchWorkOrderNo, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
+watch([searchSerial,searchWorkOrderNo, searchResultStatus, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();

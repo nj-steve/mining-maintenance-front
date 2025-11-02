@@ -153,7 +153,7 @@
   import type { DataTableColumns, PaginationProps } from 'naive-ui'
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
   import { fetchOrdersDetail } from '@/service/api/workflow'
-  import { statusOptions, statusOptionsMap, repairMethodRecord } from '@/constants/business'
+  import {  repairMethodRecord } from '@/constants/business'
   
   const route = useRoute();
   const message = useMessage()
@@ -200,7 +200,7 @@
     }
   },
     // { title: '当前状态', key: 'current_status_text',
-    //   render: (row: any) => statusOptionsMap[row.current_status_text] || '-'
+    //   render: (row: any) => repairResultMap[row.current_status_text] || '-'
     // },
     // { title: '可操作', key: 'can_operate', render: (row: any) => row.can_operate ? '是' : '否' }
   ];

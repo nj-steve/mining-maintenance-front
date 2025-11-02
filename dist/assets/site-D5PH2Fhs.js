@@ -1,1 +1,0 @@
-import{am as e}from"./index-BmztqwqR.js";function s(){return e({url:"/api/dashboard",method:"get"})}function i(t){return e({url:"/api/sites",method:"get",params:t})}function u(t){return e({url:"/api/sites/"+t,method:"get"})}function o(t,a){return e({url:"/api/sites/"+t,method:"put",data:a})}export{s as a,u as b,i as f,o as u};

@@ -142,8 +142,8 @@
           </n-descriptions-item>
   
           <n-descriptions-item label="维修状态">
-            <template v-if="!isEdit">{{ statusOptionsMap[Number(form.repair_result)] }}</template>
-            <n-select v-else v-model:value="form.repair_result" :options="statusOptions" />
+            <template v-if="!isEdit">{{ repairResultMap[Number(form.repair_result)] }}</template>
+            <n-select v-else v-model:value="form.repair_result" :options="repairResultOptions" />
           </n-descriptions-item>
   
           <n-descriptions-item label="维修人员">
@@ -169,7 +169,7 @@
   import { useMessage } from 'naive-ui';
   import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace } from "naive-ui"
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
-  import { statusOptions, statusOptionsMap } from '@/constants/business'
+  import { repairResultOptions, repairResultMap } from '@/constants/business'
   
   const route = useRoute();
   const message = useMessage()
@@ -209,11 +209,6 @@
     motherboard_sn: ""
   })
   
-  // const statusOptions = [
-  //   { label: "已修复", value: 9 },
-  //   { label: "未修复", value: 10 },
-  //   { label: "报废", value: 11 }
-  // ]
   
   function save() {
     console.log("保存数据", form.value)

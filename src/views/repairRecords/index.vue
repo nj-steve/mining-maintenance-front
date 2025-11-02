@@ -5,7 +5,6 @@ import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
 
 import { useRouter } from 'vue-router';
-import { statusOptions } from '@/constants/business'
 import RepairSearchBar from './components/RepairSearchBar.vue'
 import UploadRepairDetailsExcel from "@/components/upload/UploadRepairDetailsExcel.vue"
 
@@ -284,7 +283,6 @@ const handleFail = () => {
               :work-order-no="work_order_no"
               :sn="sn"
               :repair-result="repair_result"
-              :status-options="statusOptions"
               @update:work-order-no="work_order_no = $event"
               @update:sn="sn = $event"
               @update:repair-result="repair_result = $event"
