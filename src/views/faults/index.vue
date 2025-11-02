@@ -68,6 +68,8 @@ const searchEndDate = ref<number | null>(null);
 const searchModel = ref<number | null>(null);
 const searchWorkOrderNo = ref<string>('');
 const searchResultStatus = ref<number | null>(null);
+const searchSalerId = ref<number | null>(null);
+
 
 
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
@@ -98,6 +100,7 @@ const fetchData = async () => {
     order_no: searchWorkOrderNo.value || undefined,
     site_id: searchSiteId.value || undefined,
     status: searchStatus.value || undefined,
+    saler_id: searchSalerId.value || undefined,
     repair_result: searchResultStatus.value || undefined,
     start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
     end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
@@ -332,7 +335,7 @@ onMounted(() => {
   
   // fetchSiteData();
 });
-watch([searchSerial,searchWorkOrderNo, searchResultStatus, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
+watch([searchSerial,searchWorkOrderNo, searchSalerId, searchResultStatus, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
@@ -447,6 +450,8 @@ const handleRefresh = () => {
   // 刷新数据
   fetchData();
 };
+const onlyMySite = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
+watch(onlyMySite, v => localStorage.setItem('onlyMySite', v.toString()));
 </script>
 
 <template>
@@ -459,6 +464,7 @@ const handleRefresh = () => {
       v-model:endDate="searchEndDate"
       v-model:status="searchStatus"
       v-model:resultStatus="searchResultStatus"
+      v-model:salerId="searchSalerId"
       :site-options="siteOptions"
       :status-options="statusOptions"
       :hasRole="hasRole"
@@ -495,7 +501,24 @@ const handleRefresh = () => {
             :status-options="statusOptions"
             @refresh="handleRefresh"
           />
+
           <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
+       
+       <NSwitch v-model:value="onlyMySite" size="medium" />
+    <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
+        </template>
+        <template v-if="!hasRole">
+  <!-- 批量修改状态组件 -->
+          <BatchStatusModal 
+            :status-options="[{ label: '已完成', value: 14 }]"
+            :selectedRows="selectedRows"
+            @refresh="handleRefresh"
+          />
+
+          <UploadFileBathStatusModal 
+            :status-options="[{ label: '已完成', value: 14 }]"
+            @refresh="handleRefresh"
+          />
         </template>
       </div>
     </div>

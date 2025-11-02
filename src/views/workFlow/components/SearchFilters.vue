@@ -45,6 +45,7 @@
      </template>
     <div v-show="!collapsed" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
       <NSelect 
+        v-show="!onlyMySiteLocal"
         v-model:value="salerIdModel" 
         :options="salerOptions" 
         placeholder="售后专员" 
@@ -72,7 +73,6 @@
       />
       <!-- 工单状态 -->
        
-    
 
     </div>
     <template #header-extra>
@@ -90,14 +90,66 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue';  
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';  
 
 import { NCard, NInput, NSelect, NDatePicker, NButton, NSwitch } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 import { fetchUser } from '@/service/api';
+import local from '@/locales/langs/zh-cn';
 // import local from '@/locales/langs/zh-cn';
 const salerMap = ref<Record<number, string>>({});
 // import { useAuthStore } from '@/stores/auth';
+
+// 原基于 localStorage 的 computed 不会在同页实时响应，注释并改用 ref + 监听
+// const onlyMySiteLocal = computed(() => {
+//   console.log("localStorage.getItem('onlyMySite')",localStorage.getItem('onlyMySite'))
+//   return localStorage.getItem('onlyMySite') === 'true';
+// });
+// watch(onlyMySiteLocal, (newVal) => {
+//   if (newVal) {
+//     salerIdModel.value = null;
+//   }
+// });
+
+// 使用 ref 保存状态，并实时同步 localStorage 的变化
+const onlyMySiteLocal = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
+let onlyMySitePoller: number | null = null;
+const readOnlyMySite = () => localStorage.getItem('onlyMySite') === 'true';
+
+onMounted(() => {
+  const update = () => {
+    const val = readOnlyMySite();
+    if (onlyMySiteLocal.value !== val) {
+      onlyMySiteLocal.value = val;
+    }
+  };
+  // 初始化一次
+  update();
+  // 在同一标签页内轮询以捕获 setItem 引发的变化
+  onlyMySitePoller = window.setInterval(update, 250);
+  // 监听其它标签页/窗口的存储变化
+  window.addEventListener('storage', (e: StorageEvent) => {
+    if (e.key === 'onlyMySite') {
+      update();
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (onlyMySitePoller !== null) {
+    clearInterval(onlyMySitePoller);
+    onlyMySitePoller = null;
+  }
+});
+
+// 根据是否勾选“我的场地”，清空售后专员筛选
+watch(onlyMySiteLocal, (newVal) => {
+  if (newVal) {
+    salerIdModel.value = null;
+  }
+});
+
+
 
 onMounted(() => {
   fetchUsers();
