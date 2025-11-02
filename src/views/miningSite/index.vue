@@ -225,11 +225,13 @@ const columns: DataTableColumns<Site> = [
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
   loading.value = true;
+  let onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1
   console.log("selectedSiteStatus.value",selectedSiteStatus.value)
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
     name: searchSerial.value || undefined,
+    enable_all: onlyMySite,//1 全部，-1 我的
     saler_id: selectedSalerId.value || undefined,
     site_status: selectedSiteStatus.value===0 ? 0 : selectedSiteStatus.value || undefined
   };
@@ -285,12 +287,22 @@ const onSearch = () => {
   pagination.value.page = 1;
   fetchData();
 };
+const onlyMySite = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
+// watch(onlyMySite, v => localStorage.setItem('onlyMySite', v.toString()));
+const onOnlyMySiteChange = (v: boolean) => {
+  onlyMySite.value = v;
+  localStorage.setItem('onlyMySite', v.toString());
+  tableData.value = [];
+  pagination.value.page = 1;
+  // 切换“我的场地”后立即刷新数据
+  fetchData();
+};
 </script>
 
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <!-- 查询框 -->
-     <div class="flex"> 
+     <div class="flex justify-between items-center"> 
       <SearchBar
       v-model:serial="searchSerial"
       v-model:salerId="selectedSalerId"
@@ -299,6 +311,12 @@ const onSearch = () => {
       :siteStatusOptions="siteStatusOptions"
       @search="onSearch"
     />
+    <div>
+      <NSwitch v-model:value="onlyMySite" size="medium" @update:value="onOnlyMySiteChange"  style="margin-left:10px;"/>
+    <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
+    </div>
+         
+
      </div>
      <div class="card-wrapper sm:flex-1-hidden">
 
