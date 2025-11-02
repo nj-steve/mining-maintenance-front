@@ -93,6 +93,7 @@ const workOrderForm = ref({
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
   loading.value = true;
+  let onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
@@ -101,6 +102,7 @@ const fetchData = async () => {
     site_id: searchSiteId.value || undefined,
     status: searchStatus.value || undefined,
     saler_id: searchSalerId.value || undefined,
+    enable_all: onlyMySite,//1 全部，-1 我的
     repair_result: searchResultStatus.value || undefined,
     start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
     end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
@@ -109,12 +111,14 @@ const fetchData = async () => {
 
   try {
     const {data,error} = await fetchFaults(params);
+    tableData.value = []
     if(error==null){
         tableData.value = data.list;
         pagination.value.itemCount = data.pagination.total;
         pagination.value.page =  data.pagination.page;
         pagination.value.pageSize =  data.pagination.page_size;
     }else{
+        tableData.value=[]
         message.error(`加载失败: ${error}`);
     }
   } catch (err) {
@@ -451,7 +455,15 @@ const handleRefresh = () => {
   fetchData();
 };
 const onlyMySite = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
-watch(onlyMySite, v => localStorage.setItem('onlyMySite', v.toString()));
+// watch(onlyMySite, v => localStorage.setItem('onlyMySite', v.toString()));
+const onOnlyMySiteChange = (v: boolean) => {
+  onlyMySite.value = v;
+  localStorage.setItem('onlyMySite', v.toString());
+  tableData.value = [];
+  pagination.value.page = 1;
+  // 切换“我的场地”后立即刷新数据
+  fetchData();
+};
 </script>
 
 <template>
@@ -504,7 +516,7 @@ watch(onlyMySite, v => localStorage.setItem('onlyMySite', v.toString()));
 
           <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
        
-       <NSwitch v-model:value="onlyMySite" size="medium" />
+       <NSwitch v-model:value="onlyMySite" size="medium" @update:value="onOnlyMySiteChange" />
     <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
         </template>
         <template v-if="!hasRole">
