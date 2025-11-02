@@ -27,8 +27,8 @@ const naiveDateLocale = computed(() => {
 
 const watermarkProps = computed<WatermarkProps>(() => {
   const content =
-    themeStore.watermark.enableUserName && authStore.userInfo.username
-      ? authStore.userInfo.username
+    themeStore.watermark.enableUserName && authStore.userInfo.user_name
+      ? authStore.userInfo.user_name
       : themeStore.watermark.text;
 
   return {

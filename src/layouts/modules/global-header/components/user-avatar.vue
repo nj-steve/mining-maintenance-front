@@ -76,7 +76,7 @@ const username = JSON.parse(localStorage.getItem('userInfo')??"{}")?.username;
     <div>
       <ButtonIcon>
         <SvgIcon icon="ph:user-circle" class="text-icon-large" />
-        <span class="text-16px font-medium">{{ authStore.userInfo.username || username}}</span>
+        <span class="text-16px font-medium">{{ authStore.userInfo.user_name || username}}</span>
       </ButtonIcon>
     </div>
   </NDropdown>

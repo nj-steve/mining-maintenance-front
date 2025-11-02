@@ -72,10 +72,7 @@
       />
       <!-- 工单状态 -->
        
-    <div>
-     <NSwitch v-model:value="onlyMySite" size="medium" />
-    <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
-    </div>
+    
 
     </div>
     <template #header-extra>
@@ -101,10 +98,7 @@ import { fetchUser } from '@/service/api';
 // import local from '@/locales/langs/zh-cn';
 const salerMap = ref<Record<number, string>>({});
 // import { useAuthStore } from '@/stores/auth';
-const onlyMySite = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
-watch(onlyMySite, v =>
- localStorage.setItem('onlyMySite', v.toString()
-));
+
 onMounted(() => {
   fetchUsers();
 });

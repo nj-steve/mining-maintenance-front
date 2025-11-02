@@ -433,7 +433,7 @@ const fetchData = async () => {
     order_no: searchSerial.value || undefined,
     order_status: searchOrderStatus.value || undefined,
     site_id: searchSiteId.value || undefined,
-    saler_id: searchSalerId.value || undefined,
+    saler_id: (localStorage.getItem('onlyMySite') === 'true' ? authStore.userInfo?.user_id : searchSalerId.value) || undefined,
     station_id: searchStationId.value || undefined,
     start_date: searchStartDate.value ? dayjs(searchStartDate.value).format('YYYY-MM-DD') : undefined,
     end_date: searchEndDate.value ? dayjs(searchEndDate.value).format('YYYY-MM-DD') : undefined
@@ -553,6 +553,11 @@ const handleOpenDetail = async (row: Order) => {
   showDetailModal.value = true;
   await fetchDetailData(row.ID);
 };
+const onlyMySite = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
+watch(onlyMySite, v =>{
+  localStorage.setItem('onlyMySite', v.toString());
+  fetchData()
+});
 
 // 获取工单详情（操作日志）
 const fetchDetailData = async (orderId: number) => {
@@ -606,6 +611,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
         @search="fetchData"
         @reset="handleReset"
       />
+
     
     <div class="min-h-550px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto"> 
     <!-- 查询框和批量操作 -->
@@ -622,6 +628,10 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
         >
           批量派单 ({{ selectedOrders.length }})
         </NButton>
+        <div>
+     <NSwitch v-model:value="onlyMySite" size="medium" />
+    <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
+    </div>
       </div>
     </div>
     <!-- 表格 -->
