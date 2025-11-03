@@ -34,3 +34,13 @@ export function updateSites(id:number,params: {[key: string]: any }) {
   });
 }
 
+// orders_site 工单场地【维修账户】
+// /api/orders_site/:id 
+export function fetchOrdersSite(params: {[key: string]: any }) {
+  return request({
+    url: '/api/orders_site',
+    method: 'get',
+    params // 这里会拼接到 URL ?page=1&limit=10
+  });
+}
+

@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip } from 'naive-ui';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
 import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus } from '@/service/api/workflow';
-import {fetchSites,gobackOrders,fetchRepairStations} from '@/service/api';
+import {fetchOrdersSite,gobackOrders,fetchRepairStations} from '@/service/api';
 // import SvgIcon from '@/components/custom/svg-icon.vue';
 import { repairMethodRecord,repairMethodOptions } from '@/constants/business';
 import SearchFilters from './components/SearchFilters.vue';
@@ -471,13 +471,19 @@ const handleReset = () => {
 
 // 获取场地数据
 const fetchSiteData = async () => {
+  siteOptions.value=[];
   try {
     // 这里需要根据实际的API接口来获取场地数据
-    const { data, error } = await fetchSites({page:1,page_size:1000});
+    const params: any = {
+      enable_all: (hasRole===true && !(localStorage.getItem("onlyMySite")==='true'))?1:-1,
+    };
+    console.log("params",params)
+    const { data, error } = await fetchOrdersSite(params);
+    // console.log("data",data)
     if (!error && data) {
-      siteOptions.value = data.list.map((site: any) => ({
-        label: site.name,
-        value: site.id,
+      siteOptions.value = data.map((site: any) => ({
+        label: site.Name,
+        value: site.ID,
       }));
     }
   } catch (err) {
@@ -559,6 +565,7 @@ watch(onlyMySite, v =>{
   tableData.value = [];
   pagination.value.page = 1;
   fetchData()
+  fetchSiteData()
 });
 
 // 获取工单详情（操作日志）
@@ -614,7 +621,6 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
         @search="fetchData"
         @reset="handleReset"
       />
-
     
     <div class="min-h-550px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto"> 
     <!-- 查询框和批量操作 -->
@@ -631,7 +637,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
         >
           批量派单 ({{ selectedOrders.length }})
         </NButton>
-        <div>
+      <div>
      <NSwitch v-model:value="onlyMySite" size="medium" />
     <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
     </div>

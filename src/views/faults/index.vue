@@ -9,7 +9,7 @@ import { fetchFaults,updateFaultsStatus,updateFaults } from '@/service/api/fault
 import {fetchOrdersStatus} from '@/service/api/workflow';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
-import {fetchSites} from '@/service/api/site';
+import {fetchOrdersSite} from '@/service/api';
 import FaultsSearchCard from './components/FaultsSearchCard.vue'
 import BindWorkOrderModal from './components/BindWorkOrderModal.vue'
 import UnbindWorkOrderModal from './components/UnbindWorkOrderModal.vue'
@@ -188,11 +188,15 @@ const fetchSiteData = async () => {
   }
   try {
     // 这里需要根据实际的API接口来获取场地数据
-    const { data, error } = hasRole?await fetchSites({page:1,page_size:1000}):{data:[],error:null};
+    const params: any = {
+      nable_all: (hasRole===true && !(localStorage.getItem("onlyMySite")==='true'))?1:-1,
+    };
+    console.log("params",params)
+    const { data, error } = hasRole?await fetchOrdersSite(params):{data:[],error:null};
     if (!error && data) {
-      siteOptions.value = data.list.map((site: any) => ({
-        label: site.name,
-        value: site.id,
+      siteOptions.value = data.map((site: any) => ({
+        label: site.Name,
+        value: site.ID,
       }));
     }
   } catch (err) {
