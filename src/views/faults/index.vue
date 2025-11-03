@@ -189,7 +189,7 @@ const fetchSiteData = async () => {
   try {
     // 这里需要根据实际的API接口来获取场地数据
     const params: any = {
-      nable_all: (hasRole===true && !(localStorage.getItem("onlyMySite")==='true'))?1:-1,
+      enable_all: (hasRole===true && !(localStorage.getItem("onlyMySite")==='true'))?1:-1,
     };
     console.log("params",params)
     const { data, error } = hasRole?await fetchOrdersSite(params):{data:[],error:null};
@@ -491,7 +491,9 @@ const onOnlyMySiteChange = (v: boolean) => {
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
       <div style="display: flex; align-items: center; gap: 12px;">
         <UploadSiteMachineExcel 
-        buttonText="导入" @success="fetchData"/>
+        buttonText="导入" 
+        :site-options="siteOptions"
+        @success="fetchData"/>
         
         <template v-if="hasRole">
           <NButton 

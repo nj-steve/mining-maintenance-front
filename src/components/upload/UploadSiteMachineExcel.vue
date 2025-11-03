@@ -91,31 +91,41 @@
   <script setup lang="ts">
   import { ref,onMounted } from 'vue'
   import { NButton, NModal, NSelect, NUpload, useMessage, NIcon } from 'naive-ui'
+  import type { SelectOption } from 'naive-ui';
   import type { UploadFileInfo } from 'naive-ui'
   import axios from 'axios'
   import { getServiceBaseURL } from '@/utils/service'
   import { localStg } from '@/utils/storage'
-  import {fetchSites} from "@/service/api/site"
+  // import {fetchSites} from "@/service/api/site"
   import { useAuthStore } from '@/store/modules/auth';
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
   
   // ---------------- Props ----------------
-  interface Props {
-    params?: Record<string, any>
-    buttonText?: string
-  }
-  const props = withDefaults(defineProps<Props>(), {
-    params: () => ({}),
-    buttonText: '导入'
-  })
+  // interface Props {
+  //   params?: Record<string, any>,
+  //   buttonText?: string,
+  //   siteOptions: SelectOption[]
+  // }
+  const props = defineProps<{
+    params?: Record<string, any>,
+    buttonText?: string,
+    siteOptions: SelectOption[]
+  }>()
 
+//   const props = defineProps<{
+//    siteOptions: SelectOption[]; 
+//   statusOptions: SelectOption[],
+//   hasRole:boolean
+//   // salerOptions: SelectOption[]
+
+//  }>();
   // ---------------- Emits ----------------
   const emit = defineEmits<{
     success: []
   }>()
 
-  const tableData = ref([]);
+  // const tableData = ref([]);
   
   // ---------------- State ----------------
   const message = useMessage()
@@ -127,7 +137,7 @@ const hasRole=!authStore.userInfo.roles.includes('3')
     if(!hasRole){
       return
     }
-    fetchData() 
+    // fetchData() 
   });
 
   const showModal = ref(false)
@@ -139,7 +149,7 @@ const hasRole=!authStore.userInfo.roles.includes('3')
     errors: string[]
   } | null>(null)
   
-  const siteOptions = ref([])
+  // const siteOptions = ref([])
   const selectedSite = ref<number | null>(null)
   const selectedFile = ref<File | null>(null)
   
@@ -165,7 +175,7 @@ const hasRole=!authStore.userInfo.roles.includes('3')
       formData.append('file', selectedFile.value)
       formData.append('site_id', String(selectedSite.value))
   
-      Object.entries(props.params).forEach(([key, value]) => {
+      Object.entries(props?.params || {}).forEach(([key, value]) => {
         formData.append(key, String(value))
       })
   
@@ -225,33 +235,33 @@ const hasRole=!authStore.userInfo.roles.includes('3')
   }
 
   // ---------------- 数据获取 ----------------
-const fetchData = async () => {
-  if(!hasRole){
-    return
-  }
-  const params: any = {
-    page: 1,
-    page_size: 1000,
-    sn: ''
-  };
+// const fetchData = async () => {
+//   if(!hasRole){
+//     return
+//   }
+//   const params: any = {
+//     page: 1,
+//     page_size: 1000,
+//     sn: ''
+//   };
 
-  try {
-    const {data,error} = await fetchSites(params);
-    if(error==null){
-        // tableData.value = data.list;
-         // 假设返回 res.data 是上面的数组
-      siteOptions.value = data.list.map((item: any) => ({
-        label: item.name,
-        value: item.id
-      }))
+//   try {
+//     const {data,error} = await fetchSites(params);
+//     if(error==null){
+//         // tableData.value = data.list;
+//          // 假设返回 res.data 是上面的数组
+//       siteOptions.value = data.list.map((item: any) => ({
+//         label: item.name,
+//         value: item.id
+//       }))
 
-    }else{
-        message.error(`加载失败: ${error}`);
-    }
-  } catch (err) {
-    message.error(`加载失败${err}`);
-  }
-};
+//     }else{
+//         message.error(`加载失败: ${error}`);
+//     }
+//   } catch (err) {
+//     message.error(`加载失败${err}`);
+//   }
+// };
   </script>
   <style scoped lang="scss">
 :deep(.n-base-selection .n-base-selection-placeholder){
