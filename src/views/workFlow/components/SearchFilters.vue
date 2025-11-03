@@ -32,7 +32,6 @@
         size="medium"
         style="width: 95%; font-size: 12px;"
       />
-
         <NSelect 
         v-model:value="orderStatusModel" 
         :options="statusOptions" 
@@ -45,7 +44,7 @@
      </template>
     <div v-show="!collapsed" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
       <NSelect 
-        v-show="!onlyMySiteLocal"
+        v-show="!onlyMySiteLocal && hasRole"
         v-model:value="salerIdModel" 
         :options="salerOptions" 
         placeholder="售后专员" 
@@ -149,13 +148,14 @@ watch(onlyMySiteLocal, (newVal) => {
   }
 });
 
-
-
 onMounted(() => {
   fetchUsers();
 });
 
 const fetchUsers = async () => {
+  if(!props.hasRole){
+    return;
+  }
   const {data,error} = await fetchUser({
     page: 1,
     page_size: -1,
@@ -163,12 +163,12 @@ const fetchUsers = async () => {
     role: 2,
   });
   if(error==null){
-    console.log("data.list",data.list)
+    // console.log("data.list",data.list)
     const salerMap_byId = data.list.reduce((acc:any, cur:any) => {
       acc[cur.id] = cur.real_name;
       return acc;
     }, {} as Record<number, string>);
-    console.log("salerMap_byId",salerMap_byId)
+    // console.log("salerMap_byId",salerMap_byId)
     salerMap.value = salerMap_byId;
 
     // editForm.value.saler_id = data[0].id;
@@ -192,6 +192,7 @@ const props = defineProps<{
   stationOptions: SelectOption[];
   statusOptions: SelectOption[];
   onlyMySite?: boolean;
+  hasRole?: boolean;
 }>();
 
 const emit = defineEmits<{

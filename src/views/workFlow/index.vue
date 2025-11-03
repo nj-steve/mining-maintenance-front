@@ -556,6 +556,8 @@ const handleOpenDetail = async (row: Order) => {
 const onlyMySite = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
 watch(onlyMySite, v =>{
   localStorage.setItem('onlyMySite', v.toString());
+  tableData.value = [];
+  pagination.value.page = 1;
   fetchData()
 });
 
@@ -608,6 +610,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
         :siteOptions="siteOptions"
         :stationOptions="stationOptions"
         :statusOptions="statusOptions"
+        :hasRole="hasRole"
         @search="fetchData"
         @reset="handleReset"
       />
@@ -652,7 +655,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
     </div>
 
     <!-- 修改弹框 -->
-    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改矿机信息">
+    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改工单信息">
       <NForm :model="editForm" label-width="100">
         <!-- 工单编号 -->
     <NFormItem label="工单编号">

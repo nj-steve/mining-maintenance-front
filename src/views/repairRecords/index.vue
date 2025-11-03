@@ -7,6 +7,7 @@ import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
 import { useRouter } from 'vue-router';
 import RepairSearchBar from './components/RepairSearchBar.vue'
 import UploadRepairDetailsExcel from "@/components/upload/UploadRepairDetailsExcel.vue"
+import { repairResultMap } from  '@/constants/business'
 
 const router = useRouter();
 
@@ -74,11 +75,11 @@ function goDetail(id: number | string) {
   }
 }
 // 维修结果映射
-const repairResultMap: Record<number, string> = {
-  9: '已修复',
-  10: '未修复',
-  11: '报废'
-}
+// const repairResultMap: Record<number, string> = {
+//   9: '已修复',
+//   10: '未修复',
+//   11: '报废'
+// }
 
 const columns: DataTableColumns<any> = [
   { title: '日期', key: 'Date', width: 120 },
@@ -92,10 +93,16 @@ const columns: DataTableColumns<any> = [
   { title: '损坏部件', key: 'RepairComponent', width: 120 },
   { title: '初测不良原因', key: 'DefectReason', width: 160 },
   { title: '查证缺陷', key: 'VerifyDefect', width: 160 },
-  { title: '维修结果', key: 'RepairResult',
+  { title: '维修状态', key: 'RepairResult',
     render: (row) => {
       const label = repairResultMap[row.RepairResult] || '未知'
-      const type = row.RepairResult === 9 ? 'success' : (row.RepairResult === 11 ? 'error' : 'warning')
+       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        '已修复': 'success',
+        '报废': 'error',
+        '未修复': 'error',
+        '待修复': 'warning',
+      };
+      const type = tagMap[label] || 'default';
       return h(NTag, { type }, () => label)
     }
   },
@@ -288,7 +295,6 @@ const handleFail = () => {
               @update:repair-result="repair_result = $event"
             />
     </NCard>
-
     <NCard>
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
@@ -296,17 +302,15 @@ const handleFail = () => {
         <UploadRepairDetailsExcel v-if="isRepairStation" @success="fetchData" @fail="handleFail"/>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <NButton   circle size="medium" ghost @click="exportCsv" title="导出 CSV"  style="margin-right: 80px;">
+        <NButton  circle size="medium" ghost @click="exportCsv" title="导出 CSV"  style="margin-right: 80px;">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>
         </NButton>
-        
       </div>
     </div>
     <!-- 表格 -->
     <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" :scroll-x="1400" remote />
-
 </NCard>
   </div>
 </template>
