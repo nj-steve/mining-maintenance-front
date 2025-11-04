@@ -65,9 +65,10 @@ const handleSaveAdd = async () => {
     if(error==null){
         message.success('添加成功！');
         emit('success'); // 通知父组件刷新数据
-      }else{
-        message.error('添加失败:');
       }
+      // else{
+      //   message.error('添加失败:');
+      // }
   } catch (err) {
     message.error('添加失败');
   }finally{

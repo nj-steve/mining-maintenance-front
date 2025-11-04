@@ -78,7 +78,7 @@ const editForm = ref<{ id: number; description: string; location: string; model:
   model: props.row.model ?? '',
   site_id: props.row.site_id ?? 0,
   sn: props.row.sn ?? '',
-  status: props.row.status ?? 1,
+  status: props.row.status_value,
   warranty_status: props.row.warranty_status ?? 0,
 })
 
@@ -90,7 +90,7 @@ const open = () => {
     model: props.row.model ?? '',
     site_id: props.row.site_id ?? 0,
     sn: props.row.sn ?? '',
-    status: props.row.status ?? 1,
+    status: props.row.status_value ?? null,
     warranty_status: props.row.warranty_status ?? 0,
   }
   show.value = true
@@ -111,8 +111,6 @@ const save = async () => {
     if (error == null) {
       message.success('修改成功！')
       emit('updated')
-    } else {
-      message.error('修改失败:' + error)
     }
   } catch (err) {
     message.error('修改失败')

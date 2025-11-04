@@ -3,6 +3,7 @@ import { onMounted, ref, watch, h, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
 import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip } from 'naive-ui';
+import { Icon } from '@iconify/vue';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
 import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus } from '@/service/api/workflow';
 import {fetchOrdersSite,gobackOrders,fetchRepairStations} from '@/service/api';
@@ -28,6 +29,7 @@ interface Order {
   RepairCost: number;             // 维修费用
   LogisticsCost: number;          // 物流费用
   TotalCost: number;              // 总费用
+  SalerName: string | null;       // 销售人名称
   SettlementStatus: number;       // 付款状态
   SettlementStatusText: string | null; // 付款状态文本
   PaymentDate: string | null;     // 付款日期
@@ -308,7 +310,18 @@ const columns: DataTableColumns<Order> = [
     key: 'OrderNo', 
     width: 220,
     render: (row: Order) => {
-      const text = row.OrderNo || '';
+      const full = row.OrderNo || '';
+      const prefix = full.slice(0, 12);
+      const suffix = full.slice(-7);
+      const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
+      const onCopy = async () => {
+        try {
+          await navigator.clipboard.writeText(full);
+          message.success('工单编号已复制');
+        } catch (e) {
+          message.error('复制失败');
+        }
+      };
       return h(
         NTooltip,
         null,
@@ -316,12 +329,25 @@ const columns: DataTableColumns<Order> = [
           trigger: () => h(
             'div', 
             { 
-              style: 'max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;',
-              onClick: () => router.push({ name: 'workflowdetail', params: { id: row.ID } })
+              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
             }, 
-            text
+            [
+              h(
+                'span',
+                {
+                  style: 'flex:1; min-width:0; cursor: pointer;',
+                  onClick: () => router.push({ name: 'workflowdetail', params: { id: row.ID } })
+                },
+                truncated
+              ),
+              h(
+                NButton,
+                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
+                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
+              )
+            ]
           ),
-          default: () => text
+          default: () => full
         }
       );
     }
@@ -329,21 +355,21 @@ const columns: DataTableColumns<Order> = [
   { 
     title: '维修商', 
     key: 'StationName', 
-    width: 150,
+    width: 120,
     render: (row: any) => {
       const text = row.StationName || '';
       return h(
         NTooltip,
         null,
         {
-          trigger: () => h('div', { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
+          trigger: () => h('div', { style: 'max-width:120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
           default: () => text
         }
       );
     }
   },
   { title: '场地', key: 'SiteName' },
-  { title: '售后专员', key: 'salerName' },
+  { title: '售后专员', key: 'SalerName' },
   { title: '故障机数量', key: 'FaultCount'},
   { title: '维修方式', key: 'RepairMethod',
     render: (row: any ) => {
@@ -356,7 +382,19 @@ const columns: DataTableColumns<Order> = [
       return h(NTag, {type: tagMap[row.RepairMethod] }, () => repairMethodRecord[row.RepairMethod] || '未知')
     }
   },
-
+  { title: '工单状态', key: 'OrderStatusText',
+      render: (row: any) => {
+        const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        '已完成': 'success',
+        '维修': 'primary',
+        '未解决': 'error',
+        '待处理':'warning',
+        '处理中':'primary',
+        };
+        const label = row.OrderStatusText || '未知';
+        return h(NTag, {type: tagMap[row.OrderStatusText] }, () => label)
+      }
+  },
   // { title: '总费用', key: 'RepairCost',
   //   render: (row: any ) => {
   //     if (row.RepairCost === null || row.RepairCost === undefined) {
@@ -391,20 +429,16 @@ const columns: DataTableColumns<Order> = [
         return dayjs(row.PaymentDate).format('YYYY-MM-DD');
       }
     },
-  ] : []),
-  { title: '工单状态', key: 'OrderStatusText',
-      render: (row: any) => {
-        const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '已完成': 'success',
-        '维修': 'primary',
-        '未解决': 'error',
-        '待处理':'warning',
-        '处理中':'primary',
-        };
-        const label = row.OrderStatusText || '未知';
-        return h(NTag, {type: tagMap[row.OrderStatusText] }, () => label)
+      { title: '创建日期', key: 'CreateDate',
+      render: (row: Order) => {
+        if (!row.CreatedAt) {
+          return '-';
+        }
+        return dayjs(row.CreatedAt).format('YYYY-MM-DD');
       }
-     },
+    },
+  ] : []),
+ 
   // { title: '短保期开始', key: 'warranty_status_text' },
   // { title: '剩余短保期', key: 'warranty_status_text' },
   { title: '操作',

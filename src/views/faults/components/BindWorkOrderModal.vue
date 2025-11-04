@@ -182,9 +182,10 @@ const handleSubmit = async () => {
       message.success('绑定工单成功！');
       visible.value = false;
       emit('refresh');
-    } else {
-      message.error(`绑定失败: ${error}`);
-    }
+    } 
+    // else {
+    //   message.error(`绑定失败: ${error}`);
+    // }
   } catch (err) {
     message.error('绑定失败');
     console.error(err);

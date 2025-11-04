@@ -111,14 +111,20 @@ const handleSubmit = async () => {
   
   try {
     // 调用API批量修改状态
-    const res = await updateFaultsStatus({
+    const { data, error } = await updateFaultsStatus({
       fault_ids: faultIds,
       status: form.value.status
     });
+    console.log('批量修改状态响应:', data, error);
     
-    message.success('批量修改状态成功');
-    visible.value = false;
-    emit('refresh');
+    if (error === null && data!=null) {
+      message.success('批量修改状态成功');
+      visible.value = false;
+      emit('refresh');
+    } else {
+      console.error('批量修改状态失败:', data, error);
+      // message.error(`批量修改状态失败: ${data?.msg || error}`);
+    }
   } catch (error) {
     message.error('批量修改状态失败');
   }

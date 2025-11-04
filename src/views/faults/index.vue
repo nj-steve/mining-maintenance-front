@@ -22,7 +22,6 @@ const hasRole=!authStore.userInfo.roles.includes('3')
 
 // console.log("Outer >> hasRole>>",hasRole)
 
-
 interface Faults {
   id: number;
   sn: string;
@@ -69,8 +68,6 @@ const searchModel = ref<number | null>(null);
 const searchWorkOrderNo = ref<string>('');
 const searchResultStatus = ref<number | null>(null);
 const searchSalerId = ref<number | null>(null);
-
-
 
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
 const statusOptions = ref<{ label: string; value: number }[]>([]);
@@ -133,7 +130,6 @@ const fetchData = async () => {
   }
 }
 
-
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -157,7 +153,6 @@ const pagination = ref<PaginationProps>({
 
 // ---------------- 修改弹框 ----------------
 // 已封装到组件 EditFaultModalButton 内，无需在此维护本地编辑状态
-
 // 批量修改状态弹框相关
 
 // ---------------- 数据获取 ----------------
@@ -306,7 +301,7 @@ const columns: DataTableColumns<Faults> = [
       return h(NTag, {type: tagMap[row.repair_result_text || '未知'] }, () => label)
     }
   },
-  { title: '质保', key: 'warranty_status', width: 100,
+  { title: '短保', key: 'warranty_status', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         '短保中': 'success',
@@ -440,8 +435,8 @@ const handleConfirmWorkOrder = async () => {
     
     // 调用创建工单API
     const { data, error } = await createOrder(submitData);
-    
-    if (error === null) {
+    // console.log('创建工单响应:', data, error);
+    if (error === null && data!=null) {
       message.success('工单创建成功！');
       showWorkOrderModal.value = false;
       
@@ -451,12 +446,12 @@ const handleConfirmWorkOrder = async () => {
       
       // 刷新数据
       fetchData();
-    } else {
-      message.error(`工单创建失败: ${error}`);
-    }
+    } 
+    // else {
+    //   message.error(`工单创建失败: ${data?.msg || error}`);
+    // }
     
   } catch (error) {
-    message.error('工单创建失败');
     console.error('创建工单失败:', error);
   }
 };
