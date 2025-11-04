@@ -194,11 +194,6 @@ function toggleExpand() {
         <NButton size="medium" quaternary @click="toggleExpand">{{ expanded ? '折叠' : '展开' }}</NButton>
       </div>
     </template>
-
-   
-
-  
-
     <!-- 移除底部按钮容器，按钮固定在右上角 -->
   </NCard>
 </template>

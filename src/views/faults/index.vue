@@ -74,6 +74,7 @@ const searchSalerId = ref<number | null>(null);
 
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
 const statusOptions = ref<{ label: string; value: number }[]>([]);
+const statusUpdateOptions = ref<{ label: string; value: number }[]>([]);
 
 // 批量选择相关
 const selectedRowKeys = ref<number[]>([]);
@@ -92,7 +93,11 @@ const workOrderForm = ref({
 
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
+  // 重新查询前清空之前的选择状态
+  selectedRowKeys.value = [];
+  selectedRows.value = [];
   loading.value = true;
+
   let onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1
   const params: any = {
     page: pagination.value.page,
@@ -118,15 +123,15 @@ const fetchData = async () => {
         pagination.value.page =  data.pagination.page;
         pagination.value.pageSize =  data.pagination.page_size;
     }else{
-        tableData.value=[]
         message.error(`加载失败: ${error}`);
     }
-  } catch (err) {
-    message.error(`加载失败${err}`);
+  } catch (error) {
+    message.error('加载失败');
+    console.error('加载失败:', error);
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 
 // 分页
@@ -156,20 +161,30 @@ const pagination = ref<PaginationProps>({
 // 批量修改状态弹框相关
 
 // ---------------- 数据获取 ----------------
-const fetchOrderStatusData = async () => {
+const fetchOrderStatusData = async (operate_type:"list"|"update") => {
   loading.value = true;
   const params: any = {
    type:1,//故障机状态
+   operate_type:operate_type,
   };
 
   try {
     const {data,error} = await fetchOrdersStatus(params);
     
-    if(error==null){
-       statusOptions.value = data.map((item: any) => ({
-        label: item.name,
-        value: item.id,
-      }));
+    if(error==null && data){
+      if(operate_type==='list'){
+        statusOptions.value = data.map((item: any) => ({
+          label: item.name,
+          value: item.id,
+        }));
+      }
+      if(operate_type==='update'){
+        statusUpdateOptions.value = data.map((item: any) => ({
+          label: item.name,
+          value: item.id,
+        }));
+      }
+      
     }else{
         message.error(`加载失败: ${error}`);
     }
@@ -264,7 +279,7 @@ const columns: DataTableColumns<Faults> = [
   { title: '流转状态', key: 'status_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '已修复': 'success',
+        '已完成': 'success',
         '物流出': 'primary',
         '物流进': 'primary',
         '维修中': 'info',
@@ -315,7 +330,7 @@ const columns: DataTableColumns<Faults> = [
               {
                 row,
                 sites: siteOptions.value,
-                statusOptions: statusOptions.value,
+                statusOptions: hasRole ? statusOptions.value : statusUpdateOptions.value,
                 onUpdated: () => fetchData()
               }
             )
@@ -331,20 +346,21 @@ const columns: DataTableColumns<Faults> = [
   }
 ];
 
-
-
 onMounted(() => {
   fetchData()
-  fetchOrderStatusData();
+  fetchOrderStatusData('list');
+  fetchOrderStatusData('update');
   if(hasRole){
     // console.log("hasRole>>onMounted",hasRole)
     fetchSiteData();
   }
-  
+
   // fetchSiteData();
 });
 watch([searchSerial,searchWorkOrderNo, searchSalerId, searchResultStatus, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
   tableData.value = [];
+  selectedRowKeys.value = [];
+  selectedRows.value = [];
   pagination.value.page = 1;
   fetchData();
 });
@@ -463,6 +479,9 @@ const onlyMySite = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
 const onOnlyMySiteChange = (v: boolean) => {
   onlyMySite.value = v;
   localStorage.setItem('onlyMySite', v.toString());
+  // 切换开关时清空旧选择并重置到第一页
+  selectedRowKeys.value = [];
+  selectedRows.value = [];
   tableData.value = [];
   pagination.value.page = 1;
   // 切换“我的场地”后立即刷新数据
@@ -484,7 +503,7 @@ const onOnlyMySiteChange = (v: boolean) => {
       :site-options="siteOptions"
       :status-options="statusOptions"
       :hasRole="hasRole"
-      @search="fetchData"
+      @search="fetchData" 
     />
     <!-- 查询框 -->
   <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: 50px;">
@@ -496,7 +515,7 @@ const onOnlyMySiteChange = (v: boolean) => {
         @success="fetchData"/>
         
         <template v-if="hasRole">
-          <NButton 
+          <NButton
             type="primary" 
             ghost
             size="small"
@@ -510,13 +529,13 @@ const onOnlyMySiteChange = (v: boolean) => {
           
           <!-- 批量修改状态组件 -->
           <BatchStatusModal 
-            :status-options="statusOptions"
+            :status-options="hasRole ? statusOptions : statusUpdateOptions"
             :selectedRows="selectedRows"
             @refresh="handleRefresh"
           />
 
           <UploadFileBathStatusModal 
-            :status-options="statusOptions"
+            :status-options="hasRole ? statusOptions : statusUpdateOptions"
             @refresh="handleRefresh"
           />
 
@@ -528,13 +547,13 @@ const onOnlyMySiteChange = (v: boolean) => {
         <template v-if="!hasRole">
   <!-- 批量修改状态组件 -->
           <BatchStatusModal 
-            :status-options="[{ label: '已完成', value: 14 }]"
+            :status-options=statusUpdateOptions
             :selectedRows="selectedRows"
             @refresh="handleRefresh"
           />
 
           <UploadFileBathStatusModal 
-            :status-options="[{ label: '已完成', value: 14 }]"
+            :status-options=statusUpdateOptions
             @refresh="handleRefresh"
           />
         </template>
@@ -549,6 +568,7 @@ const onOnlyMySiteChange = (v: boolean) => {
         :loading="loading" 
         remote
         :row-key="(row: Faults) => row.id"
+        :checked-row-keys="selectedRowKeys"
         @update:checked-row-keys="handleSelectionChange"
         :scroll-x="1400"
         striped

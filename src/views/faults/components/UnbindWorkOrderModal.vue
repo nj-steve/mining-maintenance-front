@@ -97,6 +97,7 @@ const emit = defineEmits<Emits>();
 const visible = ref(false);
 
 // 已绑定工单的机器列表
+console.log("props.selectedRows",props.selectedRows)
 const withOrderRows = computed(() => props.selectedRows.filter(row => (row.order_no ?? '').toString().trim().length > 0));
 
 // 打开弹框

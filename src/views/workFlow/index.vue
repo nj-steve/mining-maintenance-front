@@ -513,6 +513,7 @@ const fetchOrderStatusData = async () => {
   loading.value = true;
   const params: any = {
    type:2,//订单状态
+   operate_type:"list",//工单状态
   };
 
   try {
