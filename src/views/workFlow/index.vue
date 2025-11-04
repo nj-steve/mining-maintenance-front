@@ -308,7 +308,7 @@ const columns: DataTableColumns<Order> = [
   { 
     title: '工单编号', 
     key: 'OrderNo', 
-    width: 220,
+    width: 250,
     render: (row: Order) => {
       const full = row.OrderNo || '';
       const prefix = full.slice(0, 12);

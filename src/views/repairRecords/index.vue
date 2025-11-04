@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h } from 'vue';
-import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
+import { NDataTable, useMessage, NButton, NTooltip,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
+import { Icon } from '@iconify/vue';
 
 import { useRouter } from 'vue-router';
 import RepairSearchBar from './components/RepairSearchBar.vue'
@@ -18,6 +19,7 @@ interface Faults {
   Faults_type_id:number;
   status_id:number,
   contract_number: string;
+  RepairResult:number;
   FaultsType?: {
     name?: string;
     hash_rate?: number;
@@ -83,7 +85,49 @@ function goDetail(id: number | string) {
 
 const columns: DataTableColumns<any> = [
   { title: '日期', key: 'Date', width: 120 },
-  { title: '工单号', key: 'WorkOrderNo', width: 180 },
+  { title: '工单号', key: 'WorkOrderNo', width: 180,   render: (row: Faults) => {
+      // const full = row.order_no || '';
+      const full = (row as any).order_no || '';
+      const prefix = full.slice(0, 6);
+      const suffix = full.slice(-7);
+      const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
+      const onCopy = async () => {
+        try {
+          await navigator.clipboard.writeText(full);
+          message.success('工单编号已复制');
+        } catch (e) {
+          message.error('复制失败');
+        }
+      };
+      return h(
+        NTooltip,
+        null,
+        {
+          trigger: () => h(
+            'div', 
+            { 
+              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+            }, 
+            [
+              h(
+                'span',
+                {
+                  style: 'flex:1; min-width:0; cursor: pointer;',
+                  // onClick: () => router.push({ name: 'workflowdetail', params: { id: row.WorkOrderNo } })
+                },
+                truncated
+              ),
+              h(
+                NButton,
+                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
+                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
+              )
+            ]
+          ),
+          default: () => full
+        }
+      ) ;
+    }},
   { title: '维修站点', key: 'RepairStationName', width: 180,
     render: (row) => row.RepairStationName || '-' 
     // ⚠️ 如果需要显示名称，就在 fetchData 里转换
@@ -284,7 +328,7 @@ const handleFail = () => {
 </script>
 
 <template>
-  <div>
+  <div class="flex  gap-16px flex-col-stretch  lt-sm:overflow-auto">
     <NCard style="margin-bottom: 20px;">
       <RepairSearchBar
               :work-order-no="work_order_no"
@@ -295,14 +339,16 @@ const handleFail = () => {
               @update:repair-result="repair_result = $event"
             />
     </NCard>
-    <NCard>
+    <!-- <NCard> -->
     <!-- 查询框 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
+   
+    <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: px;">
+       <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 6px">
       <div  style="display: flex; gap: 8px; align-items: center;">
         <UploadRepairDetailsExcel v-if="isRepairStation" @success="fetchData" @fail="handleFail"/>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <NButton  circle size="medium" ghost @click="exportCsv" title="导出 CSV"  style="margin-right: 80px;">
+        <NButton circle size="medium" ghost @click="exportCsv" title="导出 CSV"  style="margin-right: 80px;">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>
@@ -310,8 +356,26 @@ const handleFail = () => {
       </div>
     </div>
     <!-- 表格 -->
-    <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" :scroll-x="1400" remote />
-</NCard>
+    <!-- <NDataTable flex-height small :columns="columns" 
+    :data="tableData" :pagination="pagination" 
+    :loading="loading" :scroll-x="1400" 
+    remote striped
+        class="sm:h-full" /> -->
+
+         <NDataTable 
+        flex-height
+        :columns="columns" 
+        :data="tableData" 
+        :pagination="pagination" 
+        :loading="loading" 
+        remote
+        :row-key="(row: any) => row.ID"
+        :scroll-x="1600"
+        striped
+        class="sm:h-full"
+      />
+    </n-card>
+     <!-- </NCard> -->
   </div>
 </template>
 

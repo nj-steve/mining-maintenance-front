@@ -17,6 +17,7 @@ import { useAuthStore } from '@/store/modules/auth';
 import EditFaultModalButton from './components/EditFaultModalButtonShouhou.vue'
 import EditFaultModalButtonYunwei from './components/EditFaultModalButtonYunwei.vue'
 import { repairMethodRecord } from '@/constants/business';
+import { Icon } from '@iconify/vue';
 
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
@@ -224,8 +225,8 @@ const columns: DataTableColumns<Faults> = [
     multiple: true,
     width: 60
   },
-  { title: '序号', key: 'id', width: 80 },
-  { title: '日期', key: 'date', width: 120 },
+  // { title: '序号', key: 'id', width: 80 },
+
   { title: 'SN码', key: 'sn', width: 180, 
     render: (row: Faults) => {
       const sn = row.sn || '未知';
@@ -269,30 +270,73 @@ const columns: DataTableColumns<Faults> = [
      }
   },
   { title: '型号', key: 'model', width: 120},
-  { title: '问题描述', key: 'description', width: 200},
+  
   { 
     title: '工单编号', 
     key: 'order_no', 
-    width: 150,
-    render: (row: Faults) => {
-      const text = (row as any).order_no || '';
-      return hasRole
-          ? h(
+    width: 170,
+     render: (row: Faults) => {
+      // const full = row.order_no || '';
+      const full = (row as any).order_no || '';
+      const prefix = full.slice(0, 6);
+      const suffix = full.slice(-7);
+      const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
+      const onCopy = async () => {
+        try {
+          await navigator.clipboard.writeText(full);
+          message.success('工单编号已复制');
+        } catch (e) {
+          message.error('复制失败');
+        }
+      };
+      return  hasRole? h(
         NTooltip,
         null,
         {
-          trigger: () => h('div',
-           { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' ,
-            onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
-           }, 
-           text),
-          default: () => text
+          trigger: () => h(
+            'div', 
+            { 
+              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+            }, 
+            [
+              h(
+                'span',
+                {
+                  style: 'flex:1; min-width:0; cursor: pointer;',
+                  onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
+                },
+                truncated
+              ),
+              h(
+                NButton,
+                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
+                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
+              )
+            ]
+          ),
+          default: () => full
         }
-      )
-      : text;
+      ) : truncated;
     }
+    // render: (row: Faults) => {
+    //   const text = (row as any).order_no || '';
+    //   return hasRole
+    //       ? h(
+    //     NTooltip,
+    //     null,
+    //     {
+    //       trigger: () => h('div',
+    //        { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' ,
+    //         onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
+    //        }, 
+    //        text),
+    //       default: () => text
+    //     }
+    //   )
+    //   : text;
+    // }
   },
-  { title: '维修次数', key: 'repair_count', width: 100 },
+  
   { title: '流转状态', key: 'status_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -334,6 +378,7 @@ const columns: DataTableColumns<Faults> = [
       return h(NTag, {type: tagMap[row.repair_result_text || '未知'],size:'small', round:true }, () => label)
     }
   },
+  { title: '维修次数', key: 'repair_count', width: 100 },
   { title: '短保', key: 'warranty_status', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -344,6 +389,8 @@ const columns: DataTableColumns<Faults> = [
       return h(NTag, {type: tagMap[row.warranty_status_text || '无'],size:'small', round:true}, () => label)
     }
   },
+  { title: '问题描述', key: 'description', width: 200},
+  { title: '日期', key: 'date', width: 120 },
   {
     title: '操作',
     key: 'actions',
@@ -595,7 +642,7 @@ const onOnlyMySiteChange = (v: boolean) => {
         :row-key="(row: Faults) => row.id"
         :checked-row-keys="selectedRowKeys"
         @update:checked-row-keys="handleSelectionChange"
-        :scroll-x="1400"
+        :scroll-x="1800"
         striped
         class="sm:h-full"
       />
