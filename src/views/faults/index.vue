@@ -16,6 +16,7 @@ import UnbindWorkOrderModal from './components/UnbindWorkOrderModal.vue'
 import { useAuthStore } from '@/store/modules/auth';
 import EditFaultModalButton from './components/EditFaultModalButtonShouhou.vue'
 import EditFaultModalButtonYunwei from './components/EditFaultModalButtonYunwei.vue'
+import { repairMethodRecord } from '@/constants/business';
 
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
@@ -33,6 +34,8 @@ interface Faults {
   status_text?: string;
   repair_result?: number;
   repair_result_text?: string;
+  repair_method?: number;
+  repair_method_text?: string;
   warranty_status?: number;
   warranty_status_text?: string;
   site_name?: string;
@@ -223,7 +226,26 @@ const columns: DataTableColumns<Faults> = [
   },
   { title: '序号', key: 'id', width: 80 },
   { title: '日期', key: 'date', width: 120 },
-  { title: 'SN码', key: 'sn', width: 180 },
+  { title: 'SN码', key: 'sn', width: 180, 
+    render: (row: Faults) => {
+      const sn = row.sn || '未知';
+      const onCopy = async () => {
+        try {
+          await navigator.clipboard.writeText(sn);
+          message.success('SN码已复制');
+        } catch (e) {
+          message.error('复制失败');
+        }
+      };
+      return h(NTooltip, null, {
+        trigger: () => h('div', { style: 'display:flex; align-items:center; gap:8px; max-width:180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, [
+          h('span', { style: 'flex:1; min-width:0;' }, sn),
+          // h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy }, { default: () => '复制' })
+        ]),
+        default: () => sn
+      });
+    }
+  },
   { title: '场地', key: 'site_name', width: 150,
     render: (row: Faults) => {
        const siteName = row.site_name || '未知';
@@ -286,10 +308,21 @@ const columns: DataTableColumns<Faults> = [
         '新下架':'warning',
       };
       const label = row.status_text || '未知';
-      return h(NTag, {type: tagMap[row.status_text || '未知'] }, () => label)
+      return h(NTag, {type: tagMap[row.status_text || '未知'],size:'small', round:true }, () => label)
     }
   },
-  { title: '维修状态', key: 'status_text', width: 100,
+  { title: '维修方式', key: 'repair_method_text', width: 100,
+     render: (row: any ) => {
+      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        1: 'success',
+        2: 'primary',
+        3: 'primary',
+      };
+      // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
+      return h(NTag, {type: tagMap[row.repair_method || '无'],size:'small', round:true }, () => repairMethodRecord[row.repair_method || '未知'] || '未知')
+    }
+   },
+  { title: '维修状态', key: 'repair_result_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         '已修复': 'success',
@@ -298,7 +331,7 @@ const columns: DataTableColumns<Faults> = [
         '待修复': 'warning',
       };
       const label = row.repair_result_text || '未知';
-      return h(NTag, {type: tagMap[row.repair_result_text || '未知'] }, () => label)
+      return h(NTag, {type: tagMap[row.repair_result_text || '未知'],size:'small', round:true }, () => label)
     }
   },
   { title: '短保', key: 'warranty_status', width: 100,
@@ -307,8 +340,8 @@ const columns: DataTableColumns<Faults> = [
         '短保中': 'success',
         '已过保': 'error',
       };
-      const label = row.warranty_status_text || '未知';
-      return h(NTag, {type: tagMap[row.warranty_status_text || '未知'] }, () => label)
+      const label = row.warranty_status_text || '无';
+      return h(NTag, {type: tagMap[row.warranty_status_text || '无'],size:'small', round:true}, () => label)
     }
   },
   {
@@ -431,26 +464,23 @@ const handleConfirmWorkOrder = async () => {
       // site_id: workOrderForm.value.selectedMachines[0]?.Site?.id || 0 // 假设第一个机器的场地ID
     };
     
-    // console.log('提交工单数据:', submitData);
-    
     // 调用创建工单API
-    const { data, error } = await createOrder(submitData);
+    const { error, response: { data } } = await createOrder(submitData);
     // console.log('创建工单响应:', data, error);
-    if (error === null && data!=null) {
-      message.success('工单创建成功！');
-      showWorkOrderModal.value = false;
-      
-      // 清空选择
-      selectedRowKeys.value = [];
-      selectedRows.value = [];
-      
-      // 刷新数据
-      fetchData();
-    } 
-    // else {
-    //   message.error(`工单创建失败: ${data?.msg || error}`);
-    // }
-    
+    // console.log('data.code', data?.code);
+
+    if (error == null) {
+      if (Number(data?.code) == 0) {
+        message.success('工单创建成功！');
+        showWorkOrderModal.value = false;
+        // 清空选择
+        selectedRowKeys.value = [];
+        selectedRows.value = [];
+
+        // 刷新数据
+        fetchData();
+      }
+    }  
   } catch (error) {
     console.error('创建工单失败:', error);
   }

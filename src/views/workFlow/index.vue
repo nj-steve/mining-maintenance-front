@@ -379,7 +379,7 @@ const columns: DataTableColumns<Order> = [
         3: 'primary',
       };
       // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, {type: tagMap[row.RepairMethod] }, () => repairMethodRecord[row.RepairMethod] || '未知')
+      return h(NTag, {type: tagMap[row.RepairMethod || '无'],size:'small', round:true }, () => repairMethodRecord[row.RepairMethod || '未知'] || '未知')
     }
   },
   { title: '工单状态', key: 'OrderStatusText',
@@ -392,7 +392,7 @@ const columns: DataTableColumns<Order> = [
         '处理中':'primary',
         };
         const label = row.OrderStatusText || '未知';
-        return h(NTag, {type: tagMap[row.OrderStatusText] }, () => label)
+        return h(NTag, {type: tagMap[row.OrderStatusText || '未知'],size:'small', round:true }, () => label)
       }
   },
   // { title: '总费用', key: 'RepairCost',
@@ -418,7 +418,7 @@ const columns: DataTableColumns<Order> = [
 
         const label = row.SettlementStatusText || '未知';
         // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-        return h(NTag, {type: tagMap[row.SettlementStatusText] }, () => label)
+        return h(NTag, {type: tagMap[row.SettlementStatusText || '未知'],size:'small', round:true }, () => label)
       }
     },
     { title: '付款日期', key: 'PaymentDate',

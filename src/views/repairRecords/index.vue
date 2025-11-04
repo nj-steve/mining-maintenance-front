@@ -103,7 +103,7 @@ const columns: DataTableColumns<any> = [
         '待修复': 'warning',
       };
       const type = tagMap[label] || 'default';
-      return h(NTag, { type }, () => label)
+      return h(NTag, { type, size: 'small',round:true }, () => label)
     }
   },
   {
