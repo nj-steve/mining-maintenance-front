@@ -205,7 +205,7 @@ const fetchSiteData = async () => {
     const params: any = {
       enable_all: (hasRole===true && !(localStorage.getItem("onlyMySite")==='true'))?1:-1,
     };
-    console.log("params",params)
+    // console.log("params",params)
     const { data, error } = hasRole?await fetchOrdersSite(params):{data:[],error:null};
     if (!error && data) {
       siteOptions.value = data.map((site: any) => ({
@@ -345,7 +345,7 @@ const columns: DataTableColumns<Faults> = [
       // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
       return h(NTag, {type: tagMap[row.repair_method || '无'],size:'small', round:true }, () => repairMethodRecord[row.repair_method || '未知'] || '未知')
     }
-   },
+  },
   { title: '流转状态', key: 'status_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
