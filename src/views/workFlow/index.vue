@@ -82,6 +82,7 @@ const showEditModal = ref(false);
 const editForm = ref({
   id:0,
   order_no:"",
+  repair_method:0,
   "logistics_cost": 0,
   "onsite": 0,
   "order_status": 1,
@@ -113,6 +114,7 @@ const handleOpenEdit = (row: Order) => {
   editForm.value = {
     id:row.ID,
     order_no:row.OrderNo,
+    repair_method:row.RepairMethod||0,
     "logistics_cost": row.LogisticsCost||0,
     "onsite": row.Onsite||0,
     "order_status": row.OrderStatus||0,
@@ -285,13 +287,28 @@ const handleSaveEdit = async () => {
   try {
     // TODO: 调用后端接口 updateOrders(editForm.value)
     // console.log('修改提交:', editForm.value);
-    const { error } = await updateOrders(editForm.value.id, editForm.value);
-    if(error==null){
+    // const { error } = await updateOrders(editForm.value.id, editForm.value);
+    // if(error==null){
+    //     message.success('修改成功！');
+    //     fetchData(); // 刷新表格
+    //   }else{
+    //     message.error('修改失败:' +error);
+    //   }
+
+ // 调用创建工单API
+    const { error, response: { data } } = await updateOrders(editForm.value.id, editForm.value);
+    // console.log('创建工单响应:', data, error);
+    // console.log('data.code', data?.code);
+
+    if (error == null) {
+      if (Number(data?.code) == 0) {
         message.success('修改成功！');
-        fetchData(); // 刷新表格
-      }else{
-        message.error('修改失败:' +error);
+        // 刷新数据
+        fetchData();
       }
+    }  
+
+
   } catch (err) {
     message.error('修改失败');
   }finally{
@@ -702,6 +719,14 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
     <NFormItem label="工单编号">
       <NInput size="medium" v-model:value="editForm.order_no" disabled />
     </NFormItem>
+
+      <NFormItem label="维修方式" required>
+          <NSelect 
+            v-model:value="editForm.repair_method"
+            :options="repairMethodOptions"
+            placeholder="请选择维修方式"
+          />
+        </NFormItem>
 
       <!-- 选择维修站 -->
         <NFormItem label="选择维修站" required>

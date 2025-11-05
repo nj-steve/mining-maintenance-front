@@ -315,7 +315,34 @@ const columns: DataTableColumns<Faults> = [
           ),
           default: () => full
         }
-      ) : truncated;
+      ) : h(
+        NTooltip,
+        null,
+        {
+          trigger: () => h(
+            'div', 
+            { 
+              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+            }, 
+            [
+              h(
+                'span',
+                {
+                  style: 'flex:1; min-width:0; cursor: pointer;',
+                  // onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
+                },
+                truncated
+              ),
+              full!=="" ? h(
+                NButton,
+                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
+                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
+              ) : null
+            ]
+          ),
+          default: () => full
+        }
+      );
     }
     // render: (row: Faults) => {
     //   const text = (row as any).order_no || '';

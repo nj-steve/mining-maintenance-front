@@ -31,7 +31,7 @@ interface EditUser {
   assigned_company_id: string;
   company: string;
   password: string;
-  contact_phone: string;
+  phone: string;
   email: string;
   role: number;
   start_date: string;
@@ -92,7 +92,7 @@ const editForm = ref<EditUser>({
   assigned_company_id: "",
   password: "",
   company: "",
-  contact_phone: "",
+  phone: "",
   email: "",
   role: 1,        // 默认角色，可以根据需求调整
   start_date: "", // 可以用 "" 或 new Date().toISOString()
@@ -109,7 +109,7 @@ const handleOpenAdd = () => {
     assigned_company_id: "",
     password: "",
     company: "",
-    contact_phone: "",
+    phone: "",
     email: "",
     role: 1,        // 默认角色，可以根据需求调整
     start_date: "", // 可以用 "" 或 new Date().toISOString()
@@ -134,7 +134,7 @@ function userToEditUser(user: User): EditUser {
     assigned_company_id: user.company_info?.[0]?.id?.toString() || "",
     company: user.company_info?.[0]?.name || "",
     password: "",
-    contact_phone: user.contact_phone || "",
+    phone: user.contact_phone || "",
     email: user.email || "",
     role: user.role || 1,
     start_date: user.start_date || "",
@@ -176,7 +176,7 @@ const handleSave = async () => {
       message.error('请选择所属公司');
       return;
     }
-    if (!editForm.value.contact_phone) {
+    if (!editForm.value.phone) {
       message.error('请输入联系电话');
       return;
     }
@@ -210,7 +210,7 @@ const handleSave = async () => {
     } else {
       
       const res = await updateUser(editForm.value.id!, editForm.value);
-      console.log("updateUser",res)
+      // console.log("updateUser",res)
       if (res.response?.data?.msg === "Operation successful") {
         message.success('修改成功！');
         fetchData();
@@ -417,7 +417,7 @@ watch([searchSerial,searchRole], () => {
       </NFormItem>
 
       <NFormItem label="联系电话">
-        <NInput v-model:value="editForm.contact_phone" placeholder="请输入联系电话" />
+        <NInput v-model:value="editForm.phone" placeholder="请输入联系电话" />
       </NFormItem>
 
       <NFormItem label="邮箱">

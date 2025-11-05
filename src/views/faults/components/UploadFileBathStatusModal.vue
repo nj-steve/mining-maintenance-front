@@ -65,6 +65,12 @@
           >
             📥 下载模板
           </NButton>
+
+      <!-- 批量更新结果显示 -->
+      <NAlert v-if="resultInfo" type="success" title="批量更新结果" style="margin-top: 12px;">
+        <!-- <div style="font-size: 12px;">{{ resultMsg }}</div> -->
+        <div style="font-size: 12px;">成功：{{ resultInfo.success_count }}，失败：{{ resultInfo.fail_count }}</div>
+      </NAlert>
     </NForm>
     
     <template #footer>
@@ -78,7 +84,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { NButton, NModal, NForm, NFormItem, NInput, NSelect, useMessage } from 'naive-ui';
+import { NButton, NModal, NForm, NFormItem, NInput, NSelect, useMessage, NAlert } from 'naive-ui';
 import { batchUpdateStatus } from '@/service/api/faults';
 
 const message = useMessage();
@@ -103,6 +109,10 @@ const form = ref({
   file: null as File | null
 });
 
+// 结果展示
+const resultInfo = ref<{ success_count: number; fail_count: number } | null>(null);
+const resultMsg = ref('');
+
 // 打开弹框的方法
 const handleOpenModal = () => {
   // 重置表单
@@ -111,6 +121,8 @@ const handleOpenModal = () => {
     status: null,
     file: null
   };
+  resultInfo.value = null;
+  resultMsg.value = '';
   if (fileInputRef.value) {
     fileInputRef.value.value = '';
   }
@@ -150,18 +162,27 @@ const handleSubmit = async () => {
     if (form.value.file) {
       formData.append('file', form.value.file);
     }
-    const { error } = await batchUpdateStatus(formData);
-    if (error) {
-      message.error(error.message || '批量修改状态失败');
-      return;
-    }else{
-      // 临时模拟成功
-      message.success('批量修改状态成功');
-      visible.value = false;
-      
-      // 通知父组件刷新数据
-      emit('refresh');
-    }
+
+    const { error, response: { data } } = await batchUpdateStatus(formData);
+    // console.log('批量修改状态响应:', data, error);
+    // console.log('data.code', data?.code);
+
+    if (error == null) {
+      if (Number(data?.code) == 0) {
+        // 成功：展示结果，而不是立即关闭弹框
+        const info = (data?.data || {}) as { success_count?: number; fail_count?: number };
+        resultInfo.value = {
+          success_count: Number(info.success_count || 0),
+          fail_count: Number(info.fail_count || 0)
+        };
+        resultMsg.value = String(data?.msg || '操作成功');
+        message.success('批量修改状态成功！');
+        // 保持弹框显示以便查看结果
+        visible.value = true;
+        // 通知父组件刷新数据
+        emit('refresh');
+      }
+    } 
   } catch (error) {
     message.error('批量修改状态失败');
     console.error('批量修改状态失败:', error);
@@ -176,6 +197,8 @@ const handleCancel = () => {
     status: null,
     file: null
   };
+  resultInfo.value = null;
+  resultMsg.value = '';
   if (fileInputRef.value) {
     fileInputRef.value.value = '';
   }
@@ -185,8 +208,8 @@ const handleCancel = () => {
 const downloadTemplate = () => {
   // 创建一个临时链接来下载模板文件
   const link = document.createElement('a');
-  link.href = '/template/site_machine_template.xlsx'; // 模板文件路径
-  link.download = '场地矿机导入模板.xlsx';
+  link.href = '/template/status_machine_template.xlsx'; // 模板文件路径
+  link.download = '批量改机器状态模板.xlsx';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

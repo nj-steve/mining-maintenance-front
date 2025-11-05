@@ -87,7 +87,7 @@ const columns: DataTableColumns<any> = [
   { title: '日期', key: 'Date', width: 120 },
   { title: '工单号', key: 'WorkOrderNo', width: 180,   render: (row: Faults) => {
       // const full = row.order_no || '';
-      const full = (row as any).order_no || '';
+      const full = (row as any).WorkOrderNo || '';
       const prefix = full.slice(0, 6);
       const suffix = full.slice(-7);
       const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
@@ -241,7 +241,7 @@ const isRepairStation = role === 4;
 const downloadTemplate = () => {
   // 创建一个临时链接来下载模板文件
   const link = document.createElement('a');
-  link.href = '/template/repair-detail.xlsx'; // 模板文件路径
+  link.href = '/template/repair-detail-V002.xlsx'; // 模板文件路径
   link.download = '维修明细导入模板.xlsx';
   document.body.appendChild(link);
   link.click();
