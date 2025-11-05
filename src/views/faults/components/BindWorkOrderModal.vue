@@ -177,12 +177,24 @@ const handleSubmit = async () => {
       site_id: siteId.value
     };
 
-    const { error } = await bindFaultsToOrder(submitData);
-    if (error === null) {
-      message.success('绑定工单成功！');
-      visible.value = false;
-      emit('refresh');
+        // 调用创建工单API
+    const { error, response: { data } } = await bindFaultsToOrder(submitData);
+    // console.log('创建工单响应:', data, error);
+    // console.log('data.code', data?.code);
+
+    if (error == null) {
+      if (Number(data?.code) == 0) {
+        message.success('绑定工单成功！');
+        visible.value = false;
+        emit('refresh');
+      }
     } 
+    // const { error } = await bindFaultsToOrder(submitData);
+    // if (error === null) {
+    //   message.success('绑定工单成功！');
+    //   visible.value = false;
+    //   emit('refresh');
+    // } 
     // else {
     //   message.error(`绑定失败: ${error}`);
     // }

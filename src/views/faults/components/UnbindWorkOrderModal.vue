@@ -122,14 +122,25 @@ const handleSubmit = async () => {
   }
 
   try {
-    const { error } = await unbindFaultsToOrder({ fault_ids: faultIds });
-    if (error === null) {
-      message.success('解绑工单成功！');
-      visible.value = false;
-      emit('refresh');
-    } else {
-      message.error(`解绑失败: ${error}`);
-    }
+
+    const { error, response: { data } } = await unbindFaultsToOrder({ fault_ids: faultIds });
+
+    if (error == null) {
+      if (Number(data?.code) == 0) {
+        message.success('解绑工单成功！');
+        visible.value = false;
+        emit('refresh');
+      }
+    } 
+    // const { error } = await unbindFaultsToOrder({ fault_ids: faultIds });
+    // if (error === null) {
+    //   message.success('解绑工单成功！');
+    //   visible.value = false;
+    //   emit('refresh');
+    // } else {
+    //   message.error(`解绑失败: ${error}`);
+    // }
+
   } catch (err) {
     message.error('解绑失败');
     console.error(err);

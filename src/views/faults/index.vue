@@ -307,11 +307,11 @@ const columns: DataTableColumns<Faults> = [
                 },
                 truncated
               ),
-              h(
+              full!=="" ? h(
                 NButton,
                 { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
                 { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
-              )
+              ) : null
             ]
           ),
           default: () => full

@@ -107,11 +107,25 @@ const save = async () => {
       status: editForm.value.status ?? 1,
       warranty_status: props.row.warranty_status?? 0,
     }
-    const { error } = await updateFaults(props.row.id,params)
+    // const { error } = await updateFaults(props.row.id,params)
+    // if (error == null) {
+    //   message.success('修改成功！')
+    //   emit('updated')
+    // }
+
+    const { error, response: { data } } = await updateFaults(props.row.id,params);
+    // console.log('创建工单响应:', data, error);
+    // console.log('data.code', data?.code);
+
     if (error == null) {
-      message.success('修改成功！')
-      emit('updated')
-    }
+      if (Number(data?.code) == 0) {
+        message.success('修改成功!');
+        emit('updated');
+      }
+    } 
+
+
+
   } catch (err) {
     message.error('修改失败')
   } finally {

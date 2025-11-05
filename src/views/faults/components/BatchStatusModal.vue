@@ -110,21 +110,38 @@ const handleSubmit = async () => {
   const faultIds = validMachines.map(row => row.id);
   
   try {
-    // 调用API批量修改状态
-    const { data, error } = await updateFaultsStatus({
+
+    const { error, response: { data } } = await updateFaultsStatus({
       fault_ids: faultIds,
       status: form.value.status
     });
-    console.log('批量修改状态响应:', data, error);
+    // console.log('创建工单响应:', data, error);
+    // console.log('data.code', data?.code);
+
+    if (error == null) {
+      if (Number(data?.code) == 0) {
+        message.success('批量修改状态成功!');
+        visible.value = false;
+        emit('refresh');
+      }
+    } 
+
+
+    // // 调用API批量修改状态
+    // const { data, error } = await updateFaultsStatus({
+    //   fault_ids: faultIds,
+    //   status: form.value.status
+    // });
+    // console.log('批量修改状态响应:', data, error);
     
-    if (error === null && data!=null) {
-      message.success('批量修改状态成功');
-      visible.value = false;
-      emit('refresh');
-    } else {
-      console.error('批量修改状态失败:', data, error);
-      // message.error(`批量修改状态失败: ${data?.msg || error}`);
-    }
+    // if (error === null && data!=null) {
+    //   message.success('批量修改状态成功');
+    //   visible.value = false;
+    //   emit('refresh');
+    // } else {
+    //   console.error('批量修改状态失败:', data, error);
+    //   // message.error(`批量修改状态失败: ${data?.msg || error}`);
+    // }
   } catch (error) {
     message.error('批量修改状态失败');
   }

@@ -128,7 +128,7 @@ const handleSaveEdit = async () => {
       <NFormItem label="联系电话" required>
         <NInput v-model:value="editForm.contact_phone" placeholder="请输入联系电话" />
       </NFormItem>
-      <NFormItem label="KYC状态">
+      <NFormItem label="白名单认证">
         <NSelect v-model:value="editForm.kyc_status" :options="kycStatusOptions" />
       </NFormItem>
       <NFormItem label="评分">

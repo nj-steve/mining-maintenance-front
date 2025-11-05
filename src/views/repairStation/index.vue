@@ -91,7 +91,7 @@ const handleAddSuccess = () => {
 const columns: DataTableColumns<CompanyInfo> = [
   { title: '公司名称', key: 'Name', width: 200 },
   { title: '法人代表', key: 'LegalRepresentative' },
-  { title: 'KYC认证', key: 'KYCStatus',
+  { title: '白名单认证', key: 'KYCStatus',
     render: (row: CompanyInfo) => {
       return h(NTag, {
         type: row.KYCStatus === 1 ? 'success' : 'warning'
