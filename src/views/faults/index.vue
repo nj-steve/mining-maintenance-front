@@ -270,7 +270,6 @@ const columns: DataTableColumns<Faults> = [
      }
   },
   { title: '型号', key: 'model', width: 120},
-  
   { 
     title: '工单编号', 
     key: 'order_no', 
@@ -336,7 +335,17 @@ const columns: DataTableColumns<Faults> = [
     //   : text;
     // }
   },
-  
+  { title: '维修方式', key: 'repair_method_text', width: 100,
+     render: (row: any ) => {
+      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        1: 'success',
+        2: 'primary',
+        3: 'primary',
+      };
+      // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
+      return h(NTag, {type: tagMap[row.repair_method || '无'],size:'small', round:true }, () => repairMethodRecord[row.repair_method || '未知'] || '未知')
+    }
+   },
   { title: '流转状态', key: 'status_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -355,17 +364,6 @@ const columns: DataTableColumns<Faults> = [
       return h(NTag, {type: tagMap[row.status_text || '未知'],size:'small', round:true }, () => label)
     }
   },
-  { title: '维修方式', key: 'repair_method_text', width: 100,
-     render: (row: any ) => {
-      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        1: 'success',
-        2: 'primary',
-        3: 'primary',
-      };
-      // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, {type: tagMap[row.repair_method || '无'],size:'small', round:true }, () => repairMethodRecord[row.repair_method || '未知'] || '未知')
-    }
-   },
   { title: '维修状态', key: 'repair_result_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
