@@ -31,7 +31,7 @@ interface EditUser {
   assigned_company_id: string;
   company: string;
   password: string;
-  phone: string;
+  contact_phone: string;
   email: string;
   role: number;
   start_date: string;
@@ -92,7 +92,7 @@ const editForm = ref<EditUser>({
   assigned_company_id: "",
   password: "",
   company: "",
-  phone: "",
+  contact_phone: "",
   email: "",
   role: 1,        // 默认角色，可以根据需求调整
   start_date: "", // 可以用 "" 或 new Date().toISOString()
@@ -109,7 +109,7 @@ const handleOpenAdd = () => {
     assigned_company_id: "",
     password: "",
     company: "",
-    phone: "",
+    contact_phone: "",
     email: "",
     role: 1,        // 默认角色，可以根据需求调整
     start_date: "", // 可以用 "" 或 new Date().toISOString()
@@ -134,7 +134,7 @@ function userToEditUser(user: User): EditUser {
     assigned_company_id: user.company_info?.[0]?.id?.toString() || "",
     company: user.company_info?.[0]?.name || "",
     password: "",
-    phone: user.contact_phone || "",
+    contact_phone: user.contact_phone || "",
     email: user.email || "",
     role: user.role || 1,
     start_date: user.start_date || "",
@@ -176,7 +176,19 @@ const handleSave = async () => {
       message.error('请选择所属公司');
       return;
     }
-    if (!editForm.value.phone) {
+     if (!editForm.value.username) {
+      message.error('请输入昵称(登陆账号)');
+      return;
+    }
+    if (!editForm.value.real_name) {
+      message.error('请输入真实姓名');
+      return;
+    }
+    if(!editForm.value.password && dialogMode.value === 'add') {
+      message.error('请输入密码');
+      return;
+    }
+    if (!editForm.value.contact_phone) {
       message.error('请输入联系电话');
       return;
     }
@@ -192,6 +204,7 @@ const handleSave = async () => {
       message.error('请输入密码');
       return;
     }
+
     
     // if (!editForm.value.start_date) {
     //   message.error('请输入入职时间');
@@ -203,25 +216,29 @@ const handleSave = async () => {
       console.log("addUser",res)
       if (res.response?.data?.msg === "Operation successful") {
         message.success('添加成功！');
+        showModal.value = false;
         fetchData();
-      } else {
-        message.error('添加失败: ' + res.response?.data?.msg);
       }
+      //  else {
+      //   message.error('添加失败: ' + res.response?.data?.msg);
+      // }
     } else {
       
       const res = await updateUser(editForm.value.id!, editForm.value);
       // console.log("updateUser",res)
       if (res.response?.data?.msg === "Operation successful") {
         message.success('修改成功！');
+        showModal.value = false;
         fetchData();
-      } else {
-        message.error('修改失败: ' + res.response?.data?.msg);
-      }
+      } 
+      // else {
+      //   message.error('修改失败: ' + res.response?.data?.msg);
+      // }
     }
   } catch (err) {
     message.error(dialogMode.value === 'add' ? '添加失败' : '修改失败');
   } finally {
-    showModal.value = false;
+    
   }
 };
 
@@ -396,17 +413,23 @@ watch([searchSerial,searchRole], () => {
 >
   <NForm :model="editForm" label-width="100">
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-      <NFormItem label="昵称">
+      <NFormItem label="昵称( 登陆账号)" required  v-if="dialogMode==='add'">
         <NInput v-model:value="editForm.username" placeholder="请输入昵称" />
       </NFormItem>
-      <NFormItem label="真实姓名">
+       <NFormItem label="昵称( 登陆账号)"   v-if="dialogMode==='edit'">
+        <NInput v-model:value="editForm.username" disabled placeholder="请输入昵称" />
+      </NFormItem>
+      <NFormItem label="真实姓名" required>
         <NInput v-model:value="editForm.real_name" placeholder="请输入真实姓名" />
       </NFormItem>
-      <NFormItem label="密码">
+      <NFormItem label="密码" required v-if="dialogMode==='add'">
+        <NInput v-model:value="editForm.password" type="password" placeholder="请输入密码" />
+      </NFormItem>
+      <NFormItem label="密码（留空～密码保持不变）" v-else>
         <NInput v-model:value="editForm.password" type="password" placeholder="请输入密码" />
       </NFormItem>
 
-      <NFormItem label="角色类型">
+      <NFormItem label="角色类型" required>
         <NSelect
           v-model:value="editForm.role"
           :options="modelOptions"
@@ -416,11 +439,11 @@ watch([searchSerial,searchRole], () => {
         />
       </NFormItem>
 
-      <NFormItem label="联系电话">
-        <NInput v-model:value="editForm.phone" placeholder="请输入联系电话" />
+      <NFormItem label="联系电话" required>
+        <NInput v-model:value="editForm.contact_phone" placeholder="请输入联系电话" />
       </NFormItem>
 
-      <NFormItem label="邮箱">
+      <NFormItem label="邮箱" required>
         <NInput v-model:value="editForm.email" placeholder="请输入邮箱" />
       </NFormItem>
 
@@ -437,7 +460,7 @@ watch([searchSerial,searchRole], () => {
           <!-- <NInput v-model:value="editForm.Company" placeholder="请输入所属公司" /> -->
         </NFormItem>
 
-      <NFormItem label="用户状态">
+      <NFormItem label="用户状态" required>
         <NSelect
           v-model:value="editForm.status"
           :options="statusOptions"

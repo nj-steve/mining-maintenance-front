@@ -1,5 +1,14 @@
 import { request } from '../request';
 
+// 获取单个用户列表
+export function fetchUserDetail(id:number) {
+  return request({
+    // url: '/auth/login',
+    url:'/api/users/'+id,
+    method: 'get',
+  });
+}
+
 // 获取用户列表
 export function fetchUser(params: { page?: number; limit?: number; [key: string]: any }) {
   return request({

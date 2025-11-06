@@ -30,6 +30,7 @@ declare module "@elegant-router/types" {
     "repairstation": "/repairstation";
     "sitedetail": "/miningsite/:id/info";
     "users": "/users";
+    "usersdetail": "/usersdetail";
     "workflow": "/workflow";
     "workflowdetail": "/workflowdetail/:id";
   };
@@ -76,6 +77,7 @@ declare module "@elegant-router/types" {
     | "repairstation"
     | "sitedetail"
     | "users"
+    | "usersdetail"
     | "workflow"
     | "workflowdetail"
   >;
@@ -107,6 +109,7 @@ declare module "@elegant-router/types" {
     | "repairstation"
     | "sitedetail"
     | "users"
+    | "usersdetail"
     | "workflow"
     | "workflowdetail"
   >;

@@ -168,6 +168,16 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'usersdetail',
+    path: '/usersdetail',
+    component: 'layout.base$view.usersdetail',
+    meta: {
+      title: 'usersdetail',
+      i18nKey: 'route.usersdetail',
+      hideInMenu: true
+    }
+  },
+  {
     name: 'workflow',
     path: '/workflow',
     component: 'layout.base$view.workflow',

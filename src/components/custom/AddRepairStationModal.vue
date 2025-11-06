@@ -55,6 +55,11 @@ const handleClose = () => {
 
 // 保存添加
 const handleSaveAdd = async () => {
+  // 验证表单
+  if (!addForm.value.name || !addForm.value.address || !addForm.value.legal_representative || !addForm.value.contact_name || !addForm.value.contact_phone) {
+    message.warning('请填写完整信息');
+    return;
+  }
   try {
     // 转换score为数字类型
     const formData = {
@@ -64,6 +69,7 @@ const handleSaveAdd = async () => {
     const {error} = await createRepairStation(formData);
     if(error==null){
         message.success('添加成功！');
+        handleClose();
         emit('success'); // 通知父组件刷新数据
       }
       // else{
@@ -72,7 +78,7 @@ const handleSaveAdd = async () => {
   } catch (err) {
     message.error('添加失败');
   }finally{
-    handleClose();
+    
   }
 };
 </script>
@@ -103,8 +109,10 @@ const handleSaveAdd = async () => {
       </NFormItem>
     </NForm>
     <template #footer>
-      <NButton type="primary" @click="handleSaveAdd">提交</NButton>
-      <NButton @click="handleClose">取消</NButton>
+      <Space>
+        <NButton type="primary" @click="handleSaveAdd" style="margin-right: 10px;">提交</NButton>
+        <NButton @click="handleClose">取消</NButton>
+      </Space>
     </template>
   </NModal>
 </template>

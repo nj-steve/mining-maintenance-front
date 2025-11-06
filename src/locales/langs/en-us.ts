@@ -176,6 +176,8 @@ const local: App.I18n.Schema = {
     repairrecordsdetail:"Repair Records Detail",
     workflowdetail:"Work Flow Detail",
     sitedetail:"Site Detail",
+    usersdetail:"User Detail",
+
     
   },
   page: {

@@ -88,7 +88,11 @@ const handleSaveEdit = async () => {
     message.error('编辑数据不存在');
     return;
   }
-  
+  // 验证表单
+  if (!editForm.value.name || !editForm.value.address || !editForm.value.legal_representative || !editForm.value.contact_name || !editForm.value.contact_phone) {
+    message.warning('请填写完整信息');
+    return;
+  }
   try {
     // 转换score为数字类型
     const formData = {
@@ -98,6 +102,7 @@ const handleSaveEdit = async () => {
     const {error} = await updateRepairStation(props.editData.ID, formData);
     if(error===null){
         message.success('修改成功！');
+        handleClose();
         emit('success'); // 通知父组件刷新数据
       }else{
         message.error('修改失败:');
@@ -105,7 +110,7 @@ const handleSaveEdit = async () => {
   } catch (err) {
     message.error('修改失败');
   }finally{
-    handleClose();
+    
   }
 };
 </script>
@@ -136,7 +141,7 @@ const handleSaveEdit = async () => {
       </NFormItem>
     </NForm>
     <template #footer>
-      <NButton type="primary" @click="handleSaveEdit">保存</NButton>
+      <NButton type="primary" @click="handleSaveEdit" style="margin-right: 10px;" >保存</NButton>
       <NButton @click="handleClose">取消</NButton>
     </template>
   </NModal>
