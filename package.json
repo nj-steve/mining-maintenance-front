@@ -27,7 +27,7 @@
   },
   "scripts": {
     "build": "vite build --mode prod",
-    "build:test": "vite build --mode test",
+    "build:test": "vite build --mode test --outDir dist-test",
     "cleanup": "sa cleanup",
     "commit": "sa git-commit",
     "commit:zh": "sa git-commit -l=zh-cn",
