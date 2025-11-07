@@ -176,8 +176,7 @@ const local: App.I18n.Schema = {
     repairrecordsdetail:"维修明细",
     workflowdetail:"工单详情",
     sitedetail:"矿场详情",
-    usersdetail:"用户详情"
-
+    'user-center': '个人中心',
   },
   page: {
     login: {

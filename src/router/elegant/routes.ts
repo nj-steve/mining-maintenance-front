@@ -156,6 +156,16 @@ export const generatedRoutes: GeneratedRoute[] = [
     props: true
   },
   {
+    name: 'user-center',
+    path: '/user-center',
+    component: 'layout.base$view.user-center',
+    meta: {
+      title: 'user-center',
+      i18nKey: 'route.user-center',
+      hideInMenu: true
+    }
+  },
+  {
     name: 'users',
     path: '/users',
     component: 'layout.base$view.users',
@@ -165,16 +175,6 @@ export const generatedRoutes: GeneratedRoute[] = [
       icon: 'mdi:lock',
       order: 7,
       roles: ['1', '2']
-    }
-  },
-  {
-    name: 'usersdetail',
-    path: '/usersdetail',
-    component: 'layout.base$view.usersdetail',
-    meta: {
-      title: 'usersdetail',
-      i18nKey: 'route.usersdetail',
-      hideInMenu: true
     }
   },
   {

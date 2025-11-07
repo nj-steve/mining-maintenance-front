@@ -191,8 +191,10 @@ const hasRole=!authStore.userInfo.roles.includes('3')
           'Authorization': Authorization
         }
       })
+
+      console.log(response.data);
       // 处理导入结果
-      if (response.data && response.data.data) {
+      if (response.data.code==0 && response.data.data) {
         importResult.value = response.data.data
         showResult.value = true
         // 不立即关闭上传弹框，等用户查看结果后手动关闭

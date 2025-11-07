@@ -27,8 +27,8 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   repairrecordsdetail: () => import("@/views/repairRecordsDetail/index.vue"),
   repairstation: () => import("@/views/repairStation/index.vue"),
   sitedetail: () => import("@/views/siteDetail/index.vue"),
+  "user-center": () => import("@/views/user-center/index.vue"),
   users: () => import("@/views/users/index.vue"),
-  usersdetail: () => import("@/views/usersDetail/index.vue"),
   workflow: () => import("@/views/workFlow/index.vue"),
   workflowdetail: () => import("@/views/workFlowDetail/index.vue"),
 };

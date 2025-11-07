@@ -20,7 +20,8 @@ export function getAllTabs(tabs: App.Global.Tab[], homeTab?: App.Global.Tab) {
 
   const remainTabs = filterHomeTabs.filter(tab => !isFixedTab(tab));
 
-  const allTabs = [homeTab, ...fixedTabs, ...remainTabs];
+  // const allTabs = [homeTab, ...fixedTabs, ...remainTabs];
+   const allTabs = [...fixedTabs, ...remainTabs];
 
   return updateTabsLabel(allTabs);
 }
