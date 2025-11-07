@@ -66,16 +66,30 @@ const save = async () => {
       model: props.row.model ?? '',
       site_id: props.row.site_id ?? 0,
       sn: props.row.sn ?? '',
-      status: props.row.status ?? 1,
+      status: props.row.status_value ?? 1,
       warranty_status: props.row.warranty_status ?? 0,
     }
-    const { error } = await updateFaults(props.row.id,params)
+    // const {error,response} = await updateFaults(props.row.id,params)
+
+
+    const { error, response: { data } } = await updateFaults(props.row.id,params);
+
     if (error == null) {
-      message.success('修改成功！')
-      emit('updated')
-    } else {
-      message.error('修改失败:' + error)
-    }
+      if (Number(data?.code) == 0) {
+        message.success('修改成功！');
+        emit('updated');
+      }
+    } 
+
+
+
+    // console.log(response)
+    // if (error==null &&  response?.data?.code == 0) {
+    //   message.success('修改成功！')
+    //   emit('updated')
+    // } else {
+    //   message.error('修改失败:' + response?.data?.msg)
+    // }
   } catch (err) {
     message.error('修改失败')
   } finally {

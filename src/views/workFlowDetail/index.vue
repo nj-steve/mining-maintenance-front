@@ -176,12 +176,24 @@
     { title: '流转状态', key: 'current_status_text', width: 100,
     render: (row: any) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        // '物流出': 'primary',
+        // '物流进': 'primary',
+        // '维修中': 'info',
+        // '维修完成': 'success',
+        // '待上架': 'warning',
+        // '新下架':'warning',
+        '已上架': 'success',
+        '已入库': 'success',
+        '待入库': 'warning',
         '物流出': 'primary',
         '物流进': 'primary',
         '维修中': 'info',
         '维修完成': 'success',
         '待上架': 'warning',
-        '新下架':'warning',
+        '报废': 'error',
+        '未修复': 'error',
+        '待处理': 'warning',
+        // '新下架':'warning',
       };
       const label = row.current_status_text || '未知';
       return h(NTag, {type: tagMap[row.current_status_text || '未知'] }, () => label)

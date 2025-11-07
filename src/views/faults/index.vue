@@ -96,6 +96,7 @@ const workOrderForm = ref({
 const fetchData = async () => {
   // 重新查询前清空之前的选择状态
   selectedRowKeys.value = [];
+  tableData.value = []
   selectedRows.value = [];
   loading.value = true;
 
@@ -117,8 +118,8 @@ const fetchData = async () => {
 
   try {
     const {data,error} = await fetchFaults(params);
-    tableData.value = []
-    if(error==null){
+    
+    if(error==null && data){
         tableData.value = data.list;
         pagination.value.itemCount = data.pagination.total;
         pagination.value.page =  data.pagination.page;
@@ -376,7 +377,9 @@ const columns: DataTableColumns<Faults> = [
   { title: '流转状态', key: 'status_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '已完成': 'success',
+        '已上架': 'success',
+        '已入库': 'success',
+        '待入库': 'warning',
         '物流出': 'primary',
         '物流进': 'primary',
         '维修中': 'info',
@@ -385,7 +388,7 @@ const columns: DataTableColumns<Faults> = [
         '报废': 'error',
         '未修复': 'error',
         '待处理': 'warning',
-        '新下架':'warning',
+        // '新下架':'warning',
       };
       const label = row.status_text || '未知';
       return h(NTag, {type: tagMap[row.status_text || '未知'],size:'small', round:true }, () => label)
