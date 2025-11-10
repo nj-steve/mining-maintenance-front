@@ -91,7 +91,7 @@
           </template>
             </NButton>
         </n-space>
-        <n-data-table :columns="faultDeviceColumns" :data="pagedFaultDevices" :bordered="true" :pagination="faultDevicesPagination" />
+        <n-data-table :columns="faultDeviceColumns" :data="filteredFaultDevices" :bordered="true" :pagination="faultDevicesPagination" />
       </n-card>
       </n-tab-pane>
         <n-tab-pane name="logs">
@@ -187,16 +187,12 @@
   const resultStatus = ref<number | null>(null);
   const statusOptions = ref<{ label: string; value: number }[]>([]);
 
-
-
   // 列定义：故障设备
   const faultDeviceColumns: DataTableColumns<any> = [
     { title: '序号', key: 'sequence', width: 80 },
     { title: '设备SN', key: 'sn' },
-
     { title: '机型', key: 'model' },
     { title: '场地', key: 'site_name' },
-    
     { title: '流转状态', key: 'current_status_text', width: 100,
     render: (row: any) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -327,20 +323,6 @@
     motherboard_sn: ""
   })
   
-  function save() {
-    console.log("保存数据", form.value)
-    form.value.date = dayjs(form.value.date).format('YYYY-MM-DD')
-    form.value.start_time = String(form.value.start_time)
-    form.value.end_time = String(form.value.end_time)
-    updateRepairDetails(Number(id.value), form.value).then(() => {
-      message.success('修改成功')
-      isEdit.value = false
-      })
-  }
-
-  function cancel() {
-    isEdit.value = false
-  }
 
   // 获取详情数据
   const fetchDetailData = async () => {
@@ -400,8 +382,8 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
     itemCount: 0,
     showSizePicker: true,
     pageSizes: [10, 20, 50, 100],
-    prefix: (info) => `共 ${(info.itemCount ?? filteredFaultDevices.value.length) || 0} 条`,
-    onChange: (page: number) => { faultDevicesPagination.value.page = page },
+    prefix: () => `共 ${filteredFaultDevices.value.length || 0} 条`,
+    onUpdatePage: (page: number) => { faultDevicesPagination.value.page = page },
     onUpdatePageSize: (pageSize: number) => { faultDevicesPagination.value.pageSize = pageSize; faultDevicesPagination.value.page = 1 }
   })
 
@@ -427,11 +409,10 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
     return filteredFaultDevices.value.slice(start, start + pageSize)
   })
 
-  watch([filteredFaultDevices], (listArr) => {
-    const list = listArr[0] as any[]
+  watch(filteredFaultDevices, (list) => {
     faultDevicesPagination.value.itemCount = list.length
     faultDevicesPagination.value.page = 1
-  })
+  }, { immediate: true })
 
   const exportFaultDevicesCsv = async () => {
     try {
