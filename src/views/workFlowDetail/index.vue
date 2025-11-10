@@ -59,23 +59,47 @@
         </template>
       <!-- 故障设备列表 -->
       <n-card title="">
-      <n-space justify="end" class="mb-2">
-        <NButton   circle size="medium" ghost @click="exportFaultDevicesCsv" title="导出 CSV"  style="margin-right: 50px;">
+      <n-space justify="space-between" class="mb-2">
+            <NSpace>
+              <NInput
+                v-model:value="sn"
+                size="medium"
+                placeholder="请输入机器SN"
+                clearable
+                style="width: 180px"
+              />
+              <NSelect
+                size="medium"
+                v-model:value="status"
+                :options="statusOptions"
+                placeholder="流转状态"
+                clearable
+                style="margin-left: 0px; width: 120px"
+              />
+              <NSelect
+                size="medium"
+                v-model:value="resultStatus"
+                :options="repairResultOptions"
+                placeholder="维修状态"
+                clearable
+                style="margin-left: 0px; width: 120px"
+              />
+            </NSpace>
+            <NButton  circle size="medium" ghost @click="exportFaultDevicesCsv" title="导出 CSV"  style="margin-right: 50px;">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>
-        </NButton>
+            </NButton>
         </n-space>
-        <n-data-table :columns="faultDeviceColumns" :data="faultDevices" :bordered="true" :pagination="faultDevicesPagination" />
+        <n-data-table :columns="faultDeviceColumns" :data="pagedFaultDevices" :bordered="true" :pagination="faultDevicesPagination" />
       </n-card>
-        </n-tab-pane>
-
+      </n-tab-pane>
         <n-tab-pane name="logs">
           <template #tab>
             <n-text strong style="font-size: 16px;">操作日志</n-text>
           </template>
           <n-card title="">
-            <n-space justify="end" class="mb-2">
+            <n-space justify="end" class="mb-2"> 
               <NButton circle size="medium" ghost @click="exportOperationHistoryCsv" title="导出 CSV">
                 <template #icon>
                   <icon-ant-design-download-outlined />
@@ -87,9 +111,6 @@
         </n-tab-pane>
       </n-tabs>
 
-
-
-    
 
       <!-- 设备信息（隐藏） -->
       <n-card v-if="false" title="设备信息">
@@ -146,15 +167,12 @@
   import dayjs from 'dayjs';
   import { useMessage } from 'naive-ui';
   import { NTag } from 'naive-ui';
-
-
-
   import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace, NDataTable, NTabs, NTabPane } from "naive-ui"
   import type { DataTableColumns, PaginationProps } from 'naive-ui'
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
-  import { fetchOrdersDetail } from '@/service/api/workflow'
+  import { fetchOrdersDetail, fetchOrdersStatus } from '@/service/api/workflow'
   import {  repairMethodRecord } from '@/constants/business'
-  
+  import { repairResultOptions } from '@/constants/business';
   const route = useRoute();
   const message = useMessage()
   const id = ref(route.params.id as string);
@@ -164,6 +182,12 @@
   const detailData = ref<any | null>(null);
   const faultDevices = ref<any[]>([]);
   const operationHistory = ref<any[]>([]);
+  const sn = ref('');
+  const status = ref<number | null>(null);
+  const resultStatus = ref<number | null>(null);
+  const statusOptions = ref<{ label: string; value: number }[]>([]);
+
+
 
   // 列定义：故障设备
   const faultDeviceColumns: DataTableColumns<any> = [
@@ -313,6 +337,7 @@
       isEdit.value = false
       })
   }
+
   function cancel() {
     isEdit.value = false
   }
@@ -335,8 +360,38 @@
     }
   };
 
+  // ---------------- 数据获取 ----------------
+const fetchOrderStatusData = async (operate_type:"list"|"update") => {
+  loading.value = true;
+  const params: any = {
+   type:1,//故障机状态
+   operate_type:operate_type,
+  };
+
+  try {
+    const {data,error} = await fetchOrdersStatus(params);
+    
+    if(error==null && data){
+      if(operate_type==='list'){
+        statusOptions.value = data.map((item: any) => ({
+          label: item.name,
+          value: item.id,
+        }));
+      }
+      
+    }else{
+        message.error(`加载失败: ${error}`);
+    }
+  } catch (err) {
+    message.error(`加载失败${err}`);
+  } finally {
+    loading.value = false;
+  }
+};
+
   onMounted(() => {
     fetchDetailData();
+    fetchOrderStatusData('list');
   });
   
   const faultDevicesPagination = ref<PaginationProps>({
@@ -345,19 +400,35 @@
     itemCount: 0,
     showSizePicker: true,
     pageSizes: [10, 20, 50, 100],
-    prefix: (info) => `共 ${(info.itemCount ?? faultDevices.value.length) || 0} 条`,
+    prefix: (info) => `共 ${(info.itemCount ?? filteredFaultDevices.value.length) || 0} 条`,
     onChange: (page: number) => { faultDevicesPagination.value.page = page },
     onUpdatePageSize: (pageSize: number) => { faultDevicesPagination.value.pageSize = pageSize; faultDevicesPagination.value.page = 1 }
+  })
+
+  // 过滤后的故障设备列表
+  const filteredFaultDevices = computed(() => {
+    const snKeyword = sn.value?.trim().toLowerCase();
+    const statusVal = status.value;
+    const resultVal = resultStatus.value;
+    return faultDevices.value.filter((row: any) => {
+      const snMatch = !snKeyword || String(row.sn ?? '').toLowerCase().includes(snKeyword);
+      const currentStatus = Number(row.current_status ?? row.status ?? NaN);
+      const statusMatch = statusVal == null || (Number.isFinite(currentStatus) && currentStatus === Number(statusVal));
+      const repairResult = Number(row.repair_result ?? NaN);
+      const resultMatch = resultVal == null || (Number.isFinite(repairResult) && repairResult === Number(resultVal));
+      return snMatch && statusMatch && resultMatch;
+    })
   })
 
   const pagedFaultDevices = computed(() => {
     const page = faultDevicesPagination.value.page ?? 1
     const pageSize = faultDevicesPagination.value.pageSize ?? 20
     const start = (page - 1) * pageSize
-    return faultDevices.value.slice(start, start + pageSize)
+    return filteredFaultDevices.value.slice(start, start + pageSize)
   })
 
-  watch(faultDevices, (list) => {
+  watch([filteredFaultDevices], (listArr) => {
+    const list = listArr[0] as any[]
     faultDevicesPagination.value.itemCount = list.length
     faultDevicesPagination.value.page = 1
   })
@@ -371,7 +442,7 @@
         const escaped = s.replace(/"/g, '""')
         return quoted ? `"${escaped}"` : escaped
       }
-      const rows = faultDevices.value.map(item => [item.sequence, item.site_name, item.model, item.sn, item.status_text])
+      const rows = filteredFaultDevices.value.map(item => [item.sequence, item.site_name, item.model, item.sn, item.status_text])
       const csv = [headers, ...rows].map(row => row.map(toCell).join(',')).join('\n')
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
       const url = URL.createObjectURL(blob)

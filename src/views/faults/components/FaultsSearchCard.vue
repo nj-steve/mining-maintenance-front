@@ -112,13 +112,19 @@ function toggleExpand() {
     <template #header>
       <!-- <span></span> -->
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
-      <NInput
-        v-model:value="serial"
+      
+       <NSelect
         size="medium"
-        placeholder="请输入机器SN"
+        v-model:value="siteId"
+        :options="props.siteOptions"
+        placeholder="请选择场地"
+        v-if="hasRole"
+        class="site-select"
         clearable
+        filterable
         style="width: 100%"
       />
+        
       <NInput
         v-model:value="workOrderNo"
         size="medium"
@@ -142,6 +148,16 @@ function toggleExpand() {
         clearable
         style="width: 100%"
       />
+      
+      </div>
+      <div v-if="expanded" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; align-items: center; margin-top: 8px;">
+      <NInput
+        v-model:value="serial"
+        size="medium"
+        placeholder="请输入机器SN"
+        clearable
+        style="width: 100%"
+      />
        <NSelect 
         v-show="!onlyMySiteLocal && props.hasRole"
         v-model:value="salerIdModel" 
@@ -149,10 +165,9 @@ function toggleExpand() {
         placeholder="售后专员" 
         size="medium"
         clearable 
-        style="width: 90%; font-size: 12px;"
+        style="width: 100%; font-size: 12px;"
       />
-      </div>
-      <div v-if="expanded" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; align-items: center; margin-top: 8px;">
+      
       <NDatePicker
         v-model:value="startDate"
         type="date"
@@ -170,17 +185,7 @@ function toggleExpand() {
         clearable
         style="width: 100%"
       />
-      <NSelect
-        size="medium"
-        v-model:value="siteId"
-        :options="props.siteOptions"
-        placeholder="请选择场地"
-        v-if="hasRole"
-        class="site-select"
-        clearable
-        filterable
-        style="width: 100%"
-      />
+     
       <div>
       <!-- <NSwitch v-model:value="onlyMySite" size="medium" />
     <span style="font-size: 12px; margin-left: 4px;">我的场地</span> -->
