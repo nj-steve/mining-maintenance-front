@@ -3,6 +3,7 @@ import { onMounted, ref, computed } from 'vue';
 import { useMessage, NButton, NCard, NSpin, NIcon } from 'naive-ui';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchSitesDetail } from '@/service/api/site';
+import History from './components/History.vue';
 // 使用项目内置的图标系统
 
 interface SiteDetail {
@@ -107,6 +108,18 @@ onMounted(() => {
                 {{ siteData.site_status === 1 ? '驻场' : siteData.site_status === 2 ? '寄修' : '驻场+寄修' }}
               </span>
             </div>
+             <div class="info-item">
+              <span class="label">售后负责人:</span>
+              <span class="value">{{ siteData.saler_name || '' }}</span>
+            </div>
+            <div class="info-item" style="height: 5px;">
+              <!-- <span class="label">联系电话:</span>
+              <span class="value">{{ siteData.phone || '' }}</span> -->
+            </div>
+            <!-- <div class="info-item">
+              <span class="label">邮箱:</span>
+              <span class="value">{{ siteData.email || '' }}</span>
+            </div> -->
           </div>
         </NCard>
 
@@ -145,7 +158,7 @@ onMounted(() => {
         </NCard>
 
         <!-- 联系信息 -->
-        <NCard title="售后专员" class="contact-card">
+        <!-- <NCard title="售后专员" class="contact-card">
           <div class="contact-grid">
             <div class="contact-item">
               <span class="label">负责人:</span>
@@ -160,7 +173,13 @@ onMounted(() => {
               <span class="value">{{ siteData.email || '' }}</span>
             </div>
           </div>
-        </NCard>
+        </NCard> -->
+        
+        <!-- 历史数据 -->
+          <NCard title="历史数据" class="info-card">
+            <History />
+          </NCard>
+        
       </div>
     </NSpin>
   </div>
@@ -200,7 +219,12 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.info-grid,
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
 .contact-grid {
   display: grid;
   grid-template-columns: 1fr;

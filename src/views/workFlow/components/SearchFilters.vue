@@ -24,6 +24,7 @@
       
       <!-- 维修站筛选 -->
       <NSelect 
+        v-if="hasRole"
         v-model:value="stationIdModel" 
         :options="stationOptions" 
         placeholder="请选择维修站" 

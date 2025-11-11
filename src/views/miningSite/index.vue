@@ -151,9 +151,14 @@ const columns: DataTableColumns<Site> = [
                   width: '200px',
                   overflow: 'hidden',
                   whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis'
+                  textOverflow: 'ellipsis',
+                  cursor: 'pointer',
+                  color: '#1890ff'
                 },
-                title: content
+                title: content,
+                onClick: () => {
+                  router.push(`/miningsite/${row.id}/info`);
+                }
               },
               content
             )

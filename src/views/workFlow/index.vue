@@ -2,7 +2,7 @@
 import { onMounted, ref, watch, h, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
-import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip } from 'naive-ui';
+import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip, NProgress } from 'naive-ui';
 import { Icon } from '@iconify/vue';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
 import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus } from '@/service/api/workflow';
@@ -38,6 +38,7 @@ interface Order {
   CreatedAt: string;              // 创建时间
   UpdatedAt: string;              // 更新时间
   RepairMethod: number;           // 维修方式
+  RepairedCount: number;            // 维修次数
 }
 
 const message = useMessage();
@@ -103,7 +104,6 @@ const searchSalerId = ref<number | null>(null);  // 售后专员筛选
 const searchStationId = ref<number | null>(null);  // 维修站筛选
 const searchStartDate = ref<number | null>(null);  // 开始时间
 const searchEndDate = ref<number | null>(null);  // 结束时间
-
 
 // 场地和维修站选项
 const siteOptions = ref<{ label: string; value: number }[]>([]);
@@ -387,7 +387,26 @@ const columns: DataTableColumns<Order> = [
   },
   { title: '场地', key: 'SiteName' },
   { title: '售后专员', key: 'SalerName' },
-  { title: '故障机数量', key: 'FaultCount'},
+  { title: '故障机数量', key: 'FaultCount', width: 200, render: (row: any ) => {
+    const total = Number(row.FaultCount ?? 0)
+    const repaired = Number(row.RepairedCount ?? 0)
+    const safeTotal = total > 0 ? total : 0
+    const safeRepaired = repaired > 0 ? Math.min(repaired, safeTotal || repaired) : 0
+    const percent = safeTotal > 0 ? Math.round((safeRepaired / safeTotal) * 100) : 0
+    return h(
+      'div',
+      { style: 'display:flex; align-items:center; gap:10px; min-width:180px;' },
+      [
+        h(NProgress, {
+          type: 'line',
+          percentage: percent,
+          indicatorPlacement: 'inside',
+          status: percent >= 100 ? 'success' : undefined
+        }),
+        h('span', { style: 'white-space: nowrap; font-size: 12px; color: #666;' }, `${safeRepaired}/${safeTotal} (${percent}%)`)
+      ]
+    )
+  }},
   { title: '维修方式', key: 'RepairMethod',
     render: (row: any ) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -412,6 +431,15 @@ const columns: DataTableColumns<Order> = [
         return h(NTag, {type: tagMap[row.OrderStatusText || '未知'],size:'small', round:true }, () => label)
       }
   },
+   { title: '创建时间', key: 'CreatedAt',
+      render: (row: any) => {
+        if (!row.CreatedAt) {
+          return '-';
+        }
+        return dayjs(row.CreatedAt).format('YYYY-MM-DD');
+      }
+  },
+
   // { title: '总费用', key: 'RepairCost',
   //   render: (row: any ) => {
   //     if (row.RepairCost === null || row.RepairCost === undefined) {
@@ -726,7 +754,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
             :options="repairMethodOptions"
             placeholder="请选择维修方式"
           />
-        </NFormItem>
+      </NFormItem>
 
       <!-- 选择维修站 -->
         <NFormItem label="选择维修站" required>

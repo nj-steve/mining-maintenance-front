@@ -23,6 +23,14 @@ export function fetchSitesDetail(id: number) {
   });
 }
 
+// 获取场地历史数据
+export function fetchSitesHistory(id: number) {
+  return request({
+    url: '/api/sites/history/' + id,
+    method: 'get',
+  });
+}
+
 
 // 修改矿机
 // /api/sites/:id 
