@@ -11,11 +11,11 @@ export function clearAuthStorage() {
   localStg.remove('refreshToken');
   // 清除所有token
   // 1. 清除 cookie
-    clearAllCookies();
+    // clearAllCookies();
 
     // 2. 可选：清除 localStorage / sessionStorage
-    localStorage.clear();
-    sessionStorage.clear();
+    // localStorage.clear();
+    // sessionStorage.clear();
 
     // 3. 跳转到登录页
     // router.replace("/login");

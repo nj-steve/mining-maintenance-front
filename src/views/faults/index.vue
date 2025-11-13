@@ -43,6 +43,7 @@ interface Faults {
   site_id?:number;
   model?: string;
   order_id?: number;
+  created_time?: string;
   FaultsType?: {
     name?: string;
     hash_rate?: number;
@@ -255,19 +256,39 @@ const columns: DataTableColumns<Faults> = [
        
        if (siteId) {
          return h(
-           NButton,
+           NTooltip,
+           null,
            {
-             text: true,
-             type: 'primary',
-             onClick: () => {
-               router.push(`/miningsite/${siteId}/info`);
-             }
-           },
-           { default: () => siteName }
+             trigger: () => h(
+               'div',
+               { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' },
+               [
+                 h(
+                   NButton,
+                   {
+                     text: true,
+                     type: 'primary',
+                     onClick: () => {
+                       router.push(`/miningsite/${siteId}/info`);
+                     }
+                   },
+                   { default: () => h('span', { style: 'display:inline-block; max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, siteName) }
+                 )
+               ]
+             ),
+             default: () => siteName
+           }
          );
        }
        
-       return siteName;
+       return h(
+         NTooltip,
+         null,
+         {
+           trigger: () => h('div', { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, siteName),
+           default: () => siteName
+         }
+       );
      }
   },
   { title: '型号', key: 'model', width: 120},
@@ -418,7 +439,22 @@ const columns: DataTableColumns<Faults> = [
     }
   },
   { title: '问题描述', key: 'description', width: 200},
-  { title: '日期', key: 'date', width: 120 },
+  { title: '下架日期', key: 'date', width: 120 },
+  { title: '导入时间', key: 'created_time', width: 160,
+    render: (row: Faults) => {
+      const s = row.created_time;
+      if (!s) return '';
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return String(s);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const da = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      return `${y}-${m}-${da} ${hh}:${mm}:${ss}`;
+    }
+   },
   {
     title: '操作',
     key: 'actions',

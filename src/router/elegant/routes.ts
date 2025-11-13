@@ -156,6 +156,16 @@ export const generatedRoutes: GeneratedRoute[] = [
     props: true
   },
   {
+    name: 'sitereport',
+    path: '/sitereport',
+    component: 'layout.base$view.sitereport',
+    meta: {
+      title: 'sitereport',
+      i18nKey: 'route.sitereport',
+      hideInMenu: true
+    }
+  },
+  {
     name: 'user-center',
     path: '/user-center',
     component: 'layout.base$view.user-center',

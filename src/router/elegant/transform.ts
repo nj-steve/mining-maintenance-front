@@ -175,6 +175,7 @@ const routeMap: RouteMap = {
   "repairrecordsdetail": "/repairrecords/:id/detail",
   "repairstation": "/repairstation",
   "sitedetail": "/miningsite/:id/info",
+  "sitereport": "/sitereport",
   "user-center": "/user-center",
   "users": "/users",
   "workflow": "/workflow",

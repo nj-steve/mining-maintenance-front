@@ -52,3 +52,19 @@ export function fetchOrdersSite(params: {[key: string]: any }) {
   });
 }
 
+// 场地每日日报.只有运维人员可上传
+export function postSiteReport(params: {[key: string]: any }) {
+  return request({
+    url: '/api/sites/report',
+    method: 'post',
+    data:params // 这里会拼接到 URL ?page=1&limit=10
+  });
+}
+// 日报列表
+export function fetchSiteReport(params: {[key: string]: any }) {
+  return request({
+    url: '/api/sites/report',
+    method: 'get',
+    params // 这里会拼接到 URL ?page=1&limit=10
+  });
+}

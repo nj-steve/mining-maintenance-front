@@ -46,7 +46,8 @@
   
           <n-descriptions-item label="电源 SN">
             <template v-if="!isEdit">
-              <div v-for="pwr in form.powerSN" :key="pwr">{{ pwr }}</div>
+              {{ form.powerSN}}
+              <!-- <div v-for="pwr in form.powerSN" :key="pwr">{{ pwr }}</div> -->
             </template>
             <div v-else>
               <!-- <n-dynamic-input v-model:value="form.powerSN" placeholder="请输入电源 SN" /> -->

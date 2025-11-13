@@ -177,6 +177,7 @@ const local: App.I18n.Schema = {
     workflowdetail:"Work Flow Detail",
     sitedetail:"Site Detail",
    'user-center': 'User Center',
+   sitereport:'Site Report'
     
   },
   page: {

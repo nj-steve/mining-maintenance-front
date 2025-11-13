@@ -288,7 +288,30 @@ const exportCsv = async () => {
 const exportExcel=async () => {
 
 // 处理导出成功逻辑
- const headers = ['日期','工单号','维修站点','机型','整机SN码','损坏部件','初测不良原因','查证缺陷','维修结果'];
+ const headers = [
+   '日期',
+   '工单编号',
+   '机型',
+   '整机 SN',
+   '电源 SN',
+   '板1 SN',
+   '板2 SN',
+   '板3 SN',
+   '控制板 SN',
+   '维修部件',
+   '初测不良原因',
+   '不良代码L2',
+   '不良代码L3',
+   '位号信息',
+   '查证缺陷',
+   '开始维修时间',
+   '结束维修时间',
+   '维修结果',
+   '创建时间',
+   '更新时间',
+   '维修员',
+   '维修站点'
+ ];
   const formatCell = (val: any) => {
     const s = val === undefined || val === null ? '' : String(val);
     const needsQuote = /[",\n]/.test(s);
@@ -298,13 +321,27 @@ const exportExcel=async () => {
   const rows = exportData.value.map((row: any) => [
     row.Date,
     row.WorkOrderNo,
-    row.RepairStationName ?? '-',
     row.MachineModel,
     row.DeviceSN,
+    row.PowerSN,
+    row.BoardSN1,
+    row.BoardSN2,
+    row.BoardSN3,
+    row.ControlSN,
     row.RepairComponent,
     row.DefectReason,
+    row.DefectCode2,
+    row.DefectCode3,
+    row.Position,
     row.VerifyDefect,
-    repairResultMap[row.RepairResult] ?? '未知'
+    
+    row.StartTime,
+    row.EndTime,
+    repairResultMap[row.RepairResult],
+    row.CreatedAt,
+    row.UpdatedAt,
+    row.RepairerName,
+    row.RepairStationName
   ]);
   const csv = [headers, ...rows]
     .map(r => r.map(formatCell).join(','))
