@@ -125,7 +125,9 @@
                 <img v-for="img in form.images" :src="img" :key="img" class="w-24 h-24 object-cover rounded" />
               </div>
             </template>
-            <n-upload v-else action="#" list-type="image-card" />
+
+           <!-- <QiniuImageUpload v-else :images="form.images" :max="9" button-text="上传图片" @uploaded="url => form.images.push(url)" @update="urls => form.images = urls" />-->
+
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
@@ -168,15 +170,18 @@
   import { useRoute } from "vue-router"
   import dayjs from 'dayjs';
   import { useMessage } from 'naive-ui';
-  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace } from "naive-ui"
+  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace } from "naive-ui"
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
   import { repairResultOptions, repairResultMap } from '@/constants/business'
+  // import QiniuImageUpload from '@/components/upload/QiniuImageUpload.vue'
+  
   
   const route = useRoute();
   const message = useMessage()
   // const id = route.params.id; // 用它去请求详情数据
   const id = ref(route.params.id as string);
   const loading = ref(false);
+  const imgAuthString = ref("")
 
   const isEdit = ref(false)
   
@@ -199,9 +204,7 @@
     board_sn_3: "",
     position: "",
     verify_defect: "",
-    images: [
-      ""
-    ],
+    images: [],
     start_time: dayjs().format('YYYY-MM-DD HH:mm'),
     end_time: dayjs().format('YYYY-MM-DD HH:mm'),
     repair_result: 0,
@@ -269,6 +272,7 @@
       loading.value = false;
     }
   };
+
 
   onMounted(() => {
     fetchDetailData();

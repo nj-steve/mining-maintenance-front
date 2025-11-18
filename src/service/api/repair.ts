@@ -98,5 +98,15 @@ export function deleteRepairStation(id:number) {
   });
 }
 
+// /api/imgauth/string
+// 图片上传私钥
+export function getUploadToken(params: {[key: string]: any }) {
+  return request({
+    url: '/api/getUploadToken',
+    method: 'get',
+    params
+  });
+}
+
 
 

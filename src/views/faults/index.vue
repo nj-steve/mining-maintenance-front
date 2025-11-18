@@ -44,6 +44,7 @@ interface Faults {
   model?: string;
   order_id?: number;
   created_time?: string;
+  on_shelf_time?: string;
   FaultsType?: {
     name?: string;
     hash_rate?: number;
@@ -228,7 +229,6 @@ const columns: DataTableColumns<Faults> = [
     width: 60
   },
   // { title: '序号', key: 'id', width: 80 },
-
   { title: 'SN码', key: 'sn', width: 180, 
     render: (row: Faults) => {
       const sn = row.sn || '未知';
@@ -443,6 +443,21 @@ const columns: DataTableColumns<Faults> = [
   { title: '导入时间', key: 'created_time', width: 160,
     render: (row: Faults) => {
       const s = row.created_time;
+      if (!s) return '';
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return String(s);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const da = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      return `${y}-${m}-${da} ${hh}:${mm}:${ss}`;
+    }
+   },
+  { title: '上架/入库时间', key: 'on_shelf_time', width: 160,
+    render: (row: Faults) => {
+      const s = row.on_shelf_time;
       if (!s) return '';
       const d = new Date(s);
       if (isNaN(d.getTime())) return String(s);
@@ -706,7 +721,7 @@ const onOnlyMySiteChange = (v: boolean) => {
         :row-key="(row: Faults) => row.id"
         :checked-row-keys="selectedRowKeys"
         @update:checked-row-keys="handleSelectionChange"
-        :scroll-x="1800"
+        :scroll-x="2000"
         striped
         class="sm:h-full"
       />

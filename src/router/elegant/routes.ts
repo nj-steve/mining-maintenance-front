@@ -51,7 +51,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'faults',
       i18nKey: 'route.faults',
       icon: 'mdi:alert-circle-outline',
-      order: 4,
+      order: 40,
       roles: ['1', '2', '3']
     }
   },
@@ -63,7 +63,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'home',
       i18nKey: 'route.home',
       icon: 'mdi:monitor-dashboard',
-      order: 1,
+      order: 10,
       roles: ['1', '2']
     }
   },
@@ -100,7 +100,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'miningsite',
       i18nKey: 'route.miningsite',
       icon: 'mdi:factory',
-      order: 2,
+      order: 20,
       roles: ['1', '2']
     }
   },
@@ -112,7 +112,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'repairrecords',
       i18nKey: 'route.repairrecords',
       icon: 'mdi:file-cog',
-      order: 5,
+      order: 50,
       roles: ['1', '2', '4']
     },
     props: true
@@ -138,7 +138,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'repairstation',
       i18nKey: 'route.repairstation',
       icon: 'mdi:office-building-cog',
-      order: 6,
+      order: 60,
       roles: ['1', '2']
     }
   },
@@ -161,8 +161,11 @@ export const generatedRoutes: GeneratedRoute[] = [
     component: 'layout.base$view.sitereport',
     meta: {
       title: 'sitereport',
+      icon: 'mdi:file-document-outline',
       i18nKey: 'route.sitereport',
-      hideInMenu: true
+      order: 11,
+      // hideInMenu: true,
+      roles: ['1', '2', '3']
     }
   },
   {
@@ -183,7 +186,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'users',
       i18nKey: 'route.users',
       icon: 'mdi:lock',
-      order: 7,
+      order: 70,
       roles: ['1', '2']
     }
   },
@@ -195,7 +198,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       title: 'workflow',
       i18nKey: 'route.workflow',
       icon: 'mdi:flowchart',
-      order: 3,
+      order: 30,
       roles: ['1', '2', '4']
     }
   },

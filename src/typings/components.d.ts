@@ -67,6 +67,7 @@ declare module 'vue' {
     NTooltip: typeof import('naive-ui')['NTooltip']
     NWatermark: typeof import('naive-ui')['NWatermark']
     PinToggler: typeof import('./../components/common/pin-toggler.vue')['default']
+    QiniuImageUpload: typeof import('./../components/upload/QiniuImageUpload.vue')['default']
     ReloadButton: typeof import('./../components/common/reload-button.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
