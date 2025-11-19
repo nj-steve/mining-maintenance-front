@@ -68,3 +68,20 @@ export function fetchSiteReport(params: {[key: string]: any }) {
     params // 这里会拼接到 URL ?page=1&limit=10
   });
 }
+// 编辑日报
+export function updateSiteReport(id:number, params: {[key: string]: any }) {
+  return request({
+    url: '/api/sites/report/' + id,
+    method: 'put',
+    data: params
+  });
+}
+
+// 我的场地
+export function getSiteReport(params: {[key: string]: any }) {
+  return request({
+    url: '/api/sites/report_site/',
+    method: 'get',
+    params // 这里会拼接到 URL ?page=1&limit=10
+  });
+}

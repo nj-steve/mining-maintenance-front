@@ -21,21 +21,21 @@ const emit = defineEmits<{
       :value="workOrderNo"
       placeholder="请输入工单号"
       clearable
-      style="width: 150px"
+      style="width: 200px"
       @update:value="emit('update:work-order-no', $event)"
     />
     <NInput
       :value="sn"
       placeholder="请输入机器SN"
       clearable
-      style="width: 150px"
+      style="width: 220px"
       @update:value="emit('update:sn', $event)"
     />
     <NSelect
       :value="repairResult"
       :options="repairResultOptions"
       clearable
-      style="width: 150px"
+      style="width: 120px"
       @update:value="emit('update:repair-result', $event)"
     />
   </div>

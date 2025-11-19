@@ -9,12 +9,12 @@
       :max="max"
       accept="image/*"
     >
-      <n-button size="small" type="primary">
+      <!-- <n-button size="small" type="primary">
         <template #icon>
           <NIcon><SvgIcon icon="material-symbols:upload" /></NIcon>
         </template>
         {{ buttonText }}
-      </n-button>
+      </n-button> -->
     </n-upload>
   </div>
 </template>
@@ -26,7 +26,6 @@ import type { UploadFileInfo } from 'naive-ui'
 import axios from 'axios'
 import { getServiceBaseURL } from '@/utils/service'
 import { localStg } from '@/utils/storage'
-import { getUploadToken } from '@/service/api/repair'
 
 interface Props {
   extraParams?: Record<string, any>
@@ -46,9 +45,11 @@ const emit = defineEmits<{
   uploaded: [url: string]
   removed: [url: string]
   update: [urls: string[]]
+  'update:images': [urls: string[]]
 }>()
 
 const message = useMessage()
+const uploadToken = ref('')
 const { baseURL } = getServiceBaseURL(
   import.meta.env,
   import.meta.env.DEV && import.meta.env.VITE_HTTP_PROXY === 'Y'
@@ -68,6 +69,7 @@ const initFromImages = () => {
 
 onMounted(initFromImages)
 watch(() => props.images, () => {
+  console.log('watch props.images', props.images)
   initFromImages()
 })
 
@@ -80,20 +82,23 @@ const handleBeforeUpload = async ({ file }: { file: UploadFileInfo }) => {
     const tokenResp = await axios.request({
       url: baseURL + '/api/getUploadToken',
       method: 'get',
-      data: {
-        filename: file.name,
-        ...props.extraParams
-      },
+      // data: {
+      //   filename: file.name,
+      //   ...props.extraParams
+      // },
       headers: {
         Authorization
       }
     })
     console.log('tokenResp', tokenResp)
-    const { uploadToken, uploadUrl } = tokenResp.data || {};   
-    const tokenData = tokenResp.data?.data || tokenResp.data
+    const { uploadToken, uploadUrl } = tokenResp.data.data || {};   
+    console.log('uploadToken', uploadToken)
+    console.log('uploadUrl', uploadUrl)
+
+    // const tokenData = tokenResp.data?.data || tokenResp.data
     // const uploadToken = tokenData?.token || tokenData?.uptoken
-    const domain = tokenData?.domain
-    const keyFromServer = tokenData?.key
+    const domain = uploadToken?.domain||"http://qiniu.datastring.cc"
+    const keyFromServer = uploadToken?.key
 
     if (!uploadToken) {
       message.error('获取上传凭证失败')
@@ -104,11 +109,11 @@ const handleBeforeUpload = async ({ file }: { file: UploadFileInfo }) => {
 
     // 2. 上传到七牛
     const formData = new FormData()
-    formData.append('token', uploadToken)
+    formData.append('token', uploadToken) 
     formData.append('file', file.file)
     formData.append('key', key)
 
-    const resp = await axios.post('https://upload.qiniup.com', formData, {
+    const resp = await axios.post(uploadUrl, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -126,7 +131,11 @@ const handleBeforeUpload = async ({ file }: { file: UploadFileInfo }) => {
     })
 
     emit('uploaded', url)
-    emit('update', fileList.value.map(f => f.url!))
+    // 通过 v-model:images 同步最新列表
+    const newUrls = fileList.value.map(f => f.url!)
+    emit('update:images', newUrls)
+    // 兼容旧事件
+    emit('update', newUrls)
     message.success(`图片 ${file.name} 上传成功`)
   } catch (e) {
     console.error(e)
@@ -137,9 +146,16 @@ const handleBeforeUpload = async ({ file }: { file: UploadFileInfo }) => {
 
 const handleRemove = ({ file }: { file: UploadFileInfo }) => {
   const url = file.url || ''
+  // 仅移除当前项，其他图片不受影响
+  const newFileList = fileList.value.filter(f => f.id !== file.id)
+  fileList.value = newFileList
+  // 派发单项删除事件
   emit('removed', url)
-  const newUrls = fileList.value.filter(f => f.id !== file.id).map(f => f.url!)
+  // 同步父组件的图片数组
+  const newUrls = newFileList.map(f => f.url!).filter(Boolean)
+  emit('update:images', newUrls)
   emit('update', newUrls)
+  return false;
 }
 
 function generateKey(name: string) {

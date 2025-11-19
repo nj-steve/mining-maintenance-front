@@ -79,7 +79,6 @@
                <n-input v-model:value="form.board_sn_3" placeholder="请输入板3 码 "  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
-
         </n-descriptions>
       </n-card>
   
@@ -90,7 +89,7 @@
             <template v-if="!isEdit">{{ form.repair_component }}</template>
             <n-input v-else v-model:value="form.repair_component" />
           </n-descriptions-item>
-  
+
           <n-descriptions-item label="初测不良原因">
             <template v-if="!isEdit">{{ form.defect_reason }}</template>
             <n-input v-else v-model:value="form.defect_reason" />
@@ -122,12 +121,26 @@
           <n-descriptions-item label="维修部位图片">
             <template v-if="!isEdit">
               <div class="flex gap-2">
-                <img v-for="img in form.images" :src="img" :key="img" class="w-24 h-24 object-cover rounded" />
+                <img v-for="img in form.images.filter(Boolean)" :src="img" :key="img" class="w-24 h-24 object-cover rounded" />
               </div>
             </template>
-
-           <!-- <QiniuImageUpload v-else :images="form.images" :max="9" button-text="上传图片" @uploaded="url => form.images.push(url)" @update="urls => form.images = urls" />-->
-
+           <!-- <QiniuImageUpload
+             v-else
+             :images="form.images"
+             :max="10"
+             button-text="上传图片"
+             @uploaded="(url: string) => form.images.push(url)"
+             @remove="(url: string) => form.images = form.images.filter(u => u !== url)"
+             @update="(urls: string[]) => form.images = urls"
+             @update="(urls: string[]) => { if (Array.isArray(urls) && urls.length) form.images = urls.filter(Boolean) }
+           /> -->
+            <QiniuImageUpload
+             v-else
+             v-model:images="form.images"
+             :max="10"
+             button-text="上传图片"
+             @uploaded="(url: string) => form.images.push(url)"
+           />
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
@@ -173,7 +186,7 @@
   import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace } from "naive-ui"
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
   import { repairResultOptions, repairResultMap } from '@/constants/business'
-  // import QiniuImageUpload from '@/components/upload/QiniuImageUpload.vue'
+  import QiniuImageUpload from '@/components/upload/QiniuImageUpload.vue'
   
   
   const route = useRoute();
@@ -204,7 +217,8 @@
     board_sn_3: "",
     position: "",
     verify_defect: "",
-    images: [],
+    images: [] as string[],
+    repair_image_urls: "",
     start_time: dayjs().format('YYYY-MM-DD HH:mm'),
     end_time: dayjs().format('YYYY-MM-DD HH:mm'),
     repair_result: 0,
@@ -219,6 +233,9 @@
     form.value.date = dayjs(form.value.date).format('YYYY-MM-DD')
     form.value.start_time = String(form.value.start_time)
     form.value.end_time = String(form.value.end_time)
+    console.log("form.value.images", form.value.images)
+    // return false
+    form.value.repair_image_urls = form.value.images.join(',')
     updateRepairDetails(Number(id.value), form.value).then(() => {
       message.success('修改成功')
       isEdit.value = false
@@ -257,7 +274,8 @@
           board_sn_3: detail.BoardSN3 || '',
           position: detail.Position || '',
           verify_defect: detail.VerifyDefect || '',
-          images: detail.Images ? detail.Images.split(',') : [],
+          images:detail.RepairImageUrls ? detail.RepairImageUrls.split(',') : [],
+          repair_image_urls: detail.RepairImageUrls || '',
           start_time: detail.StartTime ? dayjs(detail.StartTime).format('YYYY-MM-DD HH:mm') : dayjs().format('YYYY-MM-DD HH:mm'),
           end_time: detail.EndTime ? dayjs(detail.EndTime).format('YYYY-MM-DD HH:mm') : dayjs().format('YYYY-MM-DD HH:mm'),
           repair_result: detail.RepairResult ?? 1,
@@ -278,3 +296,10 @@
     fetchDetailData();
   });
   </script>
+
+  <style scoped>
+ .n-descriptions.n-descriptions--left-label-align th {
+    font-weight: bold;
+    width: 140px !important;
+  }
+  </style>
