@@ -97,7 +97,7 @@ const handleBeforeUpload = async ({ file }: { file: UploadFileInfo }) => {
 
     // const tokenData = tokenResp.data?.data || tokenResp.data
     // const uploadToken = tokenData?.token || tokenData?.uptoken
-    const domain = uploadToken?.domain||"http://qiniu.datastring.cc"
+    const domain = uploadToken?.domain||"https://qiniu.datastring.cc"
     const keyFromServer = uploadToken?.key
 
     if (!uploadToken) {
