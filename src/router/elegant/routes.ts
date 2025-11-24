@@ -164,7 +164,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       icon: 'mdi:file-document-outline',
       i18nKey: 'route.sitereport',
       order: 11,
-      hideInMenu: true,
+      hideInMenu: false,
       roles: ['1', '2', '3']
     }
   },
