@@ -140,6 +140,7 @@
              :max="10"
              button-text="上传图片"
              @uploaded="(url: string) => form.images.push(url)"
+             @removed="(url: string) => form.images = form.images.filter(u => u !== url)"
            />
           </n-descriptions-item>
         </n-descriptions>
@@ -233,7 +234,7 @@
     form.value.date = dayjs(form.value.date).format('YYYY-MM-DD')
     form.value.start_time = String(form.value.start_time)
     form.value.end_time = String(form.value.end_time)
-    console.log("form.value.images", form.value.images)
+    // console.log("form.value.images", form.value.images)
     // return false
     form.value.repair_image_urls = form.value.images.join(',')
     updateRepairDetails(Number(id.value), form.value).then(() => {

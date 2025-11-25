@@ -26,7 +26,7 @@ const props = defineProps<{
  }>();
 const emit = defineEmits<{ (e: 'search'): void }>();
 
-const expanded = ref(false);
+const expanded = ref(true);
 // 使用 ref 保存状态，并实时同步 localStorage 的变化
 const onlyMySiteLocal = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
 let onlyMySitePoller: number | null = null;

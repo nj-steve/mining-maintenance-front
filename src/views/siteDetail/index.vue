@@ -4,7 +4,11 @@ import { useMessage, NButton, NCard, NSpin, NIcon } from 'naive-ui';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchSitesDetail } from '@/service/api/site';
 import History from './components/History.vue';
+import { useAuthStore } from '@/store/modules/auth';
 // 使用项目内置的图标系统
+const authStore = useAuthStore();
+const hasRole=!authStore.userInfo.roles.includes('3')
+const isAdmin=authStore.userInfo.roles.includes('1') // 超管
 
 interface SiteDetail {
   id: number;
@@ -23,6 +27,7 @@ interface SiteDetail {
   phone: string;
   email: string;
   repairing: number;
+  on_shelf_wait_repair_count: number;
   repairing_rate: number;
   wait_repair: number;
   wait_repair_rate: number;
@@ -108,7 +113,7 @@ onMounted(() => {
                 {{ siteData.site_status === 1 ? '驻场' : siteData.site_status === 2 ? '寄修' : '驻场+寄修' }}
               </span>
             </div>
-             <div class="info-item">
+             <div class="info-item" v-if="hasRole">
               <span class="label">售后负责人:</span>
               <span class="value">{{ siteData.saler_name || '' }}</span>
             </div>
@@ -131,7 +136,7 @@ onMounted(() => {
               <span class="stat-value">{{ siteData.asset_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label">24H故障数:</span>
+              <span class="stat-label">故障数:</span>
               <span class="stat-value">{{ siteData.fault_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
@@ -142,9 +147,14 @@ onMounted(() => {
               <span class="stat-label">在修数:</span>
               <span class="stat-value">{{ siteData.repairing || 0 }} 台</span>
             </div>
+              <div class="stat-item">
+              <span class="stat-label">在架待修数:</span>
+              <span class="stat-value">{{ siteData.on_shelf_wait_repair_count || 0 }} 台</span>
+            </div>
+
             <div class="stat-item">
-              <span class="stat-label">待修数:</span>
-              <span class="stat-value">{{ siteData.wait_repair_count || 0 }} 台</span>
+              <span class="stat-label">总待修数:</span>
+              <span class="stat-value">{{ siteData.wait_repair_count+siteData.on_shelf_wait_repair_count || 0 }} 台</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">待上架:</span>

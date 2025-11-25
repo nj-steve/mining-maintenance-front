@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/modules/auth';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace, NTooltip } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchSites,updateSites,fetchUser } from '@/service/api';
+import { fetchSites,updateSites,fetchUser, UpdateSiteHistory } from '@/service/api';
 import { siteStatusRecord } from '@/constants/business';
 import SearchBar from './components/SearchBar.vue';
+
+const authStore = useAuthStore();
+const hasRole=!authStore.userInfo.roles.includes('3')
+const isAdmin=authStore.userInfo.roles.includes('1') // 超管
 
 interface Site {
   id: number;
@@ -30,6 +35,7 @@ interface Site {
   wait_repair_rate: number;
   is_onsite_default?: number;
   wait_on_shelf_count: number;
+  on_shelf_wait_repair_count: number;
 }
 
 const dialog = useDialog()
@@ -65,6 +71,8 @@ const pagination = ref<PaginationProps>({
 type EditForm = Pick<Site, 'id' | 'name' | 'address' | 'asset_count' | 'is_onsite_default' | 'site_status' | 'saler_id'>
 // ---------------- 修改弹框 ----------------
 const showEditModal = ref(false);
+const showEditHistoryModal = ref(false);
+const siteHistoryForm = ref<{ id: number; on_shelf_wait_repair_count: number, date_time: string }>({ id: 0, on_shelf_wait_repair_count: 0, date_time: '' });
 const salerMap = ref<Record<number, string>>({});
 const editForm = ref<EditForm>({
   id: 0,
@@ -91,6 +99,16 @@ const handleOpenEdit = (row: Site) => {
   showEditModal.value = true;
 };
 
+// 新增：打开在架待修数编辑弹框
+const handleOpenEditHistory = (row: Site) => {
+  siteHistoryForm.value.id = row.id;
+
+  // 初始值（若后端不返回该字段到列表，默认 0，由用户填写）
+  siteHistoryForm.value.on_shelf_wait_repair_count = 0;
+  // 新增：设置默认时间为当前时间
+  siteHistoryForm.value.date_time = new Date().toISOString().slice(0, 10);
+  showEditHistoryModal.value = true;
+};
 // 保存修改
 const handleSaveEdit = async () => {
   try {
@@ -109,7 +127,29 @@ const handleSaveEdit = async () => {
   }
 };
 
+// 新增：保存在架待修数修改
+const handleSaveEditHistory = async () => {
+  try {
+    const { error } = await UpdateSiteHistory(siteHistoryForm.value.id, {
+      date_time: siteHistoryForm.value.date_time,
+      on_shelf_wait_repair_count: siteHistoryForm.value.on_shelf_wait_repair_count,
+    });
+    if (error == null) {
+      message.success('修改成功！');
+      fetchData();
+    } else {
+      message.error('修改失败:' + error);
+    }
+  } catch (err) {
+    message.error('修改失败');
+  } finally {
+    showEditHistoryModal.value = false;
+  }
+};
 const fetchUsers = async () => {
+  if (!hasRole) {
+    return;
+  }
   const {data,error} = await fetchUser({
     page: 1,
     page_size: -1,
@@ -167,12 +207,13 @@ const columns: DataTableColumns<Site> = [
     }
   },
   { title: '资产数', key: 'asset_count',render: (row: Site) => row.asset_count.toLocaleString() || 0 },
-  { title: '24H故障数', width: 120, key: 'fault_count',render: (row: Site) => row.fault_count.toLocaleString() || 0 },
+  { title: '故障数', width: 120, key: 'fault_count',render: (row: Site) => row.fault_count.toLocaleString() || 0 },
   { title: '物流中', key: 'in_logistics_count',render: (row: Site) => row.in_logistics_count.toLocaleString() || 0 },
   { title: '待上架', key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
   { title: '在修数', key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
-  { title: '待修数', key: 'wait_repair_count',render: (row: Site) => row.wait_repair_count.toLocaleString() || 0 },
-  { title: '待修率', key: 'wait_repair_rate',render: (row: Site) => (row.wait_repair_rate || 0).toFixed(2) + "%" },
+  { title: '在架待修数', key: 'on_shelf_wait_repair_count',render: (row: Site) => row.on_shelf_wait_repair_count.toLocaleString() || 0 },
+  { title: '待修数', key: 'wait_repair_count', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, (row.wait_repair_count+row.on_shelf_wait_repair_count)?.toLocaleString?.() || '0') },
+  { title: '待修率', key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
   { title: '报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
   { title: '维修状态', key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -183,46 +224,59 @@ const columns: DataTableColumns<Site> = [
     };
     return h(NTag, {type: tagMap[row.site_status] }, () => siteStatusRecord[row.site_status])
   } },
-   { title: '售后专员', key: 'saler_name' },
+   ...(hasRole ? [{ title: '售后专员', key: 'saler_name' }] : []),
   {
     title: '操作',
     key: 'actions',
     width: 180,
     align:'center',
     render: (row: Site) => {
-      return [
-        h(
-          NButton,
-          {
-            // type: 'info',
-            ghost: true,
-            size:'small',
-            style: "margin-right: 8px;color: #1890ff;",
-            onClick: () => handleOpenEdit(row)
-          },
-          {
-            default: () => '编辑',
-            // icon: () => h('icon-mdi-pencil', { class: 'text-icon' })
+      if(isAdmin || !hasRole){
+             return h(
+        NButton,
+        {
+          ghost: true,
+          size:'small',
+          style: 'color: #1890ff;',
+          onClick: () => {
+            handleOpenEditHistory(row)
+            // router.push(`/sitereport?site_id=${row.id}`)
           }
-        ),
-        h(
-          NButton,
-          {
-            // type: 'primary',
-            ghost: true,
-            size:'small',
-            style: 'color: #1890ff;',
-            onClick: () => {
-              router.push(`/miningsite/${row.id}/info`);
+        },
+        { default: () => '编辑日报' }
+      );
+      }
+      if (isAdmin ||hasRole) {
+        return [
+          h(
+            NButton,
+            {
+              ghost: true,
+              size:'small',
+              style: "margin-right: 8px;color: #1890ff;",
+              onClick: () => handleOpenEditHistory(row)
+            },
+            {
+              default: () => '编辑',
             }
-            
-          },
-          {
-            default: () => '查看',
-            // icon: () => h('icon-mdi-eye', { class: 'text-icon', style: 'color: #1890ff;' })
-          }
-        )
-      ]
+          ),
+          h(
+            NButton,
+            {
+              ghost: true,
+              size:'small',
+              style: 'color: #1890ff;',
+              onClick: () => {
+                router.push(`/miningsite/${row.id}/info`);
+              }
+            },
+            {
+              default: () => '查看',
+            }
+          )
+        ]
+      }
+ 
     }
   }
 ];
@@ -307,7 +361,7 @@ const onOnlyMySiteChange = (v: boolean) => {
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <!-- 查询框 -->
-     <div class="flex justify-between items-center"> 
+     <div class="flex justify-between items-center" v-if="hasRole"> 
       <SearchBar
       v-model:serial="searchSerial"
       v-model:salerId="selectedSalerId"
@@ -367,6 +421,21 @@ const onOnlyMySiteChange = (v: boolean) => {
         <NSpace :size="12">
           <NButton class="min-w-96px" type="primary" size="medium" @click="handleSaveEdit">保存</NButton>
           <NButton class="min-w-96px" size="medium" @click="showEditModal = false">取消</NButton>
+        </NSpace>
+      </template>
+    </NModal>
+
+    <!-- 新增：在架待修数编辑弹框 -->
+    <NModal v-model:show="showEditHistoryModal" style="width: 500px" preset="card" title="修改在架待修数">
+      <NForm :model="siteHistoryForm" label-width="120">
+        <NFormItem label="在架待修数">
+          <NInputNumber v-model:value="siteHistoryForm.on_shelf_wait_repair_count" :min="0" />
+        </NFormItem>
+      </NForm>
+      <template #footer>
+        <NSpace :size="12">
+          <NButton class="min-w-96px" type="primary" size="medium" @click="handleSaveEditHistory">保存</NButton>
+          <NButton class="min-w-96px" size="medium" @click="showEditHistoryModal = false">取消</NButton>
         </NSpace>
       </template>
     </NModal>

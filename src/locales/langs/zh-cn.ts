@@ -171,13 +171,12 @@ const local: App.I18n.Schema = {
     repairstation:"维修站",
     repairrecords:"维修明细",
     workflow:"工单列表",
-    miningsite:"矿场列表",
+    miningsite:"矿场日报",
     users:"权限管理",
     repairrecordsdetail:"维修明细",
     workflowdetail:"工单详情",
     sitedetail:"矿场详情",
     'user-center': '个人中心',
-    sitereport:'场地日报'
   },
   page: {
     login: {

@@ -101,7 +101,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.miningsite',
       icon: 'mdi:factory',
       order: 20,
-      roles: ['1', '2']
+      roles: ['1', '2', '3']
     }
   },
   {
@@ -151,22 +151,9 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.sitedetail',
       props: true,
       hideInMenu: true,
-      roles: ['1', '2']
+      roles: ['1', '2', '3']
     },
     props: true
-  },
-  {
-    name: 'sitereport',
-    path: '/sitereport',
-    component: 'layout.base$view.sitereport',
-    meta: {
-      title: 'sitereport',
-      icon: 'mdi:file-document-outline',
-      i18nKey: 'route.sitereport',
-      order: 11,
-      hideInMenu: false,
-      roles: ['1', '2', '3']
-    }
   },
   {
     name: 'user-center',

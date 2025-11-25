@@ -85,3 +85,13 @@ export function getSiteReport(params: {[key: string]: any }) {
     params // 这里会拼接到 URL ?page=1&limit=10
   });
 }
+
+// 我的场地 id: site_id
+// on_shelf_wait_repair_count
+export function UpdateSiteHistory(id:number,params: {[key: string]: any }) {
+  return request({
+    url: '/api/sites/history/' + id,
+    method: 'put',
+    data: params
+  });
+}
