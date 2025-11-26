@@ -207,13 +207,14 @@ const columns: DataTableColumns<Site> = [
     }
   },
   { title: '资产数', key: 'asset_count',render: (row: Site) => row.asset_count.toLocaleString() || 0 },
-  { title: '故障数', width: 120, key: 'fault_count',render: (row: Site) => row.fault_count.toLocaleString() || 0 },
+  { title: '24H故障数', width: 120, key: 'fault_count',render: (row: Site) => row.fault_count},
   { title: '物流中', key: 'in_logistics_count',render: (row: Site) => row.in_logistics_count.toLocaleString() || 0 },
   { title: '待上架', key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
   { title: '在修数', key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
   { title: '在架待修数', key: 'on_shelf_wait_repair_count',render: (row: Site) => row.on_shelf_wait_repair_count.toLocaleString() || 0 },
   { title: '待修数', key: 'wait_repair_count', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, (row.wait_repair_count+row.on_shelf_wait_repair_count)?.toLocaleString?.() || '0') },
   { title: '待修率', key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
+  { title: '净故障数', width: 120, key: 'fault_count',render: (row: Site) => row.fault_count+row.in_logistics_count+row.wait_repair_count+row.repairing+row.on_shelf_wait_repair_count },
   { title: '报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
   { title: '维修状态', key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -231,7 +232,7 @@ const columns: DataTableColumns<Site> = [
     width: 180,
     align:'center',
     render: (row: Site) => {
-      if(isAdmin || !hasRole){
+      if(!hasRole){
              return h(
         NButton,
         {
@@ -246,7 +247,58 @@ const columns: DataTableColumns<Site> = [
         { default: () => '编辑日报' }
       );
       }
-      if (isAdmin ||hasRole) {
+      if(isAdmin){
+        return h(
+          NSpace,
+          { size: 8, justify: 'center' },
+          {
+            default: () => [
+              h(
+                NButton,
+                {
+                  ghost: true,
+                  size:'small',
+                  style: 'color: #1890ff;',
+                  onClick: () => {
+                    handleOpenEditHistory(row)
+                  }
+                },
+                { default: () => '日报' }
+              ),
+              h(
+                NButton,
+                {
+                  ghost: true,
+                  size:'small',
+                  style: 'color: #1890ff;',
+                  onClick: () => handleOpenEditHistory(row)
+                },
+                {
+                  default: () => '编辑',
+                }
+              ),
+              h(
+                NButton,
+                {
+                  ghost: true,
+                  size:'small',
+                  style: 'color: #1890ff;',
+                  onClick: () => {
+                    router.push(`/miningsite/${row.id}/info`);
+                  }
+                },
+                {
+                  default: () => '查看',
+                }
+              )
+            ]
+          }
+        )
+      }
+      // 移除重复的 isAdmin 分支
+      // (重复代码已删除)
+      // 已移除重复的 isAdmin 分支内容
+      if (isAdmin) {
         return [
           h(
             NButton,
@@ -276,7 +328,6 @@ const columns: DataTableColumns<Site> = [
           )
         ]
       }
- 
     }
   }
 ];

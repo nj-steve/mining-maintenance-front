@@ -25,7 +25,7 @@ const columns = [
     }
   },
   {
-    title: '故障数',
+    title: '24H故障数',
     key: 'fault_count',
     width: 120,
   },
@@ -48,6 +48,12 @@ const columns = [
     title: '待上架',
     key: 'wait_on_shelf_count',
     width: 120,
+  },
+   {
+    title: '净故障数',
+    key: 'wait_on_shelf_count',
+    width: 120,
+    render: (row: any) => row.in_logistics_count + row.repairing + row.wait_repair_count+ row.wait_on_shelf_count,
   },
   {
     title: '报废数',
