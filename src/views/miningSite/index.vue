@@ -3,6 +3,7 @@ import { onMounted, ref, watch, h, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/modules/auth';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace, NTooltip } from 'naive-ui';
+import { Icon } from '@iconify/vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchSites,updateSites,fetchUser, UpdateSiteHistory } from '@/service/api';
 import { siteStatusRecord } from '@/constants/business';
@@ -206,16 +207,244 @@ const columns: DataTableColumns<Site> = [
       );
     }
   },
-  { title: '资产数', key: 'asset_count',render: (row: Site) => row.asset_count.toLocaleString() || 0 },
-  { title: '24H故障数', width: 120, key: 'fault_count',render: (row: Site) => row.fault_count},
-  { title: '物流中', key: 'in_logistics_count',render: (row: Site) => row.in_logistics_count.toLocaleString() || 0 },
-  { title: '待上架', key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
-  { title: '在修数', key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
-  { title: '在架待修数', key: 'on_shelf_wait_repair_count',render: (row: Site) => row.on_shelf_wait_repair_count.toLocaleString() || 0 },
-  { title: '待修数', key: 'wait_repair_count', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, (row.wait_repair_count+row.on_shelf_wait_repair_count)?.toLocaleString?.() || '0') },
-  { title: '待修率', key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
-  { title: '净故障数', width: 120, key: 'fault_count',render: (row: Site) => row.in_logistics_count+row.wait_repair_count+row.repairing+row.on_shelf_wait_repair_count },
-  { title: '报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
+  {
+    title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:100px;' },
+        [
+          '资产数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '总托管机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
+    key: 'asset_count',
+    render: (row: Site) => row.asset_count.toLocaleString() || 0
+  },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:100px;' },
+        [
+          '24H故障数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '近24小时导入故障机数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),width: 120, key: 'fault_count',render: (row: Site) => row.fault_count},
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          '物流中',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '状态：“物流进+物流出” 机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), key: 'in_logistics_count',render: (row: Site) => row.in_logistics_count.toLocaleString() || 0 },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          '待上架',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '状态：“待上架” 的机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
+  // { title: '待上架', key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          '在修数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '状态：“维修中” 的机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
+  // { title: '在修数', key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
+        [
+          '在架待修数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '状态：“在架，等待下架” 故障机数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), key: 'on_shelf_wait_repair_count',render: (row: Site) => row.on_shelf_wait_repair_count.toLocaleString() || 0 },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:180px;' },
+        [
+          '待修数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '状态：“未下架+已下架+待处理” 故障机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), key: 'wait_repair_count', render: (row: Site) => h('span', (row.wait_repair_count+row.on_shelf_wait_repair_count)?.toLocaleString?.() || '0') },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:4px;width:120px;' },
+        [
+          '待修率',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '未下架+已下架+待处理 故障机器数占比',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 故障机器数占比' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
+  // { title: '待修率', key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
+        [
+          '净故障数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '在架待修数+待修数+在修数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), key: 'fault_count',render: (row: Site) => row.in_logistics_count+row.wait_repair_count+row.repairing+row.on_shelf_wait_repair_count },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
+        [
+          '预报废数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '维修状态：“报废” 故障机数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
+  // { title: , key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
   { title: '维修状态', key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',

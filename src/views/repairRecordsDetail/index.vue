@@ -87,7 +87,24 @@
         <n-descriptions :column="1" label-placement="left" bordered>
           <n-descriptions-item label="维修部件">
             <template v-if="!isEdit">{{ form.repair_component }}</template>
-            <n-input v-else v-model:value="form.repair_component" />
+            <div v-else style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <n-checkbox-group v-model:value="selectedComponents">
+                <n-space>
+                  <n-checkbox
+                    v-for="opt in componentOptions"
+                    :key="opt"
+                    :label="opt"
+                    :value="opt"
+                  />
+                </n-space>
+              </n-checkbox-group>
+              <n-input
+                v-if="selectedComponents.includes('其他')"
+                v-model:value="otherComponent"
+                placeholder="请输入其他项"
+                style="max-width: 200px;"
+              />
+            </div>
           </n-descriptions-item>
 
           <n-descriptions-item label="初测不良原因">
@@ -121,7 +138,20 @@
           <n-descriptions-item label="维修部位图片">
             <template v-if="!isEdit">
               <div class="flex gap-2">
-                <img v-for="img in form.images.filter(Boolean)" :src="img" :key="img" class="w-24 h-24 object-cover rounded" />
+                <div
+                  v-for="img in form.images.filter(Boolean)"
+                  :key="img"
+                  class="relative w-24 h-24 group"
+                >
+                  <img :src="img" class="w-24 h-24 object-cover rounded" />
+                  <div
+                    class="absolute inset-0 rounded bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                  >
+                    <n-button text size="tiny" @click="previewSrc = img; previewVisible = true">
+                      <Icon icon="ant-design:eye-outlined" width="20" height="20" color="#fff" />
+                    </n-button>
+                  </div>
+                </div>
               </div>
             </template>
            <!-- <QiniuImageUpload
@@ -145,7 +175,12 @@
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
-  
+      <n-modal v-model:show="previewVisible" preset="card" title="图片预览" style="width: 800px;">
+        <div style="display:flex; justify-content:center; align-items:center;">
+          <img :src="previewSrc" alt="预览" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+        </div>
+      </n-modal>
+
       <!-- 维修进程 -->
       <n-card title="维修进程">
         <n-descriptions :column="2" label-placement="left" bordered>
@@ -184,10 +219,11 @@
   import { useRoute } from "vue-router"
   import dayjs from 'dayjs';
   import { useMessage } from 'naive-ui';
-  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace } from "naive-ui"
+  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace, NCheckbox, NCheckboxGroup, NModal } from "naive-ui"
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
   import { repairResultOptions, repairResultMap } from '@/constants/business'
   import QiniuImageUpload from '@/components/upload/QiniuImageUpload.vue'
+  import { Icon } from '@iconify/vue'
   
   
   const route = useRoute();
@@ -198,6 +234,8 @@
   const imgAuthString = ref("")
 
   const isEdit = ref(false)
+  const previewVisible = ref(false)
+  const previewSrc = ref('')
   
   const form = ref({
     date: dayjs().format('YYYY-MM-DD'),
@@ -227,10 +265,21 @@
     power_sn: "",
     motherboard_sn: ""
   })
+
+  // 维修部件选项与编辑态状态
+  const componentOptions = ['板1', '板2', '板3', '电源', '控制板', '其他']
+  const selectedComponents = ref<string[]>([])
+  const otherComponent = ref('')
   
   
   function save() {
     console.log("保存数据", form.value)
+    // 合成维修部件字符串
+    const finalComponents = selectedComponents.value.filter(s => s !== '其他')
+    if (selectedComponents.value.includes('其他') && otherComponent.value.trim()) {
+      finalComponents.push(otherComponent.value.trim())
+    }
+    form.value.repair_component = finalComponents.join(',')
     form.value.date = dayjs(form.value.date).format('YYYY-MM-DD')
     form.value.start_time = String(form.value.start_time)
     form.value.end_time = String(form.value.end_time)
@@ -284,6 +333,17 @@
           power_sn: detail.PowerSN || '',
           motherboard_sn: detail.BoardSN || ''
         };
+        // 初始化组件选择
+        const parts = (form.value.repair_component || '').split(',').map(s => s.trim()).filter(Boolean)
+        const known = parts.filter(p => componentOptions.includes(p))
+        const unknown = parts.filter(p => !componentOptions.includes(p))
+        selectedComponents.value = known
+        if (unknown.length > 0) {
+          if (!selectedComponents.value.includes('其他')) selectedComponents.value.push('其他')
+          otherComponent.value = unknown.join(',')
+        } else {
+          otherComponent.value = ''
+        }
       }
     } catch (error) {
       console.error('获取详情数据失败:', error);
@@ -296,6 +356,12 @@
   onMounted(() => {
     fetchDetailData();
   });
+
+  //   const openPreview = (url: string) => {
+  //   if (!url) return
+  //   previewSrc.value = url
+  //   previewVisible.value = true
+  // }
   </script>
 
   <style scoped>
@@ -304,3 +370,4 @@
     width: 140px !important;
   }
   </style>
+

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useMessage, NButton, NCard, NSpin, NIcon } from 'naive-ui';
+import { onMounted, ref, computed,h, onUnmounted } from 'vue';
+import { useMessage, NButton, NCard, NSpin, NIcon,NTooltip } from 'naive-ui';
+import { Icon } from '@iconify/vue';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchSitesHistory } from '@/service/api/site';
 
@@ -25,38 +26,216 @@ const columns = [
     }
   },
   {
-    title: '24H故障数',
+    title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:100px;' },
+        [
+          '24H故障数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '近24小时导入故障机数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
     key: 'fault_count',
     width: 120,
   },
   {
-    title: '物流中',
+    title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          '物流中',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '状态：“物流进+物流出” 机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
     key: 'in_logistics_count',
     width: 120,
   },
   {
-    title: '在修数',
+    title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          '在修数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '状态：“维修中” 的机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
     key: 'repairing',
     width: 120,
   },
+    // { title: () =>
+    //   h(
+    //     'div',
+    //     { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
+    //     [
+    //       '在架待修数',
+    //       h(
+    //         NTooltip,
+    //         { placement: 'top' },
+    //         {
+    //           default: () => '状态：“在架，等待下架” 故障机数',
+    //           trigger: () =>
+    //             h(Icon, {
+    //               icon: 'ant-design:question-circle-outlined',
+    //               width: 14,
+    //               height: 14,
+    //               color: '#999',
+    //               style: 'cursor:pointer;'
+    //             })
+    //         }
+    //       )
+    //     ]
+    //   ), key: 'on_shelf_wait_repair_count'},
   {
-    title: '待修数',
+    title:() =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:180px;' },
+        [
+          '待修数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '状态：“未下架+已下架+待处理” 故障机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
     key: 'wait_repair_count',
     width: 120,
-  },
-  {
-    title: '待上架',
+    // render: (row: any) => h('span', (row.wait_repair_count+row.on_shelf_wait_repair_count)?.toLocaleString?.() || '0') },
+          },
+          {
+    title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          '待上架',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '状态：“待上架” 的机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
     key: 'wait_on_shelf_count',
     width: 120,
   },
    {
-    title: '净故障数',
+    title:  () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
+        [
+          '净故障数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '“待修数+在修数+物流中” 机器数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
     key: 'wait_on_shelf_count',
     width: 120,
     render: (row: any) => row.in_logistics_count + row.repairing + row.wait_repair_count+ row.wait_on_shelf_count,
   },
   {
-    title: '报废数',
+    title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
+        [
+          '预报废数',
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => '维修状态：“报废” 故障机数',
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
     key: 'scrapped_count',
     width: 120,
   },

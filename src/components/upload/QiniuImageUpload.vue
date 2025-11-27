@@ -6,6 +6,7 @@
       :default-upload="false"
       :on-before-upload="handleBeforeUpload"
       :on-remove="handleRemove"
+      :on-preview="handlePreview"
       :max="max"
       accept="image/*"
     >
@@ -16,12 +17,17 @@
         {{ buttonText }}
       </n-button> -->
     </n-upload>
+    <n-modal v-model:show="previewVisible" preset="card" title="图片预览" style="width: 800px;">
+      <div style="display:flex; justify-content:center; align-items:center;">
+        <img :src="previewSrc" alt="预览" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+      </div>
+    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
-import { NUpload, NButton, useMessage, NIcon } from 'naive-ui'
+import { NUpload, NButton, useMessage, NIcon, NModal } from 'naive-ui'
 import type { UploadFileInfo } from 'naive-ui'
 import axios from 'axios'
 import { getServiceBaseURL } from '@/utils/service'
@@ -33,6 +39,8 @@ interface Props {
   max?: number
   buttonText?: string
 }
+
+
 
 const props = withDefaults(defineProps<Props>(), {
   extraParams: () => ({}),
@@ -56,6 +64,8 @@ const { baseURL } = getServiceBaseURL(
 )
 
 const fileList = ref<UploadFileInfo[]>([])
+const previewVisible = ref(false)
+const previewSrc = ref('')
 
 // 初始化 fileList
 const initFromImages = () => {
@@ -73,7 +83,8 @@ watch(() => props.images, () => {
   initFromImages()
 })
 
-const handleBeforeUpload = async ({ file }: { file: UploadFileInfo }) => {
+const handleBeforeUpload = async (data: { file: UploadFileInfo; fileList?: UploadFileInfo[] }) => {
+  const { file } = data
   if (!file.file) return false
   try {
     // 1. 获取上传凭证
@@ -90,10 +101,10 @@ const handleBeforeUpload = async ({ file }: { file: UploadFileInfo }) => {
         Authorization
       }
     })
-    console.log('tokenResp', tokenResp)
+    // console.log('tokenResp', tokenResp)
     const { uploadToken, uploadUrl } = tokenResp.data.data || {};   
-    console.log('uploadToken', uploadToken)
-    console.log('uploadUrl', uploadUrl)
+    // console.log('uploadToken', uploadToken)
+    // console.log('uploadUrl', uploadUrl)
 
     // const tokenData = tokenResp.data?.data || tokenResp.data
     // const uploadToken = tokenData?.token || tokenData?.uptoken
@@ -144,7 +155,8 @@ const handleBeforeUpload = async ({ file }: { file: UploadFileInfo }) => {
   return false
 }
 
-const handleRemove = ({ file }: { file: UploadFileInfo }) => {
+const handleRemove = (data: { file: UploadFileInfo; fileList: UploadFileInfo[]; index: number }) => {
+  const { file } = data
   const url = file.url || ''
   // 仅移除当前项，其他图片不受影响
   const newFileList = fileList.value.filter(f => f.id !== file.id)
@@ -155,7 +167,14 @@ const handleRemove = ({ file }: { file: UploadFileInfo }) => {
   const newUrls = newFileList.map(f => f.url!).filter(Boolean)
   emit('update:images', newUrls)
   emit('update', newUrls)
-  return false;
+  return false
+}
+
+const handlePreview = (file: UploadFileInfo) => {
+  const url = file.url || ''
+  if (!url) return
+  previewSrc.value = url
+  previewVisible.value = true
 }
 
 function generateKey(name: string) {
