@@ -97,6 +97,16 @@ export function batchUpdateStatus(params: {[key: string]: any }) {
   });
 }
 
+// /api/faults/id 
+// params:
+//   status: number
+export function deleteFaultsStatusById(id:number) {
+  return request({
+    url: '/api/faults/'+id,
+    method: 'delete',
+  });
+}
+
 
 
 

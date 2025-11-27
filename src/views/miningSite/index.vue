@@ -214,7 +214,7 @@ const columns: DataTableColumns<Site> = [
   { title: '在架待修数', key: 'on_shelf_wait_repair_count',render: (row: Site) => row.on_shelf_wait_repair_count.toLocaleString() || 0 },
   { title: '待修数', key: 'wait_repair_count', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, (row.wait_repair_count+row.on_shelf_wait_repair_count)?.toLocaleString?.() || '0') },
   { title: '待修率', key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
-  { title: '净故障数', width: 120, key: 'fault_count',render: (row: Site) => row.fault_count+row.in_logistics_count+row.wait_repair_count+row.repairing+row.on_shelf_wait_repair_count },
+  { title: '净故障数', width: 120, key: 'fault_count',render: (row: Site) => row.in_logistics_count+row.wait_repair_count+row.repairing+row.on_shelf_wait_repair_count },
   { title: '报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
   { title: '维修状态', key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -271,7 +271,7 @@ const columns: DataTableColumns<Site> = [
                   ghost: true,
                   size:'small',
                   style: 'color: #1890ff;',
-                  onClick: () => handleOpenEditHistory(row)
+                  onClick: () => handleOpenEdit(row)
                 },
                 {
                   default: () => '编辑',
@@ -298,7 +298,7 @@ const columns: DataTableColumns<Site> = [
       // 移除重复的 isAdmin 分支
       // (重复代码已删除)
       // 已移除重复的 isAdmin 分支内容
-      if (isAdmin) {
+      if (hasRole) {
         return [
           h(
             NButton,
@@ -306,7 +306,7 @@ const columns: DataTableColumns<Site> = [
               ghost: true,
               size:'small',
               style: "margin-right: 8px;color: #1890ff;",
-              onClick: () => handleOpenEditHistory(row)
+              onClick: () => handleOpenEdit(row)
             },
             {
               default: () => '编辑',

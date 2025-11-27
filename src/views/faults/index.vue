@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h } from 'vue';
-import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip } from 'naive-ui';
+import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip, NPopconfirm } from 'naive-ui';
 import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
@@ -9,18 +9,26 @@ import { fetchFaults,updateFaultsStatus,updateFaults } from '@/service/api/fault
 import {fetchOrdersStatus} from '@/service/api/workflow';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
-import {fetchOrdersSite} from '@/service/api';
+import {fetchOrdersSite,deleteFaultsStatusById} from '@/service/api';
 import FaultsSearchCard from './components/FaultsSearchCard.vue'
 import BindWorkOrderModal from './components/BindWorkOrderModal.vue'
 import UnbindWorkOrderModal from './components/UnbindWorkOrderModal.vue'
 import { useAuthStore } from '@/store/modules/auth';
+
 import EditFaultModalButton from './components/EditFaultModalButtonShouhou.vue'
 import EditFaultModalButtonYunwei from './components/EditFaultModalButtonYunwei.vue'
+import EditFaultModalButtonAdmin from './components/EditFaultModalButtonAdmin.vue'
 import { repairMethodRecord } from '@/constants/business';
+
+
+
 import { Icon } from '@iconify/vue';
 
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
+const isAdmin=authStore.userInfo.roles.includes('1')
+
+
 
 // console.log("Outer >> hasRole>>",hasRole)
 
@@ -332,7 +340,8 @@ const columns: DataTableColumns<Faults> = [
                 NButton,
                 { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
                 { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
-              ) : null
+              ) : null,
+           
             ]
           ),
           default: () => full
@@ -477,7 +486,46 @@ const columns: DataTableColumns<Faults> = [
     width: 120,
     fixed: 'right',
     render: (row: Faults) => {
-      return [
+      if(isAdmin){
+        return [
+          h(
+              EditFaultModalButtonAdmin,
+              {
+                row,
+                sites: siteOptions.value,
+                statusOptions:  statusOptions.value,
+                onUpdated: () => fetchData()
+              }
+            ),
+             h(
+                NPopconfirm,
+                {
+                  onPositiveClick: async () => {
+                    try {
+                      const { data, error } = await deleteFaultsStatusById(row.id);
+                      if (error == null) {
+                        message.success('删除成功');
+                        await fetchData();
+                      } else {
+                        message.error('删除失败');
+                      }
+                    } catch (e) {
+                      message.error('删除失败');
+                    }
+                  }
+                },
+                {
+                  trigger: () => h(
+                    NButton,
+                    { size: 'tiny', quaternary: true, type: 'error' },
+                    { default: () => h(Icon, { icon: 'ant-design:delete-outlined', width: 16, height: 16 }) }
+                  ),
+                  default: () => '确认删除该故障机？'
+                }
+              ) 
+          ]
+      }
+      return [  
         hasRole
           ? h(
               EditFaultModalButton,
