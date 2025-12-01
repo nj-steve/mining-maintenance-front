@@ -5,7 +5,7 @@ import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { fetchFaults,updateFaultsStatus,updateFaults } from '@/service/api/faults';
+import { fetchFaults,updateFaultsStatus,updateFaults, exportFaults } from '@/service/api/faults';
 import {fetchOrdersStatus} from '@/service/api/workflow';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
@@ -686,6 +686,146 @@ const onOnlyMySiteChange = (v: boolean) => {
   // 切换“我的场地”后立即刷新数据
   fetchData();
 };
+
+// 导出故障列表（CSV，可用 Excel 打开）
+const exportFaultsCsv = async () => {
+  loading.value = true;
+  try {
+    const onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1;
+    const params: any = {
+      sn: searchSerial.value || undefined,
+      order_no: searchWorkOrderNo.value || undefined,
+      site_id: searchSiteId.value || undefined,
+      status: searchStatus.value || undefined,
+      saler_id: searchSalerId.value || undefined,
+      enable_all: onlyMySite, // 1 全部，-1 我的
+      repair_result: searchResultStatus.value || undefined,
+      start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
+      end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
+      model: searchModel.value || undefined
+    };
+
+    const { data, error } = await exportFaults(params);
+    if (error == null) {
+      const headers = [
+        'SN码',
+        '场地',
+        '型号',
+        '工单编号',
+        '维修方式',
+        '流转状态',
+        '维修状态',
+        '维修次数',
+        '短保',
+        '问题描述',
+        '下架日期',
+        '导入时间',
+        '上架/入库时间'
+      ];
+      const formatCell = (val: any) => {
+        const s = val === undefined || val === null ? '' : String(val);
+        const needsQuote = /[",\n]/.test(s);
+        const escaped = s.replace(/"/g, '""');
+        return needsQuote ? `"${escaped}"` : escaped;
+      };
+      const rows = (data || []).map((row: any) => [
+        row.sn,
+        row.Site?.name || row.site_name,
+        row.model,
+        row.order_no,
+        repairMethodRecord[row.repair_method || '未知'] || row.repair_method_text,
+        row.status_text,
+        row.repair_result_text,
+        row.repair_count,
+        row.warranty_status_text,
+        row.description,
+        row.date,
+        row.created_time,
+        row.on_shelf_time
+      ]);
+      const csv = [headers, ...rows]
+        .map(r => r.map(formatCell).join(','))
+        .join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const date = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.download = `故障机_导出_${date}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      message.success('导出成功，下载已开始');
+    } else {
+      message.error(`导出失败: ${error}`);
+    }
+  } catch (err) {
+    message.error(`导出失败: ${err}`);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 后端直接生成文件的导出（以 Blob 下载）
+const exportFaultsFile = async () => {
+  loading.value = true;
+  try {
+    const onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1;
+    const params: Record<string, any> = {
+      sn: searchSerial.value || undefined,
+      order_no: searchWorkOrderNo.value || undefined,
+      site_id: searchSiteId.value || undefined,
+      status: searchStatus.value || undefined,
+      saler_id: searchSalerId.value || undefined,
+      enable_all: onlyMySite,
+      repair_result: searchResultStatus.value || undefined,
+      start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
+      end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
+      model: searchModel.value || undefined
+    };
+
+    const token = localStorage.getItem('token');
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined) as [string, string][]
+    ).toString();
+
+    const res = await fetch(`/api/faults/export?${qs}` , {
+      method: 'GET',
+      headers: {
+        Authorization: token ? `Bearer ${token}` : ''
+      }
+    });
+
+    if (!res.ok) {
+      const msg = `导出失败: ${res.status} ${res.statusText}`;
+      message.error(msg);
+      return;
+    }
+
+    const disposition = res.headers.get('content-disposition') || '';
+    const blob = await res.blob();
+    let filename = `故障机_导出_${new Date().toISOString().slice(0,10)}.xlsx`;
+    const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
+    if (match) {
+      filename = decodeURIComponent(match[1] || match[2]);
+    }
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    message.success('导出成功，下载已开始');
+  } catch (err) {
+    message.error(`导出失败: ${err}`);
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <template>
@@ -712,6 +852,13 @@ const onOnlyMySiteChange = (v: boolean) => {
         buttonText="导入" 
         :site-options="siteOptions"
         @success="fetchData"/>
+
+        <!-- <NButton circle size="medium" ghost @click="exportFaultsFile" title="导出 Excel">
+          <template #icon>
+            <icon-ant-design-download-outlined />
+          </template>
+        </NButton> -->
+
         
         <template v-if="hasRole">
           <NButton
@@ -756,6 +903,8 @@ const onOnlyMySiteChange = (v: boolean) => {
             @refresh="handleRefresh"
           />
         </template>
+
+        
       </div>
     </div>
     <!-- 表格 -->

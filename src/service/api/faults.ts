@@ -107,6 +107,19 @@ export function deleteFaultsStatusById(id:number) {
   });
 }
 
+// /api/faults/id 
+// params:
+//   status: number
+export function exportFaults(params: {[key: string]: any }) {
+  return request({
+    url: '/api/faults/export',
+    method: 'get',
+    params
+  });
+}
+
+
+
 
 
 
