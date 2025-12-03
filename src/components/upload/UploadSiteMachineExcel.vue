@@ -68,6 +68,27 @@
           <!-- 错误详情 -->
           <div v-if="importResult.errors && importResult.errors.length > 0">
             <h4 style="margin: 0 0 12px 0; color: #ff4d4f;">错误详情：</h4>
+            <!-- 错误操作：复制与导出 -->
+            <div style="display: flex; gap: 8px;margin-top: -40px;  margin-bottom: 8px;justify-content:right">
+            <n-button size="small" secondary @click="copyErrors" title="复制错误信息" icon-placement="right">
+              <template #icon>
+                <NIcon>
+                  <SvgIcon icon="material-symbols:content-copy" />
+                </NIcon>
+              </template>
+            </n-button>
+            <n-button size="small" secondary @click="exportErrors" title="导出错误" icon-placement="right">
+              <template #icon>
+                <NIcon>
+                  <SvgIcon icon="material-symbols:download" />
+                </NIcon>
+              </template>
+            </n-button>
+          </div>
+            <!-- <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+              <n-button size="small" secondary @click="copyErrors">复制错误信息</n-button>
+              <n-button size="small" secondary @click="exportErrors">导出错误</n-button>
+            </div> -->
             <div style="max-height: 300px; overflow-y: auto; border: 1px solid #d9d9d9; border-radius: 4px; padding: 12px; background-color: #fff;">
               <div v-for="(error, index) in importResult.errors" :key="index" style="margin-bottom: 8px; padding: 8px; background-color: #fff2f0; border-left: 3px solid #ff4d4f; font-family: monospace; font-size: 13px;">
                 {{ error }}
@@ -217,6 +238,68 @@ const hasRole=!authStore.userInfo.roles.includes('3')
     }
   }
   
+  // 复制错误信息到剪贴板
+  const copyErrors = async () => {
+    const errors = importResult.value?.errors || []
+    if (!errors.length) {
+      message.warning('暂无错误信息可复制')
+      return
+    }
+    const text = errors.join('\n')
+    try {
+      await navigator.clipboard.writeText(text)
+      message.success('错误信息已复制到剪贴板')
+    } catch (err) {
+      // 兼容性降级方案
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        message.success('错误信息已复制到剪贴板')
+      } catch (e) {
+        message.error('复制失败，请手动复制')
+      } finally {
+        document.body.removeChild(textarea)
+      }
+    }
+  }
+
+  // 导出错误信息为 CSV（带 BOM，Excel 可直接打开）
+  const exportErrors = () => {
+    const errors = importResult.value?.errors || []
+    if (!errors.length) {
+      message.warning('暂无错误信息可导出')
+      return
+    }
+
+    const headers = ['序号', '错误信息']
+    const escapeCsv = (s: string) => {
+      if (s == null) return ''
+      const str = String(s)
+      if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`
+      return str
+    }
+    const rows = errors.map((err, i) => `${i + 1},${escapeCsv(err)}`)
+    const csv = [headers.join(','), ...rows].join('\n')
+    const bom = '\ufeff'
+    const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+
+    const a = document.createElement('a')
+    a.href = url
+    const now = new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const filename = `导入错误_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.csv`
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    message.success('错误信息已导出')
+  }
+
   // 关闭结果弹框
   const handleCloseResult = () => {
     showResult.value = false
