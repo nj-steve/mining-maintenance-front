@@ -29,7 +29,7 @@
             :show-file-list="true"
             :default-upload="false"
             :on-change="handleFileChange"
-            accept=".xls,.xlsx"
+            accept=".xls,.xlsx,.xlsm"
           >
             <n-button size="small">选择文件</n-button>
           </n-upload>
