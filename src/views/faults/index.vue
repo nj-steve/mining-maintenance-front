@@ -767,7 +767,7 @@ const exportFaultsCsv = async () => {
   }
 };
 
-// 后端直接生成文件的导出（以 Blob 下载）
+// 通过 /api/faults/export 获取数据，按指定字段生成 CSV（Excel 可打开）
 const exportFaultsFile = async () => {
   loading.value = true;
   try {
@@ -785,36 +785,82 @@ const exportFaultsFile = async () => {
       model: searchModel.value || undefined
     };
 
-    const token = localStorage.getItem('token');
-    const qs = new URLSearchParams(
-      Object.entries(params).filter(([, v]) => v !== undefined) as [string, string][]
-    ).toString();
-
-    const res = await fetch(`/api/faults/export?${qs}` , {
-      method: 'GET',
-      headers: {
-        Authorization: token ? `Bearer ${token}` : ''
-      }
-    });
-
-    if (!res.ok) {
-      const msg = `导出失败: ${res.status} ${res.statusText}`;
-      message.error(msg);
+    const { data, error } = await exportFaults(params);
+    if (error != null) {
+      message.error(`导出失败: ${error}`);
       return;
     }
 
-    const disposition = res.headers.get('content-disposition') || '';
-    const blob = await res.blob();
-    let filename = `故障机_导出_${new Date().toISOString().slice(0,10)}.xlsx`;
-    const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i);
-    if (match) {
-      filename = decodeURIComponent(match[1] || match[2]);
-    }
+    const headers = [
+      'SN',
+      '场地名',
+      '机型',
+      '位置',
+      '故障原因',
+      
+      '下架时间',
+      '上架时间',
+      '短保状态',
+      '工单号',
 
+      '创建人',
+      '备注',
+      '导入时间',
+      '更新时间',
+      '流转状态',
+      '维修结果',
+      '维修次数'
+    ];
+
+    const formatCell = (val: any) => {
+      const s = val === undefined || val === null ? '' : String(val);
+      const needsQuote = /[",\n]/.test(s);
+      const escaped = s.replace(/"/g, '""');
+      return needsQuote ? `"${escaped}"` : escaped;
+    };
+
+    const formatDateTime = (val: any) => {
+      if (!val) return '';
+      const d = new Date(typeof val === 'number' ? val : String(val));
+      if (isNaN(d.getTime())) return String(val);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const da = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      return `${y}-${m}-${da} ${hh}:${mm}:${ss}`;
+    };
+
+    const rows = (data || []).map((row: any) => [
+      row.SN,
+      row.SiteName,
+      row.Model,
+      row.Location,
+      row.Description,
+      row.DownTime,
+      formatDateTime(row.OnShelfTime),
+      row.warranty_status_text,
+      row.OrderNo,
+      row.CreatedBy,
+      row.remarks,
+      formatDateTime(row.created_at),
+      formatDateTime(row.UpdatedAt),
+      row.status_text,
+      row.repair_result_text,
+      row.repair_count
+    ]);
+
+    const csv = [headers, ...rows]
+      .map(r => r.map(formatCell).join(','))
+      .join('\n');
+
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
     link.href = url;
-    link.download = filename;
+    link.download = `故障机_导出_${date}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -853,13 +899,7 @@ const exportFaultsFile = async () => {
         :site-options="siteOptions"
         @success="fetchData"/>
 
-        <!-- <NButton circle size="medium" ghost @click="exportFaultsFile" title="导出 Excel">
-          <template #icon>
-            <icon-ant-design-download-outlined />
-          </template>
-        </NButton> -->
-
-        
+       
         <template v-if="hasRole">
           <NButton
             type="primary" 
@@ -903,6 +943,11 @@ const exportFaultsFile = async () => {
             @refresh="handleRefresh"
           />
         </template>
+         <NButton circle size="small" ghost @click="exportFaultsFile" title="导出 Excel">
+          <template #icon>
+            <icon-ant-design-download-outlined />
+          </template>
+        </NButton>
 
         
       </div>

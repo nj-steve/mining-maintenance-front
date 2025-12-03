@@ -195,7 +195,7 @@ const columns = [
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '“待修数+在修数+物流中” 机器数',
+              default: () => '“待修数+寄修数+驻场”',
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',

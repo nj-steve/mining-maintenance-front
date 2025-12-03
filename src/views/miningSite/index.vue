@@ -230,7 +230,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ),
+      ), width: 120,
     key: 'asset_count',
     render: (row: Site) => row.asset_count.toLocaleString() || 0
   },
@@ -279,7 +279,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), key: 'in_logistics_count',render: (row: Site) => row.in_logistics_count.toLocaleString() || 0 },
+      ), width: 120, key: 'in_logistics_count',render: (row: Site) => row.in_logistics_count.toLocaleString() || 0 },
   { title: () =>
       h(
         'div',
@@ -302,8 +302,8 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
-  // { title: '待上架', key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
+      ), width: 120, key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
+  // { title: '待上架', width: 120, key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
   { title: () =>
       h(
         'div',
@@ -326,8 +326,8 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
-  // { title: '在修数', key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
+      ), width: 120, key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
+  // { title: '在修数', width: 120, key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
   { title: () =>
       h(
         'div',
@@ -338,7 +338,7 @@ const columns: DataTableColumns<Site> = [
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '状态：“在架，等待下架” 故障机数',
+              default: () => '状态：“在架” 故障机数',
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -350,7 +350,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), key: 'on_shelf_wait_repair_count',render: (row: Site) => row.on_shelf_wait_repair_count.toLocaleString() || 0 },
+      ), width: 120, key: 'on_shelf_wait_repair_count',render: (row: Site) => row.on_shelf_wait_repair_count.toLocaleString() || 0 },
   { title: () =>
       h(
         'div',
@@ -380,24 +380,24 @@ const columns: DataTableColumns<Site> = [
         { style: 'display:flex; align-items:center; gap:4px;width:120px;' },
         [
           '待修率',
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => '未下架+已下架+待处理 故障机器数占比',
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
+          // h(
+          //   NTooltip,
+          //   { placement: 'top' },
+          //   {
+          //     default: () => '未下架+已下架+待处理 故障机器数占比',
+          //     trigger: () =>
+          //       h(Icon, {
+          //         icon: 'ant-design:question-circle-outlined',
+          //         width: 14,
+          //         height: 14,
+          //         color: '#999',
+          //         style: 'cursor:pointer;'
+          //       })
+          //   }
+          // )
         ]
-      ), key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 故障机器数占比' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
-  // { title: '待修率', key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
+      ), width: 120, key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 故障机器数占比' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
+  // { title: '待修率', width: 120, key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
   { title: () =>
       h(
         'div',
@@ -408,7 +408,7 @@ const columns: DataTableColumns<Site> = [
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '在架待修数+待修数+在修数',
+              default: () => '待修数+寄修数+驻场',
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -420,7 +420,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), key: 'fault_count',render: (row: Site) => row.in_logistics_count+row.wait_repair_count+row.repairing+row.on_shelf_wait_repair_count },
+      ), width: 120, key: 'fault_count',render: (row: Site) => row.in_logistics_count+row.wait_repair_count+row.repairing+row.on_shelf_wait_repair_count },
   { title: () =>
       h(
         'div',
@@ -443,9 +443,9 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
-  // { title: , key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
-  { title: '维修状态', key: 'site_status',render: (row: any ) => {
+      ), width: 120, key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
+  // { title: '预报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
+  { title: '维修状态', width: 120, key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',
       1: 'success',
@@ -454,7 +454,7 @@ const columns: DataTableColumns<Site> = [
     };
     return h(NTag, {type: tagMap[row.site_status] }, () => siteStatusRecord[row.site_status])
   } },
-   ...(hasRole ? [{ title: '售后专员', key: 'saler_name' }] : []),
+   ...(hasRole ? [{ title: '售后专员',width: 120, key: 'saler_name' }] : []),
   {
     title: '操作',
     key: 'actions',
@@ -707,7 +707,7 @@ const onOnlyMySiteChange = (v: boolean) => {
 
     <!-- 新增：在架待修数编辑弹框 -->
     <NModal v-model:show="showEditHistoryModal" style="width: 500px" preset="card" title="修改在架待修数">
-      <NForm :model="siteHistoryForm" label-width="120">
+      <NForm :model="siteHistoryForm" label-width="180">
         <NFormItem label="在架待修数">
           <NInputNumber v-model:value="siteHistoryForm.on_shelf_wait_repair_count" :min="0" />
         </NFormItem>
