@@ -199,8 +199,8 @@ const handleCloseResult = () => {
 
 const downloadTemplate = () => {
   const link = document.createElement('a')
-  link.href = '/template/repair-detail.xlsx'
-  link.download = '维修明细_导入模板.xlsx'
+  link.href = '/template/repair-detail-V3.xlsm'
+  link.download = '维修明细_导入模板.xlsm'
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)

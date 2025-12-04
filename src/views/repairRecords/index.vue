@@ -135,6 +135,7 @@ const columns: DataTableColumns<any> = [
   { title: '机型', key: 'MachineModel', width: 200 },
   { title: '整机SN码', key: 'DeviceSN', width: 200 },
   { title: '损坏部件', key: 'RepairComponent', width: 120 },
+  // { title: '额外操作', key: 'extra_operations', width: 120 },
   { title: '初测不良原因', key: 'DefectReason', width: 160 },
   { title: '查证缺陷', key: 'VerifyDefect', width: 160 },
   { title: '维修状态', key: 'RepairResult',
@@ -299,6 +300,7 @@ const exportExcel=async () => {
    '板3 SN',
    '控制板 SN',
    '维修部件',
+   '额外操作',
    '初测不良原因',
    '不良代码L2',
    '不良代码L3',
@@ -307,6 +309,8 @@ const exportExcel=async () => {
    '开始维修时间',
    '结束维修时间',
    '维修结果',
+   '下架时间',
+   '上架时间',
    '创建时间',
    '更新时间',
    '维修员',
@@ -329,6 +333,7 @@ const exportExcel=async () => {
     row.BoardSN3,
     row.ControlSN,
     row.RepairComponent,
+    row.extra_operations,
     row.DefectReason,
     row.DefectCode2,
     row.DefectCode3,
@@ -338,6 +343,8 @@ const exportExcel=async () => {
     row.StartTime,
     row.EndTime,
     repairResultMap[row.RepairResult],
+    row.down_time,
+    row.on_shelf_time,
     row.CreatedAt,
     row.UpdatedAt,
     row.RepairerName,
@@ -378,7 +385,6 @@ const handleFail = () => {
     </NCard>
     <!-- <NCard> -->
     <!-- 查询框 -->
-   
     <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: px;">
        <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 6px">
       <div  style="display: flex; gap: 8px; align-items: center;">

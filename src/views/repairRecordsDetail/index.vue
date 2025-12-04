@@ -107,6 +107,24 @@
             </div>
           </n-descriptions-item>
 
+          <n-descriptions-item label="额外操作">
+            <template v-if="!isEdit">{{ form.extra_operations }}</template>
+            <div v-else style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <n-checkbox-group v-model:value="selectedExtraOperations">
+                <n-space>
+                  <n-checkbox
+                    v-for="opt in componentExtraOperations"
+                    :key="opt"
+                    :label="opt"
+                    :value="opt"
+                  />
+                </n-space>
+              </n-checkbox-group>
+            </div>
+          </n-descriptions-item>
+
+          <!-- 涂硅脂, 涂三防漆, 换升压模块, 清灰, 贴铝片 -->
+
           <n-descriptions-item label="初测不良原因">
             <template v-if="!isEdit">{{ form.defect_reason }}</template>
             <n-input v-else v-model:value="form.defect_reason" />
@@ -134,6 +152,7 @@
             <template v-if="!isEdit">{{ form.verify_defect }}</template>
             <n-input v-else v-model:value="form.verify_defect" />
           </n-descriptions-item>
+          
   
           <n-descriptions-item label="维修部位图片">
             <template v-if="!isEdit">
@@ -263,22 +282,33 @@
     repair_result: 0,
     repairer_name: "",
     power_sn: "",
-    motherboard_sn: ""
+    motherboard_sn: "",
+    extra_operations: ""
+    
   })
 
   // 维修部件选项与编辑态状态
   const componentOptions = ['板1', '板2', '板3', '电源', '控制板', '其他']
   const selectedComponents = ref<string[]>([])
   const otherComponent = ref('')
+
+  const componentExtraOperations = ['涂硅脂', '涂三防漆', '换升压模块', '清灰', '贴铝片']
+  const selectedExtraOperations = ref<string[]>([])
+
+  //  
+  
   
   
   function save() {
-    console.log("保存数据", form.value)
+    // console.log("保存数据", form.value)
     // 合成维修部件字符串
     const finalComponents = selectedComponents.value.filter(s => s !== '其他')
     if (selectedComponents.value.includes('其他') && otherComponent.value.trim()) {
       finalComponents.push(otherComponent.value.trim())
     }
+    // 合成额外操作字符串
+    form.value.extra_operations = selectedExtraOperations.value.join(',')
+
     form.value.repair_component = finalComponents.join(',')
     form.value.date = dayjs(form.value.date).format('YYYY-MM-DD')
     form.value.start_time = String(form.value.start_time)
@@ -331,7 +361,8 @@
           repair_result: detail.RepairResult ?? 1,
           repairer_name: detail.RepairerName || '',
           power_sn: detail.PowerSN || '',
-          motherboard_sn: detail.BoardSN || ''
+          motherboard_sn: detail.BoardSN || '',
+          extra_operations: detail.extra_operations || ''
         };
         // 初始化组件选择
         const parts = (form.value.repair_component || '').split(',').map(s => s.trim()).filter(Boolean)
@@ -344,6 +375,13 @@
         } else {
           otherComponent.value = ''
         }
+        // 初始化额外操作选择
+        form.value.extra_operations.split(',').forEach(opt => {
+          if (componentExtraOperations.includes(opt)) {
+            selectedExtraOperations.value.push(opt)
+          }
+        })
+        
       }
     } catch (error) {
       console.error('获取详情数据失败:', error);
