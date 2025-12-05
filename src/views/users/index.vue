@@ -243,29 +243,60 @@ const handleSave = async () => {
 };
 
 // ---------------- 表格列 ----------------
+const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<User> = [
-  { title: '昵称', key: 'username', width: 200 },
-  { title: '真实姓名', key: 'real_name', width: 200 },
-  { title: '角色类型', key: 'role', render: (row: any ) => {
-    const label = roleRecord[row.role] || '未知';
-    return h(NTag, {type: roleTagMap[row.role] }, () => label)
-  }},
-  { title: '联系电话', key: 'contact_phone'},   
-  { title: '邮箱', key: 'email'},
-  { title: '所属公司', key: 'company_info',render: (row: any ) => {
-    return row.company_info?.[0]?.name || '未知';
-  } },
-  { title: '入职时间', key: 'start_date' },
-  { title: '状态', key: 'status', 
-    render: (row: any ) => {
-      const label = userStatusRecord[row.status] || '未知';
-      return h(NTag, {type: userStatusMap[row.status] }, () => label)
+  {
+    title: () => renderHeaderTitle('昵称'),
+    key: 'username',
+    width: 200,
+    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.username || '')
+  },
+  {
+    title: () => renderHeaderTitle('真实姓名'),
+    key: 'real_name',
+    width: 200,
+    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.real_name || '')
+  },
+  {
+    title: () => renderHeaderTitle('角色类型'),
+    key: 'role',
+    render: (row: any) => {
+      const label = roleRecord[row.role] || '未知';
+      return h(NTag, { class: 'text-sm', size:'small', type: roleTagMap[row.role] }, () => label)
     }
   },
   {
-    title: '操作',
+    title: () => renderHeaderTitle('联系电话'),
+    key: 'contact_phone',
+    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.contact_phone || '')
+  },
+  {
+    title: () => renderHeaderTitle('邮箱'),
+    key: 'email',
+    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.email || '')
+  },
+  {
+    title: () => renderHeaderTitle('所属公司'),
+    key: 'company_info',
+    render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.company_info?.[0]?.name || '未知')
+  },
+  {
+    title: () => renderHeaderTitle('入职时间'),
+    key: 'start_date',
+    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.start_date || '')
+  },
+  {
+    title: () => renderHeaderTitle('状态'),
+    key: 'status',
+    render: (row: any) => {
+      const label = userStatusRecord[row.status] || '未知';
+      return h(NTag, { class: 'text-sm', size:'small', type: userStatusMap[row.status] }, () => label)
+    }
+  },
+  {
+    title: () => renderHeaderTitle('操作'),
     key: 'actions',
-    align:'center',
+    align: 'center',
     render: (row: User) => {
       return isAdmin
         ? h(
@@ -273,6 +304,8 @@ const columns: DataTableColumns<User> = [
             {
               type: 'info',
               ghost: true,
+              class: 'text-sm',
+              size:'small',
               onClick: () => handleOpenEdit(row)
             },
             { default: () => '编辑' }

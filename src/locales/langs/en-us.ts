@@ -177,7 +177,7 @@ const local: App.I18n.Schema = {
     workflowdetail:"Work Flow Detail",
     sitedetail:"Site Detail",
    'user-center': 'User Center',
-    
+    scrapmachine:"Scrap Machines",
   },
   page: {
     login: {

@@ -172,9 +172,10 @@ const fetchUsers = async () => {
   }
 }
 // ---------------- 表格列 ----------------
+const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<Site> = [
   {
-    title: '场地名称',
+    title: () => renderHeaderTitle('场地名称'),
     key: 'name',
     width: 200,
     render: (row: Site) => {
@@ -201,7 +202,7 @@ const columns: DataTableColumns<Site> = [
                   router.push(`/miningsite/${row.id}/info`);
                 }
               },
-              content
+              h('span', { class: 'text-sm' }, content)
             )
         }
       );
@@ -213,7 +214,7 @@ const columns: DataTableColumns<Site> = [
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:100px;' },
         [
-          '资产数',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '资产数'),
           h(
             NTooltip,
             { placement: 'top' },
@@ -232,14 +233,14 @@ const columns: DataTableColumns<Site> = [
         ]
       ), width: 120,
     key: 'asset_count',
-    render: (row: Site) => row.asset_count.toLocaleString() || 0
+    render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.asset_count.toLocaleString() || 0)
   },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:100px;' },
         [
-          '24H故障数',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '24H故障数'),
           h(
             NTooltip,
             { placement: 'top' },
@@ -256,13 +257,13 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ),width: 120, key: 'fault_count',render: (row: Site) => row.fault_count},
+      ),width: 120, key: 'fault_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.fault_count)},
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
         [
-          '物流中',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '物流中'),
           h(
             NTooltip,
             { placement: 'top' },
@@ -279,13 +280,13 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'in_logistics_count',render: (row: Site) => row.in_logistics_count.toLocaleString() || 0 },
+      ), width: 120, key: 'in_logistics_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.in_logistics_count.toLocaleString() || 0) },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
         [
-          '待上架',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '待上架'),
           h(
             NTooltip,
             { placement: 'top' },
@@ -302,14 +303,14 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
+      ), width: 120, key: 'wait_on_shelf_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.wait_on_shelf_count.toLocaleString() || 0) },
   // { title: '待上架', width: 120, key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
         [
-          '在修数',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '在修数'),
           h(
             NTooltip,
             { placement: 'top' },
@@ -326,14 +327,14 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
+      ), width: 120, key: 'repairing',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.repairing.toLocaleString() || 0) },
   // { title: '在修数', width: 120, key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
         [
-          '在架待修数',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '在架待修数'),
           h(
             NTooltip,
             { placement: 'top' },
@@ -350,13 +351,13 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'on_shelf_wait_repair_count',render: (row: Site) => row.on_shelf_wait_repair_count.toLocaleString() || 0 },
+      ), width: 120, key: 'on_shelf_wait_repair_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.on_shelf_wait_repair_count.toLocaleString() || 0) },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:180px;' },
         [
-          '待修数',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '待修数'),
           h(
             NTooltip,
             { placement: 'top' },
@@ -373,13 +374,13 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'wait_repair_count', render: (row: Site) => h('span', (row.wait_repair_count)?.toLocaleString?.() || '0') },
+      ), width: 120, key: 'wait_repair_count', render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.wait_repair_count)?.toLocaleString?.() || '0') },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:4px;width:120px;' },
         [
-          '待修率',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '待修率'),
           // h(
           //   NTooltip,
           //   { placement: 'top' },
@@ -396,14 +397,14 @@ const columns: DataTableColumns<Site> = [
           //   }
           // )
         ]
-      ), width: 120, key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 故障机器数占比' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
+      ), width: 120, key: 'wait_repair_rate', render: (row: Site) => h('span', { class: 'text-sm text-gray-500', title: '未下架+已下架+待处理 故障机器数占比' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
   // { title: '待修率', width: 120, key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
         [
-          '净故障数',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '净故障数'),
           h(
             NTooltip,
             { placement: 'top' },
@@ -420,13 +421,13 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'fault_count',render: (row: Site) => row.in_logistics_count+row.wait_repair_count+row.repairing },
+      ), width: 120, key: 'fault_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.in_logistics_count+row.wait_repair_count+row.repairing).toLocaleString?.() || String(row.in_logistics_count+row.wait_repair_count+row.repairing)) },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
         [
-          '预报废数',
+          h('span', { class: 'text-xs font-medium text-gray-500' }, '预报废数'),
           h(
             NTooltip,
             { placement: 'top' },
@@ -443,20 +444,20 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
+      ), width: 120, key: 'scrapped_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.scrapped_count.toLocaleString() || 0) },
   // { title: '预报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
-  { title: '维修状态', width: 120, key: 'site_status',render: (row: any ) => {
+  { title: () => renderHeaderTitle('维修状态'), width: 120, key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',
       1: 'success',
       2: 'primary',
       3: 'warning',
     };
-    return h(NTag, {type: tagMap[row.site_status] }, () => siteStatusRecord[row.site_status])
+    return h(NTag, { class: 'text-sm', type: tagMap[row.site_status] }, () => siteStatusRecord[row.site_status])
   } },
-   ...(hasRole ? [{ title: '售后专员',width: 120, key: 'saler_name' }] : []),
+   ...(hasRole ? [{ title: () => renderHeaderTitle('售后专员'), width: 120, key: 'saler_name', render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.saler_name || '') }] : []),
   {
-    title: '操作',
+    title: () => renderHeaderTitle('操作'),
     key: 'actions',
     width: 180,
     align:'center',

@@ -143,6 +143,18 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'scrapmachine',
+    path: '/scrapmachine',
+    component: 'layout.base$view.scrapmachine',
+    meta: {
+      title: 'scrapmachine',
+      i18nKey: 'route.scrapmachine',
+      icon: 'mdi:trash-can-outline',
+      order: 55,
+      roles: ['1', '2']
+    }
+  },
+  {
     name: 'sitedetail',
     path: '/miningsite/:id/info',
     component: 'layout.base$view.sitedetail',

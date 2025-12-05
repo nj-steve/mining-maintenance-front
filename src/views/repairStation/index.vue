@@ -64,8 +64,6 @@ const statusOptions = [
   { label: '下架', value: 4 }
 ];
 
-
-
 // 打开修改弹框
 const handleOpenEdit = (row: CompanyInfo) => {
   currentEditData.value = JSON.parse(JSON.stringify(row)); // 深拷贝
@@ -88,40 +86,52 @@ const handleAddSuccess = () => {
 };
 
 // ---------------- 表格列 ----------------
+const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<CompanyInfo> = [
-  { title: '公司名称', key: 'Name', width: 200 },
-  { title: '法人代表', key: 'LegalRepresentative' },
-  { title: '白名单认证', key: 'KYCStatus',
-    render: (row: CompanyInfo) => {
-      return h(NTag, {
-        type: row.KYCStatus === 1 ? 'success' : 'warning'
-      }, {
-        default: () => row.KYCStatus === 1 ? '已认证' : '未认证'
-      });
-    }
-  },
-  { title: '详细地址', key: 'Address'},
-  { title: '联系人', key: 'ContactName' },
-  { title: '联系电话', key: 'ContactPhone', 
-  // render: (row: Miner) => row.Status?.name ,
-  // render: (row: any ) => {
-  //   if (row.Status?.name === null || row.Status?.name === undefined) {
-  //     return null;
-  //   }
-  //   const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-  //     '在架': 'success',
-  //     '维修': 'warning',
-  //     '报废': 'error',
-  //     '下架':'info',
-  //   };
-
-  //   const label = row.Status?.name || '未知';
-  //   // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-  //   return h(NTag, {type: tagMap[row.Status?.name] }, () => label)
-  // }
+  {
+    title: () => renderHeaderTitle('公司名称'),
+    key: 'Name',
+    width: 200,
+    render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.Name || '')
   },
   {
-    title: '操作',
+    title: () => renderHeaderTitle('法人代表'),
+    key: 'LegalRepresentative',
+    render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.LegalRepresentative || '')
+  },
+  {
+    title: () => renderHeaderTitle('白名单认证'),
+    key: 'KYCStatus',
+    render: (row: CompanyInfo) => {
+      return h(
+        NTag,
+        {
+          class: 'text-sm',
+          type: row.KYCStatus === 1 ? 'success' : 'warning'
+        },
+        {
+          default: () => (row.KYCStatus === 1 ? '已认证' : '未认证')
+        }
+      );
+    }
+  },
+  {
+    title: () => renderHeaderTitle('详细地址'),
+    key: 'Address',
+    render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.Address || '')
+  },
+  {
+    title: () => renderHeaderTitle('联系人'),
+    key: 'ContactName',
+    render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.ContactName || '')
+  },
+  {
+    title: () => renderHeaderTitle('联系电话'),
+    key: 'ContactPhone',
+    render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.ContactPhone || '')
+  },
+  {
+    title: () => renderHeaderTitle('操作'),
     key: 'actions',
     align:'center',
     render: (row: CompanyInfo) => {
@@ -136,16 +146,6 @@ const columns: DataTableColumns<CompanyInfo> = [
           },
           { default: () => '修改' }
         ),
-        //  h(
-        //   NButton,
-        //   {
-        //     type: 'info',
-        //     ghost: true,
-        //     style: "margin-right: 8px;",
-        //     onClick: () => handleOpenEdit(row)
-        //   },
-        //   { default: () => '查看' }
-        // ),
         h(
           NButton,
           {

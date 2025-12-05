@@ -317,13 +317,14 @@ const handleSaveEdit = async () => {
 };
 
 // ---------------- 表格列 ----------------
+const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<Order> = [
   {
     type: 'selection',
     width: 50
   },
   { 
-    title: '工单编号', 
+    title: () => renderHeaderTitle('工单编号'), 
     key: 'OrderNo', 
     width: 250,
     render: (row: Order) => {
@@ -352,6 +353,7 @@ const columns: DataTableColumns<Order> = [
               h(
                 'span',
                 {
+                  class: 'text-sm text-gray-500',
                   style: 'flex:1; min-width:0; cursor: pointer;',
                   onClick: () => router.push({ name: 'workflowdetail', params: { id: row.ID } })
                 },
@@ -370,7 +372,7 @@ const columns: DataTableColumns<Order> = [
     }
   },
   { 
-    title: '维修商', 
+    title: () => renderHeaderTitle('维修商'), 
     key: 'StationName', 
     width: 120,
     render: (row: any) => {
@@ -379,15 +381,15 @@ const columns: DataTableColumns<Order> = [
         NTooltip,
         null,
         {
-          trigger: () => h('div', { style: 'max-width:120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
+          trigger: () => h('div', { class: 'text-sm text-gray-500', style: 'max-width:120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
           default: () => text
         }
       );
     }
   },
-  { title: '场地', key: 'SiteName' },
-  { title: '售后专员', key: 'SalerName' },
-  { title: '故障机数量', key: 'FaultCount', width: 200, render: (row: any ) => {
+  { title: () => renderHeaderTitle('场地'), key: 'SiteName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SiteName || '') },
+  { title: () => renderHeaderTitle('售后专员'), key: 'SalerName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SalerName || '') },
+  { title: () => renderHeaderTitle('故障机数量'), key: 'FaultCount', width: 200, render: (row: any ) => {
     const total = Number(row.FaultCount ?? 0)
     const repaired = Number(row.RepairedCount ?? 0)
     const safeTotal = total > 0 ? total : 0
@@ -403,11 +405,11 @@ const columns: DataTableColumns<Order> = [
           indicatorPlacement: 'inside',
           status: percent >= 100 ? 'success' : undefined
         }),
-        h('span', { style: 'white-space: nowrap; font-size: 12px; color: #666;' }, `${safeRepaired}/${safeTotal} (${percent}%)`)
+        h('span', { class: 'text-sm text-gray-500', style: 'white-space: nowrap;' }, `${safeRepaired}/${safeTotal} (${percent}%)`)
       ]
     )
   }},
-  { title: '维修方式', key: 'RepairMethod',
+  { title: () => renderHeaderTitle('维修方式'), key: 'RepairMethod',
     render: (row: any ) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         1: 'success',
@@ -415,10 +417,10 @@ const columns: DataTableColumns<Order> = [
         3: 'primary',
       };
       // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, {type: tagMap[row.RepairMethod || '无'],size:'small', round:true }, () => repairMethodRecord[row.RepairMethod || '未知'] || '未知')
+      return h(NTag, { class: 'text-sm', type: tagMap[row.RepairMethod || '无'],size:'small', round:true }, () => repairMethodRecord[row.RepairMethod || '未知'] || '未知')
     }
   },
-  { title: '工单状态', key: 'OrderStatusText',
+  { title: () => renderHeaderTitle('工单状态'), key: 'OrderStatusText',
       render: (row: any) => {
         const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         '已完成': 'success',
@@ -428,15 +430,15 @@ const columns: DataTableColumns<Order> = [
         '处理中':'primary',
         };
         const label = row.OrderStatusText || '未知';
-        return h(NTag, {type: tagMap[row.OrderStatusText || '未知'],size:'small', round:true }, () => label)
+        return h(NTag, { class: 'text-sm', type: tagMap[row.OrderStatusText || '未知'],size:'small', round:true }, () => label)
       }
   },
-   { title: '创建时间', key: 'CreatedAt',
+   { title: () => renderHeaderTitle('创建时间'), key: 'CreatedAt',
       render: (row: any) => {
         if (!row.CreatedAt) {
           return '-';
         }
-        return dayjs(row.CreatedAt).format('YYYY-MM-DD');
+        return h('span', { class: 'text-sm text-gray-500' }, dayjs(row.CreatedAt).format('YYYY-MM-DD'));
       }
   },
 
@@ -449,7 +451,7 @@ const columns: DataTableColumns<Order> = [
   //   }
   //  },
   ...(hasRole ? [
-    { title: '付款状态', key: 'SettlementStatus', 
+    { title: () => renderHeaderTitle('付款状态'), key: 'SettlementStatus', 
       render: (row: any ) => {
         if (row.SettlementStatusText === null || row.SettlementStatusText === undefined) {
           return null;
@@ -463,30 +465,30 @@ const columns: DataTableColumns<Order> = [
 
         const label = row.SettlementStatusText || '未知';
         // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-        return h(NTag, {type: tagMap[row.SettlementStatusText || '未知'],size:'small', round:true }, () => label)
+        return h(NTag, { class: 'text-sm', type: tagMap[row.SettlementStatusText || '未知'],size:'small', round:true }, () => label)
       }
     },
-    { title: '付款日期', key: 'PaymentDate',
+    { title: () => renderHeaderTitle('付款日期'), key: 'PaymentDate',
       render: (row: Order) => {
         if (!row.PaymentDate) {
           return '-';
         }
-        return dayjs(row.PaymentDate).format('YYYY-MM-DD');
+        return h('span', { class: 'text-sm text-gray-500' }, dayjs(row.PaymentDate).format('YYYY-MM-DD'));
       }
     },
-      { title: '创建日期', key: 'CreateDate',
+      { title: () => renderHeaderTitle('创建日期'), key: 'CreateDate',
       render: (row: Order) => {
         if (!row.CreatedAt) {
           return '-';
         }
-        return dayjs(row.CreatedAt).format('YYYY-MM-DD');
+        return h('span', { class: 'text-sm text-gray-500' }, dayjs(row.CreatedAt).format('YYYY-MM-DD'));
       }
     },
   ] : []),
  
   // { title: '短保期开始', key: 'warranty_status_text' },
   // { title: '剩余短保期', key: 'warranty_status_text' },
-  { title: '操作',
+  { title: () => renderHeaderTitle('操作'),
     key: 'actions',
     render: (row: Order) => {
       return h(ActionButtons, {

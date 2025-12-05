@@ -28,6 +28,7 @@ declare module "@elegant-router/types" {
     "repairrecords": "/repairrecords";
     "repairrecordsdetail": "/repairrecords/:id/detail";
     "repairstation": "/repairstation";
+    "scrapmachine": "/scrapmachine";
     "sitedetail": "/miningsite/:id/info";
     "user-center": "/user-center";
     "users": "/users";
@@ -75,6 +76,7 @@ declare module "@elegant-router/types" {
     | "repairrecords"
     | "repairrecordsdetail"
     | "repairstation"
+    | "scrapmachine"
     | "sitedetail"
     | "user-center"
     | "users"
@@ -107,6 +109,7 @@ declare module "@elegant-router/types" {
     | "repairrecords"
     | "repairrecordsdetail"
     | "repairstation"
+    | "scrapmachine"
     | "sitedetail"
     | "user-center"
     | "users"

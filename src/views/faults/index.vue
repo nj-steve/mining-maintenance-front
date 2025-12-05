@@ -35,6 +35,7 @@ const isAdmin=authStore.userInfo.roles.includes('1')
 interface Faults {
   id: number;
   sn: string;
+  date: string;
   serial_number: string;
   serial_number_source: string;
   Faults_type_id:number;
@@ -47,12 +48,14 @@ interface Faults {
   repair_method_text?: string;
   warranty_status?: number;
   warranty_status_text?: string;
+  description?: string;
   site_name?: string;
   site_id?:number;
   model?: string;
   order_id?: number;
   created_time?: string;
   on_shelf_time?: string;
+  repair_count?: number;
   FaultsType?: {
     name?: string;
     hash_rate?: number;
@@ -230,6 +233,7 @@ const fetchSiteData = async () => {
 };
 
 // ---------------- 表格列 ----------------
+const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<Faults> = [
   { 
     type: 'selection',
@@ -237,7 +241,7 @@ const columns: DataTableColumns<Faults> = [
     width: 60
   },
   // { title: '序号', key: 'id', width: 80 },
-  { title: 'SN码', key: 'sn', width: 180, 
+  { title: () => renderHeaderTitle('SN码'), key: 'sn', width: 180, 
     render: (row: Faults) => {
       const sn = row.sn || '未知';
       const onCopy = async () => {
@@ -250,14 +254,14 @@ const columns: DataTableColumns<Faults> = [
       };
       return h(NTooltip, null, {
         trigger: () => h('div', { style: 'display:flex; align-items:center; gap:8px; max-width:180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, [
-          h('span', { style: 'flex:1; min-width:0;' }, sn),
+          h('span', { class: 'text-sm text-gray-500', style: 'flex:1; min-width:0;' }, sn),
           // h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy }, { default: () => '复制' })
         ]),
         default: () => sn
       });
     }
   },
-  { title: '场地', key: 'site_name', width: 150,
+  { title: () => renderHeaderTitle('场地'), key: 'site_name', width: 150,
     render: (row: Faults) => {
        const siteName = row.site_name || '未知';
        const siteId = row.site_id || 0;
@@ -280,7 +284,7 @@ const columns: DataTableColumns<Faults> = [
                        router.push(`/miningsite/${siteId}/info`);
                      }
                    },
-                   { default: () => h('span', { style: 'display:inline-block; max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, siteName) }
+                   { default: () => h('span', { class: 'text-sm text-gray-500', style: 'display:inline-block; max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, siteName) }
                  )
                ]
              ),
@@ -293,15 +297,15 @@ const columns: DataTableColumns<Faults> = [
          NTooltip,
          null,
          {
-           trigger: () => h('div', { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, siteName),
+           trigger: () => h('div', { class: 'text-sm text-gray-500', style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, siteName),
            default: () => siteName
          }
        );
      }
   },
-  { title: '型号', key: 'model', width: 120},
+  { title: () => renderHeaderTitle('型号'), key: 'model', width: 120, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.model || '未知') },
   { 
-    title: '工单编号', 
+    title: () => renderHeaderTitle('工单编号'), 
     key: 'order_no', 
     width: 170,
      render: (row: Faults) => {
@@ -331,7 +335,7 @@ const columns: DataTableColumns<Faults> = [
               h(
                 'span',
                 {
-                  style: 'flex:1; min-width:0; cursor: pointer;',
+                  class: 'text-sm text-gray-500', style: 'flex:1; min-width:0; cursor: pointer;',
                   onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
                 },
                 truncated
@@ -359,7 +363,7 @@ const columns: DataTableColumns<Faults> = [
               h(
                 'span',
                 {
-                  style: 'flex:1; min-width:0; cursor: pointer;',
+                  class: 'text-sm text-gray-500', style: 'flex:1; min-width:0; cursor: pointer;',
                   // onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
                 },
                 truncated
@@ -393,7 +397,7 @@ const columns: DataTableColumns<Faults> = [
     //   : text;
     // }
   },
-  { title: '维修方式', key: 'repair_method_text', width: 100,
+  { title: () => renderHeaderTitle('维修方式'), key: 'repair_method_text', width: 100,
      render: (row: any ) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         1: 'success',
@@ -401,10 +405,10 @@ const columns: DataTableColumns<Faults> = [
         3: 'primary',
       };
       // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, {type: tagMap[row.repair_method || '无'],size:'small', round:true }, () => repairMethodRecord[row.repair_method || '未知'] || '未知')
+      return h(NTag, { class: 'text-sm', type: tagMap[row.repair_method || '无'],size:'small', round:true }, () => repairMethodRecord[row.repair_method || '未知'] || '未知')
     }
   },
-  { title: '流转状态', key: 'status_text', width: 100,
+  { title: () => renderHeaderTitle('流转状态'), key: 'status_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         '已上架': 'success',
@@ -421,10 +425,10 @@ const columns: DataTableColumns<Faults> = [
         // '新下架':'warning',
       };
       const label = row.status_text || '未知';
-      return h(NTag, {type: tagMap[row.status_text || '未知'],size:'small', round:true }, () => label)
+      return h(NTag, { class: 'text-sm', type: tagMap[row.status_text || '未知'],size:'small', round:true }, () => label)
     }
   },
-  { title: '维修状态', key: 'repair_result_text', width: 100,
+  { title: () => renderHeaderTitle('维修状态'), key: 'repair_result_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         '已修复': 'success',
@@ -433,23 +437,23 @@ const columns: DataTableColumns<Faults> = [
         '待修复': 'warning',
       };
       const label = row.repair_result_text || '未知';
-      return h(NTag, {type: tagMap[row.repair_result_text || '未知'],size:'small', round:true }, () => label)
+      return h(NTag, { class: 'text-sm', type: tagMap[row.repair_result_text || '未知'],size:'small', round:true }, () => label)
     }
   },
-  { title: '维修次数', key: 'repair_count', width: 100 },
-  { title: '短保', key: 'warranty_status', width: 100,
+  { title: () => renderHeaderTitle('维修次数'), key: 'repair_count', width: 100, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, String(row.repair_count ?? '0')) },
+  { title: () => renderHeaderTitle('短保'), key: 'warranty_status', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         '短保中': 'success',
         '已过保': 'error',
       };
       const label = row.warranty_status_text || '无';
-      return h(NTag, {type: tagMap[row.warranty_status_text || '无'],size:'small', round:true}, () => label)
+      return h(NTag, { class: 'text-sm', type: tagMap[row.warranty_status_text || '无'],size:'small', round:true}, () => label)
     }
   },
-  { title: '问题描述', key: 'description', width: 200},
-  { title: '下架日期', key: 'date', width: 120 },
-  { title: '导入时间', key: 'created_time', width: 160,
+  { title: () => renderHeaderTitle('问题描述'), key: 'description', width: 200, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.description || '-') },
+  { title: () => renderHeaderTitle('下架日期'), key: 'date', width: 120, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.date || '-') },
+  { title: () => renderHeaderTitle('导入时间'), key: 'created_time', width: 160,
     render: (row: Faults) => {
       const s = row.created_time;
       if (!s) return '';
@@ -461,10 +465,10 @@ const columns: DataTableColumns<Faults> = [
       const hh = String(d.getHours()).padStart(2, '0');
       const mm = String(d.getMinutes()).padStart(2, '0');
       const ss = String(d.getSeconds()).padStart(2, '0');
-      return `${y}-${m}-${da} ${hh}:${mm}:${ss}`;
+      return h('span', { class: 'text-sm text-gray-500' }, `${y}-${m}-${da} ${hh}:${mm}:${ss}`)
     }
    },
-  { title: '上架/入库时间', key: 'on_shelf_time', width: 160,
+  { title: () => renderHeaderTitle('上架/入库时间'), key: 'on_shelf_time', width: 160,
     render: (row: Faults) => {
       const s = row.on_shelf_time;
       if (!s) return '';
@@ -476,11 +480,11 @@ const columns: DataTableColumns<Faults> = [
       const hh = String(d.getHours()).padStart(2, '0');
       const mm = String(d.getMinutes()).padStart(2, '0');
       const ss = String(d.getSeconds()).padStart(2, '0');
-      return `${y}-${m}-${da} ${hh}:${mm}:${ss}`;
+      return h('span', { class: 'text-sm text-gray-500' }, `${y}-${m}-${da} ${hh}:${mm}:${ss}`)
     }
    },
   {
-    title: '操作',
+    title: () => renderHeaderTitle('操作'),
     key: 'actions',
     align:'center',
     width: 120,

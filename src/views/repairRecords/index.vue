@@ -83,9 +83,63 @@ function goDetail(id: number | string) {
 //   11: '报废'
 // }
 
+// 日期时间格式化
+const formatDateTime = (value: any) => {
+  if (!value) return '-';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return String(value);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
+
+const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
+
 const columns: DataTableColumns<any> = [
-  { title: '日期', key: 'Date', width: 120 },
-  { title: '工单号', key: 'WorkOrderNo', width: 180,   render: (row: Faults) => {
+   { title: () => renderHeaderTitle('整机SN码'), key: 'DeviceSN', 
+   width: 150, render: (row) => {
+      const full = (row as any).DeviceSN || '';
+      const prefix = full.slice(0, 6);
+      const suffix = full.slice(-6);
+      const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
+      const onCopy = async () => {
+        try {
+          await navigator.clipboard.writeText(full);
+          message.success('SN 已复制');
+        } catch (e) {
+          message.error('复制失败');
+        }
+      };
+      return h(
+        NTooltip,
+        null,
+        {
+          trigger: () => h(
+            'div',
+            {
+              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+            },
+            [
+              h(
+                'span',
+                {
+                  class: 'text-sm text-gray-900',
+                  style: 'flex:1; min-width:0;'
+                },
+                truncated
+              ),
+              h(
+                NButton,
+                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
+                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 14, height: 14 }) }
+              )
+            ]
+          ),
+          default: () => full
+        }
+      );
+    } },
+
+  { title: () => renderHeaderTitle('工单号'), key: 'WorkOrderNo', width: 150,  render: (row: Faults) => {
       // const full = row.order_no || '';
       const full = (row as any).WorkOrderNo || '';
       const prefix = full.slice(0, 6);
@@ -112,6 +166,7 @@ const columns: DataTableColumns<any> = [
               h(
                 'span',
                 {
+                  class: 'text-sm text-gray-500',
                   style: 'flex:1; min-width:0; cursor: pointer;',
                   // onClick: () => router.push({ name: 'workflowdetail', params: { id: row.WorkOrderNo } })
                 },
@@ -120,7 +175,7 @@ const columns: DataTableColumns<any> = [
               h(
                 NButton,
                 { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
-                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
+                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 14, height: 14 }) }
               )
             ]
           ),
@@ -128,17 +183,17 @@ const columns: DataTableColumns<any> = [
         }
       ) ;
     }},
-  { title: '维修站点', key: 'RepairStationName', width: 180,
-    render: (row) => row.RepairStationName || '-' 
+  { title: () => renderHeaderTitle('维修站点'), key: 'RepairStationName', width: 180,
+    render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.RepairStationName || '-')
     // ⚠️ 如果需要显示名称，就在 fetchData 里转换
   },
-  { title: '机型', key: 'MachineModel', width: 200 },
-  { title: '整机SN码', key: 'DeviceSN', width: 200 },
-  { title: '损坏部件', key: 'RepairComponent', width: 120 },
+  { title: () => renderHeaderTitle('机型'), key: 'MachineModel', width: 200, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.MachineModel || '-') },
+ 
+  { title: () => renderHeaderTitle('损坏部件'), key: 'RepairComponent', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.RepairComponent || '-') },
   // { title: '额外操作', key: 'extra_operations', width: 120 },
-  { title: '初测不良原因', key: 'DefectReason', width: 160 },
-  { title: '查证缺陷', key: 'VerifyDefect', width: 160 },
-  { title: '维修状态', key: 'RepairResult',
+  { title: () => renderHeaderTitle('初测不良原因'), key: 'DefectReason', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.DefectReason || '-') },
+  { title: () => renderHeaderTitle('查证缺陷'), key: 'VerifyDefect', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.VerifyDefect || '-') },
+  { title: () => renderHeaderTitle('维修状态'), key: 'RepairResult',
     render: (row) => {
       const label = repairResultMap[row.RepairResult] || '未知'
        const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -148,11 +203,18 @@ const columns: DataTableColumns<any> = [
         '待修复': 'warning',
       };
       const type = tagMap[label] || 'default';
-      return h(NTag, { type, size: 'small',round:true }, () => label)
+      return h(NTag, { type,class:'text-sm', size: 'small',round:true }, () => label)
     }
   },
+    { 
+    title: () => renderHeaderTitle('日期'), 
+    key: 'Date', 
+    width: 160,
+    align: 'center',
+    render: (row: any) => h('span', { class: 'cell-date text-sm text-gray-500' }, formatDateTime(row?.Date))
+  },
   {
-    title: '操作',
+    title: () => renderHeaderTitle('操作'),
     key: 'actions',
     align: 'center',
     fixed: 'right',
@@ -170,6 +232,7 @@ const columns: DataTableColumns<any> = [
             size: 'small', 
             ghost: true, 
             style: 'margin-right: 8px;',
+            class:'text-sm',
             onClick: () => goDetail(rowId) 
           },
           { default: () => '详情' }
@@ -423,6 +486,10 @@ const handleFail = () => {
 </template>
 
 <style scoped>
+.cell-date {
+  font-family: monospace;
+  color: #333;
+}
 .floating-export {
   position: fixed;
   right: 24px;

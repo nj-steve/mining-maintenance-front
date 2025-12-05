@@ -294,10 +294,6 @@
 
   const componentExtraOperations = ['涂硅脂', '涂三防漆', '换升压模块', '清灰', '贴铝片']
   const selectedExtraOperations = ref<string[]>([])
-
-  //  
-  
-  
   
   function save() {
     // console.log("保存数据", form.value)
