@@ -373,7 +373,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), key: 'wait_repair_count', render: (row: Site) => h('span', (row.wait_repair_count+row.on_shelf_wait_repair_count)?.toLocaleString?.() || '0') },
+      ), width: 120, key: 'wait_repair_count', render: (row: Site) => h('span', (row.wait_repair_count)?.toLocaleString?.() || '0') },
   { title: () =>
       h(
         'div',
@@ -420,7 +420,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'fault_count',render: (row: Site) => row.in_logistics_count+row.wait_repair_count+row.repairing+row.on_shelf_wait_repair_count },
+      ), width: 120, key: 'fault_count',render: (row: Site) => row.in_logistics_count+row.wait_repair_count+row.repairing },
   { title: () =>
       h(
         'div',
