@@ -6,155 +6,24 @@
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">报废机管理</h1>
-        <p class="text-gray-600">查看和管理所有报废设备信息</p>
+        <!-- <p class="text-gray-600">查看和管理所有报废设备信息</p> -->
       </div>
       
       <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div class="flex items-center">
-            <div class="rounded-lg bg-red-100 p-3 mr-4">
-              <div class="text-red-600 text-xl">
-                <i class="fas fa-trash-alt"></i>
-              </div>
-            </div>
-            <div>
-              <p class="text-gray-500 text-sm">总报废数</p>
-              <p class="text-2xl font-bold text-gray-900">142</p>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div class="flex items-center">
-            <div class="rounded-lg bg-yellow-100 p-3 mr-4">
-              <div class="text-yellow-600 text-xl">
-                <i class="fas fa-clock"></i>
-              </div>
-            </div>
-            <div>
-              <p class="text-gray-500 text-sm">待处理</p>
-              <p class="text-2xl font-bold text-gray-900">24</p>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div class="flex items-center">
-            <div class="rounded-lg bg-blue-100 p-3 mr-4">
-              <div class="text-blue-600 text-xl">
-                <i class="fas fa-check-circle"></i>
-              </div>
-            </div>
-            <div>
-              <p class="text-gray-500 text-sm">已审批</p>
-              <p class="text-2xl font-bold text-gray-900">87</p>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div class="flex items-center">
-            <div class="rounded-lg bg-green-100 p-3 mr-4">
-              <div class="text-green-600 text-xl">
-                <i class="fas fa-flag-checkered"></i>
-              </div>
-            </div>
-            <div>
-              <p class="text-gray-500 text-sm">待审核</p>
-              <p class="text-2xl font-bold text-gray-900">31</p>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <div class="flex items-center">
-            <div class="rounded-lg bg-purple-100 p-3 mr-4">
-              <div class="text-purple-600 text-xl">
-                <i class="fas fa-tools"></i>
-              </div>
-            </div>
-            <div>
-              <p class="text-gray-500 text-sm">已修复</p>
-              <p class="text-2xl font-bold text-gray-900">18</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ScrapSummaryCards />
       
       <!-- Filters and Actions -->
       <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div class="flex flex-col sm:flex-row gap-4">
-            <div class="relative">
-              <div class="relative w-64">
-                <input
-                  placeholder="搜索 SN 编号..."
-                  class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  v-model="searchText"
-                />
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-search text-gray-400"></i>
-                </div>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <div class="relative">
-                <button 
-                  class="!rounded-button whitespace-nowrap px-4 py-2 text-sm border border-gray-300 rounded-md flex items-center"
-                  @click="toggleSiteDropdown"
-                >
-                  <i class="fas fa-filter mr-2"></i>
-                  {{ selectedSite }}
-                </button>
-                <div 
-                  v-if="showSiteDropdown" 
-                  class="absolute z-10 mt-1 w-48 bg-white shadow-lg rounded-md py-1"
-                >
-                  <div 
-                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                    @click="selectSite('全部场地')"
-                  >
-                    全部场地
-                  </div>
-                  <div 
-                    v-for="site in uniqueSites" 
-                    :key="site"
-                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                    @click="selectSite(site)"
-                  >
-                    {{ site }}
-                  </div>
-                </div>
-              </div>
-              <div class="relative">
-                <button 
-                  class="!rounded-button whitespace-nowrap px-4 py-2 text-sm border border-gray-300 rounded-md flex items-center"
-                  @click="toggleStatusDropdown"
-                >
-                  <i class="fas fa-filter mr-2"></i>
-                  {{ selectedStatus }}
-                </button>
-                <div 
-                  v-if="showStatusDropdown" 
-                  class="absolute z-10 mt-1 w-48 bg-white shadow-lg rounded-md py-1"
-                >
-                  <div 
-                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                    @click="selectStatus('全部状态')"
-                  >
-                    全部状态
-                  </div>
-                  <div 
-                    v-for="status in uniqueStatuses" 
-                    :key="status"
-                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                    @click="selectStatus(status)"
-                  >
-                    {{ status }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ScrapSearchBar
+            v-model:sn="filters.sn"
+            v-model:siteId="filters.siteId"
+            v-model:status="filters.status"
+            :site-options="siteOptions"
+            @change="handleSearchChange"
+          />
           <div class="flex gap-2">
-            <button class="!rounded-button whitespace-nowrap px-4 py-2 text-sm border border-gray-300 rounded-md flex items-center">
+            <button @click="exportExcel" class="!rounded-button whitespace-nowrap px-4 py-2 text-sm border border-gray-300 rounded-md flex items-center">
               <i class="fas fa-download mr-2"></i>
               导出数据
             </button>
@@ -219,60 +88,60 @@
                   {{ item.id }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ item.site }}
+                  {{ item.site_name }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {{ item.model }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ item.serialNumber }}
+                  {{ item.sn }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
-                    <span class="mr-2">{{ item.controlBoardSN }}</span>
+                    <span class="mr-2">{{ item.control_sn }}</span>
                     <i 
                       :class="[
-                        item.controlBoardAvailable ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
+                        item.control_sn_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
                       ]"
                     ></i>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
-                    <span class="mr-2">{{ item.board1SN }}</span>
+                    <span class="mr-2">{{ item.board_sn1 }}</span>
                     <i 
                       :class="[
-                        item.board1Available ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
+                        item.board_sn1_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
                       ]"
                     ></i>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
-                    <span class="mr-2">{{ item.board2SN }}</span>
+                    <span class="mr-2">{{ item.board_sn2 }}</span>
                     <i 
                       :class="[
-                        item.board2Available ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
+                        item.board_sn2_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
                       ]"
                     ></i>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
-                    <span class="mr-2">{{ item.board3SN }}</span>
+                    <span class="mr-2">{{ item.board_sn3 }}</span>
                     <i 
                       :class="[
-                        item.board3Available ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
+                        item.board_sn3_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
                       ]"
                     ></i>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
-                    <span class="mr-2">{{ item.powerSupplySN }}</span>
+                    <span class="mr-2">{{ item.power_sn }}</span>
                     <i 
                       :class="[
-                        item.powerSupplyAvailable ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
+                        item.power_sn_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
                       ]"
                     ></i>
                   </div>
@@ -281,30 +150,30 @@
                   <span 
                     :class="[
                       'px-2 py-1 rounded-full text-xs',
-                      item.status === '待处理' ? 'text-yellow-600 bg-yellow-100' : 
-                      item.status === '已审批' ? 'text-blue-600 bg-blue-100' : 
+                      item.status === 1 ? 'text-yellow-600 bg-yellow-100' : 
+                      item.status === 2 ? 'text-blue-600 bg-blue-100' : 
                       'text-green-600 bg-green-100'
                     ]"
                   >
-                    {{ item.status === '已完成' ? '待审核' : item.status }}
+                    {{ statusLabel(item.status) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ item.scrapDate }}
+                  {{ item.scrap_time }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span class="font-medium text-gray-900">{{ item.scrapCount }} 次</span>
+                  <span class="font-medium text-gray-900">{{ item.scrap_count }} 次</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm sticky right-0 bg-white">
                   <div class="flex space-x-2">
                     <button
                       :class="[
                         'px-3 py-1 text-sm rounded whitespace-nowrap',
-                        item.status === '待审核' ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white'
+                        item.status === 3 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white'
                       ]"
-                      :disabled="item.status === '待审核'"
+                      :disabled="item.status === 3"
                     >
-                      {{ item.status === '待审核' ? (item.scrapCount > 1 ? '已修复' : '已确认') : '确认报废' }}
+                      {{ item.status === 3 ? (item.scrap_count > 1 ? '已修复' : '已确认') : '确认报废' }}
                     </button>
                     <button class="text-blue-600 hover:text-blue-900 text-sm px-2 py-1">
                       查看详情
@@ -340,9 +209,9 @@
           <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p class="text-sm text-gray-700">
-                显示第 <span class="font-medium">{{ (currentPage - 1) * pageSize + 1 }}</span> 至 <span class="font-medium">{{ Math.min(currentPage * pageSize, filteredData.length) }}</span> 条记录，共 <span class="font-medium">{{ filteredData.length }}</span> 条记录
+                显示第 <span class="font-medium">{{ (serverPagination.page - 1) * serverPagination.page_size + 1 }}</span> 至 <span class="font-medium">{{ Math.min(serverPagination.page * serverPagination.page_size, serverPagination.total) }}</span> 条记录，共 <span class="font-medium">{{ serverPagination.total }}</span> 条记录
               </p>
-            </div>
+              </div>
             <div>
               <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 <button
@@ -384,30 +253,34 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, reactive } from 'vue';
+import { fetchScrapLists, exportScrapDetail } from '@/service/api/repair'
+import ScrapSummaryCards from './components/ScrapSummaryCards.vue'
+import ScrapSearchBar from './components/ScrapSearchBar.vue'
 
-interface ScrapMachine {
-  id: string;
-  site: string;
-  model: string;
-  serialNumber: string;
-  controlBoardSN: string;
-  board1SN: string;
-  board2SN: string;
-  board3SN: string;
-  powerSupplySN: string;
-  status: string;
-  scrapDate: string;
-  scrapCount: number;
-  controlBoardAvailable: boolean;
-  board1Available: boolean;
-  board2Available: boolean;
-  board3Available: boolean;
-  powerSupplyAvailable: boolean;
+interface ScrapItemApi {
+  id: number
+  site_name: string
+  model: string
+  sn: string
+  control_sn: string
+  board_sn1: string
+  board_sn2: string
+  board_sn3: string
+  power_sn: string
+  status: number
+  scrap_time: string
+  scrap_count: number
+  control_sn_flag: number
+  board_sn1_flag: number
+  board_sn2_flag: number
+  board_sn3_flag: number
+  power_sn_flag: number
+  sn_flag: number
 }
 
 // Data refs
-const data = ref<ScrapMachine[]>([]);
+const filteredData = ref<ScrapItemApi[]>([]);
 const searchText = ref('');
 const selectedSite = ref('全部场地');
 const selectedModel = ref('全部机型');
@@ -416,6 +289,25 @@ const showSiteDropdown = ref(false);
 const showStatusDropdown = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
+const serverPagination = ref({ page: 1, page_size: 10, pages: 0, total: 0 })
+
+// 搜索筛选（sn、site_id、status）
+const filters = reactive<{ sn: string; siteId: number | null; status: number | null }>({
+  sn: '',
+  siteId: null,
+  status: null
+})
+
+// 场地下拉选项（由接口数据汇总）
+const siteOptions = computed(() => {
+  const map = new Map<number, string>()
+  filteredData.value.forEach((item: any) => {
+    const id = item?.site_id
+    const name = item?.site_name
+    if (id != null && !map.has(id)) map.set(id, name || String(id))
+  })
+  return Array.from(map.entries()).map(([value, label]) => ({ label, value }))
+})
 
 // Toggle dropdowns
 const toggleSiteDropdown = () => {
@@ -450,90 +342,48 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 };
 
+async function fetchData() {
+  const params: any = { page: currentPage.value, limit: pageSize.value }
+  if (filters.sn) params.sn = filters.sn
+  if (filters.siteId != null) params.site_id = filters.siteId
+  if (filters.status != null) params.status = filters.status
+  const { data, error } = await fetchScrapLists(params)
+  if (error == null && data) {
+    filteredData.value = Array.isArray(data.data) ? data.data : []
+    serverPagination.value = data.pagination || { page: 1, page_size: pageSize.value, pages: 0, total: 0 }
+    currentPage.value = serverPagination.value.page || currentPage.value
+    pageSize.value = serverPagination.value.page_size || pageSize.value
+  }
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  
-  // Generate mock data
-  const sites = ['上海工厂', '深圳生产基地', '北京研发中心', '广州装配线', '成都维修中心'];
-  const models = ['XJ-2000', 'YK-3500', 'ZL-5000', 'WM-1500', 'NP-800'];
-  const statuses = ['待处理', '已审批', '待审核'];
-  
-  const generateMockData = (): ScrapMachine[] => {
-    return Array.from({ length: 50 }, (_, index) => ({
-      id: `SCRAP-${String(index + 1).padStart(4, '0')}`,
-      site: sites[Math.floor(Math.random() * sites.length)],
-      model: models[Math.floor(Math.random() * models.length)],
-      serialNumber: `SN-${Math.floor(100000 + Math.random() * 900000)}`,
-      controlBoardSN: `CB-${Math.floor(100000 + Math.random() * 900000)}`,
-      board1SN: `B1-${Math.floor(100000 + Math.random() * 900000)}`,
-      board2SN: `B2-${Math.floor(100000 + Math.random() * 900000)}`,
-      board3SN: `B3-${Math.floor(100000 + Math.random() * 900000)}`,
-      powerSupplySN: `PS-${Math.floor(100000 + Math.random() * 900000)}`,
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      scrapDate: `${2023}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
-      scrapCount: Math.floor(Math.random() * 5) + 1,
-      controlBoardAvailable: Math.random() > 0.3,
-      board1Available: Math.random() > 0.3,
-      board2Available: Math.random() > 0.3,
-      board3Available: Math.random() > 0.3,
-      powerSupplyAvailable: Math.random() > 0.3,
-    }));
-  };
-  
-  data.value = generateMockData();
+  fetchData()
 });
 
-// Computed properties
-const filteredData = computed(() => {
-  let result = [...data.value];
-  
-  if (searchText.value) {
-    const searchLower = searchText.value.toLowerCase();
-    result = result.filter(item =>
-      item.serialNumber.toLowerCase().includes(searchLower) ||
-      item.controlBoardSN.toLowerCase().includes(searchLower) ||
-      item.board1SN.toLowerCase().includes(searchLower) ||
-      item.board2SN.toLowerCase().includes(searchLower) ||
-      item.board3SN.toLowerCase().includes(searchLower) ||
-      item.powerSupplySN.toLowerCase().includes(searchLower)
-    );
-  }
-  
-  if (selectedSite.value !== '全部场地') {
-    result = result.filter(item => item.site === selectedSite.value);
-  }
-  
-  if (selectedModel.value !== '全部机型') {
-    result = result.filter(item => item.model === selectedModel.value);
-  }
-  
-  if (selectedStatus.value !== '全部状态') {
-    result = result.filter(item => item.status === selectedStatus.value);
-  }
-  
-  return result;
-});
+// 使用后端分页数据，直接展示当前页数据
+const paginatedData = computed(() => filteredData.value);
 
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredData.value.slice(start, end);
-});
+const totalPages = computed(() => serverPagination.value.pages || 0);
 
-const totalPages = computed(() => {
-  return Math.ceil(filteredData.value.length / pageSize.value);
-});
+// 将后端状态数值映射为中文标签
+const statusLabel = (status: number) => {
+  if (status === 3) return '待审核';
+  if (status === 1) return '待处理';
+  if (status === 2) return '已审批';
+  return '未知';
+};
 
 const uniqueSites = computed(() => {
-  return Array.from(new Set(data.value.map(item => item.site)));
+  return Array.from(new Set(filteredData.value.map(item => item.site_name)));
 });
 
 const uniqueModels = computed(() => {
-  return Array.from(new Set(data.value.map(item => item.model)));
+  return Array.from(new Set(filteredData.value.map(item => item.model)));
 });
 
 const uniqueStatuses = computed(() => {
-  return Array.from(new Set(data.value.map(item => item.status)));
+  return Array.from(new Set(filteredData.value.map(item => item.status)));
 });
 
 // Pagination controls
@@ -559,29 +409,128 @@ const visiblePages = computed(() => {
   return pages;
 });
 
-const prevPage = () => {
+const prevPage = async () => {
   if (currentPage.value > 1) {
     currentPage.value--;
+    await fetchData()
   }
 };
 
-const nextPage = () => {
+const nextPage = async () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
+    await fetchData()
   }
 };
 
-const goToPage = (page: number) => {
+const goToPage = async (page: number) => {
   currentPage.value = page;
+  await fetchData()
 };
 
-// Watch for filter changes to reset to first page
-watch([searchText, selectedSite, selectedModel, selectedStatus], () => {
-  currentPage.value = 1;
-});
+function handleSearchChange() {
+  currentPage.value = 1
+  fetchData()
+}
+
+// Watch filters as fallback
+watch(() => [filters.sn, filters.siteId, filters.status], async () => {
+  currentPage.value = 1
+  await fetchData()
+})
+
+/**
+ * 导出当前筛选条件下的报废明细为 Excel（.xls 兼容格式）
+ * 通过调用后端 `exportScrapDetail` 接口获取数据并构造 Excel 兼容的 HTML 表格
+ */
+async function exportExcel() {
+  try {
+    const params: any = {}
+    if (filters.sn) params.sn = filters.sn
+    if (filters.siteId != null) params.site_id = filters.siteId
+    if (filters.status != null) params.status = filters.status
+
+    const { data, error } = await exportScrapDetail(params)
+    if (error != null) {
+      window.$message?.error(`导出失败: ${error}`)
+      return
+    }
+
+    const list: any[] = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : [])
+    if (!list.length) {
+      window.$message?.warning('当前筛选无可导出数据')
+      return
+    }
+
+    const headers = [
+      '报废编号',
+      '场地',
+      '机型',
+      '整机 SN',
+      '控制板 SN',
+      '板1 SN',
+      '板2 SN',
+      '板3 SN',
+      '电源 SN',
+      '状态',
+      '报废日期',
+      '报废次数'
+    ]
+
+    const th = headers.map(h => `<th style="mso-number-format:'\@';border:1px solid #ddd;padding:6px;background:#f5f5f5;">${h}</th>`).join('')
+    const rows = list.map((row: any) => {
+      const cells = [
+        row.id,
+        row.site_name,
+        row.model,
+        row.sn,
+        row.control_sn,
+        row.board_sn1,
+        row.board_sn2,
+        row.board_sn3,
+        row.power_sn,
+        statusLabel(Number(row.status)),
+        row.scrap_time,
+        row.scrap_count
+      ].map(v => `<td style="mso-number-format:'\@';border:1px solid #ddd;padding:6px;">${v ?? ''}</td>`)
+      return `<tr>${cells.join('')}</tr>`
+    }).join('')
+
+    const html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="UTF-8" />
+          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+          <x:Name>报废明细</x:Name>
+          <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+          </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+        </head>
+        <body>
+          <table border="1" cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:12px;">
+            <thead><tr>${th}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </body>
+      </html>
+    `
+
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    const date = new Date().toISOString().slice(0, 10)
+    link.href = url
+    link.download = `报废明细_导出_${date}.xls`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    window.$message?.success('导出成功，下载已开始')
+  } catch (err: any) {
+    window.$message?.error(`导出失败: ${err?.message || err}`)
+  }
+}
 </script>
 
 <style scoped>
 /* Custom styles if needed */
 </style>
-

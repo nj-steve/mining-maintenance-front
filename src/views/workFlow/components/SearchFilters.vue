@@ -1,15 +1,16 @@
 <template>
   <!-- <div class="mb-2"> -->
-  <NCard size="medium"  :bordered="false" class="faults-search-card">
+  <NCard size="medium"  :bordered="false" class="faults-search-card text-sm text-gray-500">
      <template #header>
       <!-- 工单编号 -->
-       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
+       <div class="text-sm text-gray-500" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
       <NInput 
         v-model:value="serialModel" 
         placeholder="工单号" 
         clearable 
-        size="medium"
-        style="width: 95%; font-size: 12px;"
+        size="small"
+        class="text-sm text-gray-500"
+        style="width: 95%;"
       />
       <!-- 场地筛选 -->
       <NSelect 
@@ -18,8 +19,9 @@
         placeholder="请选择场地" 
         clearable 
         filterable
-        size="medium"
-        style="width: 95%; font-size: 12px;"
+        size="small"
+        class="text-sm text-gray-500"
+        style="width: 95%;"
       />
       
       <!-- 维修站筛选 -->
@@ -30,28 +32,31 @@
         placeholder="请选择维修站" 
         clearable 
         filterable
-        size="medium"
-        style="width: 95%; font-size: 12px;"
+        size="small"
+        class="text-sm text-gray-500"
+        style="width: 95%;"
       />
         <NSelect 
         v-model:value="orderStatusModel" 
         :options="statusOptions" 
         placeholder="工单状态" 
-        size="medium"
+        size="small"
         clearable 
-        style="width: 90%; font-size: 12px;"
+        class="text-sm text-gray-500"
+        style="width: 90%;"
       />
       </div>
      </template>
-    <div v-show="!collapsed" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
+    <div v-show="!collapsed" class="text-sm text-gray-500" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
       <NSelect 
         v-show="!onlyMySiteLocal && hasRole"
         v-model:value="salerIdModel" 
         :options="salerOptions" 
         placeholder="售后专员" 
-        size="medium"
+        size="small"
         clearable 
-        style="width: 90%; font-size: 12px;"
+        class="text-sm text-gray-500"
+        style="width: 90%;"
       />
       <!-- 开始时间 -->
       <NDatePicker 
@@ -59,28 +64,30 @@
         type="date" 
         placeholder="开始时间" 
         clearable 
-        size="medium"
-        style="width: 100%; font-size: 12px;"
+        size="small"
+        class="text-sm text-gray-500"
+        style="width: 100%;"
       />
       <!-- 结束时间 -->
       <NDatePicker 
         v-model:value="endDateModel" 
         type="date" 
-        size="medium"
+        size="small"
         placeholder="结束时间" 
         clearable 
-        style="width: 100%; font-size: 12px;"
+        class="text-sm text-gray-500"
+        style="width: 100%;"
       />
       <!-- 工单状态 -->
        
 
     </div>
     <template #header-extra>
-      <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+      <div class="text-sm text-gray-500" style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
         <!-- 查询按钮 -->
-      <NButton type="primary" size="medium"  @click="emit('search')">查询</NButton>
-      <NButton size="medium"  @click="emit('reset')">重置</NButton>
-       <NButton quaternary size="medium" @click="collapsed = !collapsed">
+      <NButton type="primary" size="small" class="text-sm text-white" @click="emit('search')">查询</NButton>
+      <NButton size="small" class="text-sm text-gray-500" @click="emit('reset')">重置</NButton>
+       <NButton quaternary size="small" class="text-sm text-gray-500" @click="collapsed = !collapsed">
         {{ collapsed ? '展开' : '收起' }}
       </NButton>
       </div>
@@ -92,11 +99,9 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';  
 
-import { NCard, NInput, NSelect, NDatePicker, NButton, NSwitch } from 'naive-ui';
+import { NCard, NInput, NSelect, NDatePicker, NButton } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 import { fetchUser } from '@/service/api';
-import local from '@/locales/langs/zh-cn';
-// import local from '@/locales/langs/zh-cn';
 const salerMap = ref<Record<number, string>>({});
 // import { useAuthStore } from '@/stores/auth';
 

@@ -108,5 +108,54 @@ export function getUploadToken(params: {[key: string]: any }) {
   });
 }
 
+// get /api/scraps/summary 统计数值
+export function fetchScrapSummary() {
+  return request({
+    url: '/api/scraps/summary',
+    method: 'get',
+  });
+}
+
+// /api/scraps
+// 报废机列表
+export function fetchScrapLists(params: { page?: number; limit?: number; [key: string]: any }) {
+  return request({
+    url: '/api/scraps',
+    method: 'get',
+    params // 这里会拼接到 URL ?page=1&limit=10
+  });
+}
+
+
+// /api/scraps/info?detail_id=25 
+// 维修标注查看
+export function fetchRepairDetailInfo(detail_id: number) {
+  return request({
+    url: '/api/scraps/info?detail_id='+detail_id,
+    method: 'get',
+  });
+}
+
+// put /api/scraps?detail_id=8'
+// 设置/添加 报废设备标注
+export function updateRepairDetail(detail_id:number,params: {[key: string]: any }) {
+  return request({
+    url: '/api/scraps?detail_id='+detail_id,
+    method: 'put',
+    data:params
+  });
+}
+
+// /api/scraps/export 导出报废设备标注
+export function exportScrapDetail(params: {[key: string]: any }) {
+  return request({
+    url: '/api/scraps/export',
+    method: 'get',
+    params
+  });
+}
+
+
+
 
 

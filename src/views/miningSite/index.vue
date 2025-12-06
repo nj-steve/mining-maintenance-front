@@ -178,6 +178,7 @@ const columns: DataTableColumns<Site> = [
     title: () => renderHeaderTitle('场地名称'),
     key: 'name',
     width: 200,
+    fixed: 'left',
     render: (row: Site) => {
       const content = row.name || '';
       return h(
@@ -194,15 +195,14 @@ const columns: DataTableColumns<Site> = [
                   overflow: 'hidden',
                   whiteSpace: 'nowrap',
                   textOverflow: 'ellipsis',
-                  cursor: 'pointer',
-                  color: '#1890ff'
+                  cursor: 'pointer'
                 },
                 title: content,
                 onClick: () => {
                   router.push(`/miningsite/${row.id}/info`);
                 }
               },
-              h('span', { class: 'text-sm' }, content)
+              h('span', { class: 'text-sm text-gray-900 font-medium' }, content)
             )
         }
       );
@@ -460,6 +460,7 @@ const columns: DataTableColumns<Site> = [
     title: () => renderHeaderTitle('操作'),
     key: 'actions',
     width: 180,
+    fixed: 'right',
     align:'center',
     render: (row: Site) => {
       if(!hasRole){
@@ -468,7 +469,8 @@ const columns: DataTableColumns<Site> = [
         {
           ghost: true,
           size:'small',
-          style: 'color: #1890ff;',
+          class: 'text-sm text-gray-500',
+          style: 'color: #6b7280;',
           onClick: () => {
             handleOpenEditHistory(row)
             // router.push(`/sitereport?site_id=${row.id}`)
@@ -488,7 +490,8 @@ const columns: DataTableColumns<Site> = [
                 {
                   ghost: true,
                   size:'small',
-                  style: 'color: #1890ff;',
+                  class: 'text-sm text-gray-500',
+                  style: 'color: #6b7280;',
                   onClick: () => {
                     handleOpenEditHistory(row)
                   }
@@ -500,7 +503,8 @@ const columns: DataTableColumns<Site> = [
                 {
                   ghost: true,
                   size:'small',
-                  style: 'color: #1890ff;',
+                  class: 'text-sm text-gray-500',
+                  style: 'color: #6b7280;',
                   onClick: () => handleOpenEdit(row)
                 },
                 {
@@ -512,7 +516,8 @@ const columns: DataTableColumns<Site> = [
                 {
                   ghost: true,
                   size:'small',
-                  style: 'color: #1890ff;',
+                  class: 'text-sm text-gray-500',
+                  style: 'color: #6b7280;',
                   onClick: () => {
                     router.push(`/miningsite/${row.id}/info`);
                   }
@@ -531,34 +536,36 @@ const columns: DataTableColumns<Site> = [
       if (hasRole) {
         return [
           h(
-            NButton,
-            {
-              ghost: true,
-              size:'small',
-              style: "margin-right: 8px;color: #1890ff;",
-              onClick: () => handleOpenEdit(row)
-            },
-            {
-              default: () => '编辑',
+          NButton,
+          {
+            ghost: true,
+            size:'small',
+            class: 'text-sm text-gray-500',
+            style: "margin-right: 8px;color: #6b7280;",
+            onClick: () => handleOpenEdit(row)
+          },
+          {
+            default: () => '编辑',
+          }
+        ),
+        h(
+          NButton,
+          {
+            ghost: true,
+            size:'small',
+            class: 'text-sm text-gray-500',
+            style: 'color: #6b7280;',
+            onClick: () => {
+              router.push(`/miningsite/${row.id}/info`);
             }
-          ),
-          h(
-            NButton,
-            {
-              ghost: true,
-              size:'small',
-              style: 'color: #1890ff;',
-              onClick: () => {
-                router.push(`/miningsite/${row.id}/info`);
-              }
-            },
-            {
-              default: () => '查看',
-            }
-          )
-        ]
-      }
+          },
+          {
+            default: () => '查看',
+          }
+        )
+      ]
     }
+  }
   }
 ];
 

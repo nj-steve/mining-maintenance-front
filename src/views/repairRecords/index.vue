@@ -8,6 +8,7 @@ import { Icon } from '@iconify/vue';
 import { useRouter } from 'vue-router';
 import RepairSearchBar from './components/RepairSearchBar.vue'
 import UploadRepairDetailsExcel from "@/components/upload/UploadRepairDetailsExcel.vue"
+import ScrapFlagsModal from './components/ScrapFlagsModal.vue'
 import { repairResultMap } from  '@/constants/business'
 
 const router = useRouter();
@@ -40,6 +41,19 @@ const exportData = ref<Faults[]>([]);
 const loading = ref(false);
 const work_order_no = ref<string>('');
 const sn = ref<string>('');
+// 报废标记弹窗
+const showScrapModal = ref(false)
+const currentDetailId = ref<number | null>(null)
+const currentDetailRow = ref<any | null>(null)
+const openScrapModal = (row: any) => {
+  const rowId = row?.id || row?.ID || row?.Id || row?.workOrderNo || row?.WorkOrderNo
+  const numId = Number(rowId)
+  if (!Number.isNaN(numId)) {
+    currentDetailId.value = numId
+    currentDetailRow.value = row
+    showScrapModal.value = true
+  }
+}
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -138,7 +152,6 @@ const columns: DataTableColumns<any> = [
         }
       );
     } },
-
   { title: () => renderHeaderTitle('工单号'), key: 'WorkOrderNo', width: 150,  render: (row: Faults) => {
       // const full = row.order_no || '';
       const full = (row as any).WorkOrderNo || '';
@@ -188,7 +201,6 @@ const columns: DataTableColumns<any> = [
     // ⚠️ 如果需要显示名称，就在 fetchData 里转换
   },
   { title: () => renderHeaderTitle('机型'), key: 'MachineModel', width: 200, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.MachineModel || '-') },
- 
   { title: () => renderHeaderTitle('损坏部件'), key: 'RepairComponent', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.RepairComponent || '-') },
   // { title: '额外操作', key: 'extra_operations', width: 120 },
   { title: () => renderHeaderTitle('初测不良原因'), key: 'DefectReason', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.DefectReason || '-') },
@@ -206,7 +218,7 @@ const columns: DataTableColumns<any> = [
       return h(NTag, { type,class:'text-sm', size: 'small',round:true }, () => label)
     }
   },
-    { 
+  { 
     title: () => renderHeaderTitle('日期'), 
     key: 'Date', 
     width: 160,
@@ -222,8 +234,7 @@ const columns: DataTableColumns<any> = [
     render: (row) => {
       // console.log("表格行数据:", row);
       const rowId = row.id || row.ID || row.Id || row.workOrderNo || row.WorkOrderNo;
-      // console.log("提取的ID:", rowId);
-      
+      // console.log("提取的ID:", rowId); 
       return [
         h(
           NButton,
@@ -237,6 +248,20 @@ const columns: DataTableColumns<any> = [
           },
           { default: () => '详情' }
         ),
+        row.RepairResult === 4
+          ? h(
+              NButton,
+              {
+                type: 'error',
+                size: 'small',
+                ghost: true,
+                style: 'margin-right: 8px;',
+                class: 'text-sm',
+                onClick: () => openScrapModal(row)
+              },
+              { default: () => '报废标记' }
+            )
+          : null,
         // h(
         //   NButton,
         //   { 
@@ -436,7 +461,7 @@ const handleFail = () => {
 
 <template>
   <div class="flex  gap-16px flex-col-stretch  lt-sm:overflow-auto">
-    <NCard style="margin-bottom: 20px;">
+    <NCard>
       <RepairSearchBar
               :work-order-no="work_order_no"
               :sn="sn"
@@ -448,7 +473,7 @@ const handleFail = () => {
     </NCard>
     <!-- <NCard> -->
     <!-- 查询框 -->
-    <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: px;">
+    <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-200px)]">
        <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 6px">
       <div  style="display: flex; gap: 8px; align-items: center;">
         <UploadRepairDetailsExcel v-if="isRepairStation" @success="fetchData" @fail="handleFail"/>
@@ -480,6 +505,8 @@ const handleFail = () => {
         striped
         class="sm:h-full"
       />
+      <!-- 报废标记弹窗 -->
+      <ScrapFlagsModal v-model:show="showScrapModal" :detail-id="currentDetailId" :detail-row="currentDetailRow" @success="fetchData" />
     </n-card>
      <!-- </NCard> -->
   </div>

@@ -327,6 +327,7 @@ const columns: DataTableColumns<Order> = [
     title: () => renderHeaderTitle('工单编号'), 
     key: 'OrderNo', 
     width: 250,
+    fixed: 'left',
     render: (row: Order) => {
       const full = row.OrderNo || '';
       const prefix = full.slice(0, 12);
@@ -353,7 +354,7 @@ const columns: DataTableColumns<Order> = [
               h(
                 'span',
                 {
-                  class: 'text-sm text-gray-500',
+                  class: 'text-sm text-gray-500 font-medium',
                   style: 'flex:1; min-width:0; cursor: pointer;',
                   onClick: () => router.push({ name: 'workflowdetail', params: { id: row.ID } })
                 },
@@ -490,6 +491,7 @@ const columns: DataTableColumns<Order> = [
   // { title: '剩余短保期', key: 'warranty_status_text' },
   { title: () => renderHeaderTitle('操作'),
     key: 'actions',
+    fixed: 'right',
     render: (row: Order) => {
       return h(ActionButtons, {
         row,
