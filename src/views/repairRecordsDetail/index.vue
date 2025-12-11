@@ -363,7 +363,7 @@
       if (error === null && data !== null) {
         const detail = data; // 假设返回的是数组，取第一个
         form.value = {
-          date: detail.Date ? dayjs(detail.Date).format('YYYY-MM-DD') : dayjs(detail.create_time).format('YYYY-MM-DD HH:mm'),
+          date: detail.Date ? dayjs(detail.Date).format('YYYY-MM-DD') : dayjs(detail.CreatedAt).format('YYYY-MM-DD HH:mm'),
           work_order_no: detail.WorkOrderNo || '',
           machine_model: detail.MachineModel || '',
           repairStation: detail.RepairStationName || '',
@@ -383,8 +383,8 @@
           verify_defect: detail.VerifyDefect || '',
           images:detail.RepairImageUrls ? detail.RepairImageUrls.split(',') : [],
           repair_image_urls: detail.RepairImageUrls || '',
-          start_time: detail.StartTime ? dayjs(detail.StartTime).format('YYYY-MM-DD HH:mm') : dayjs(detail.create_time).format('YYYY-MM-DD HH:mm'),
-          end_time: detail.EndTime ? dayjs(detail.EndTime).format('YYYY-MM-DD HH:mm') : dayjs(detail.create_time).format('YYYY-MM-DD HH:mm'),
+          start_time: detail.StartTime ? dayjs(detail.StartTime).format('YYYY-MM-DD HH:mm') : dayjs(detail.CreatedAt).format('YYYY-MM-DD HH:mm'),
+          end_time: detail.EndTime ? dayjs(detail.EndTime).format('YYYY-MM-DD HH:mm') : dayjs(detail.CreatedAt).format('YYYY-MM-DD HH:mm'),
           repair_result: detail.RepairResult ?? 1,
           repairer_name: detail.RepairerName || '',
           power_sn: detail.PowerSN || '',
