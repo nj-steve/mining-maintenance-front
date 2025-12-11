@@ -259,7 +259,7 @@ const columns: DataTableColumns<any> = [
                 class: 'text-sm',
                 onClick: () => openScrapModal(row)
               },
-              { default: () => '报废标记' }
+              { default: () => '部件标记' }
             )
           : null,
         // h(
@@ -493,7 +493,7 @@ const handleFail = () => {
     remote striped
         class="sm:h-full" /> -->
 
-         <NDataTable 
+        <NDataTable 
         flex-height
         :columns="columns" 
         :data="tableData" 

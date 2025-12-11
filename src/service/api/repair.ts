@@ -129,12 +129,14 @@ export function fetchScrapLists(params: { page?: number; limit?: number; [key: s
 
 // /api/scraps/info?detail_id=25 
 // 维修标注查看
-export function fetchRepairDetailInfo(detail_id: number) {
+export function fetchScrapsDetailInfo(detail_id: number) {
   return request({
     url: '/api/scraps/info?detail_id='+detail_id,
     method: 'get',
   });
 }
+
+
 
 // put /api/scraps?detail_id=8'
 // 设置/添加 报废设备标注
@@ -154,6 +156,26 @@ export function exportScrapDetail(params: {[key: string]: any }) {
     params
   });
 }
+
+// /api/scraps/export 导出报废设备标注
+// /api/scraps/status/:id 查看报废设备标注
+export function updateScrapStatus(params: {[key: string]: any }) {
+  return request({
+    url: '/api/scraps/status/'+params.id,
+    method: 'put',
+    data:{status:params.status}
+  });
+}
+
+// /api/scraps/info?scrap_id=25 
+// 维修标注查看
+export function fetchScrapsDetail(scrap_id: number) {
+  return request({
+    url: '/api/scraps/info?scrap_id='+scrap_id,
+    method: 'get',
+  });
+}
+
 
 
 

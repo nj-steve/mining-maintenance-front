@@ -2,21 +2,26 @@
     <div class="p-4 space-y-6">
       <!-- 基础信息 -->
       <n-card title="基础信息">
-        <n-descriptions :column="2" label-placement="left" bordered>
-          <n-descriptions-item label="工单编号">
-            {{ detailData?.order_no || '-' }}
+        <n-descriptions :column="2" label-placement="left" bordered size="small" class="text-sm">
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">工单编号</span></template>
+            <span class="text-sm text-gray-600">{{ detailData?.order_no || '-' }}</span>
           </n-descriptions-item>
-          <n-descriptions-item label="工单状态">
-            {{ detailData?.order_status_text || '-' }}
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">工单状态</span></template>
+            <span class="text-sm text-gray-600">{{ detailData?.order_status_text || '-' }}</span>
           </n-descriptions-item>
-          <n-descriptions-item label="场地">
-            {{ detailData?.site_name || '-' }}
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">场地</span></template>
+            <span class="text-sm text-gray-600">{{ detailData?.site_name || '-' }}</span>
           </n-descriptions-item>
-          <n-descriptions-item label="维修站">
-            {{ detailData?.station_name || '-' }}
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">维修站</span></template>
+            <span class="text-sm text-gray-600">{{ detailData?.station_name || '-' }}</span>
           </n-descriptions-item>
-          <n-descriptions-item label="维修方式">
-            {{ repairMethodRecord[detailData?.repair_method as number] || '-' }}
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">维修方式</span></template>
+            <span class="text-sm text-gray-600">{{ repairMethodRecord[detailData?.repair_method as number] || '-' }}</span>
           </n-descriptions-item>
           <!-- <n-descriptions-item label="维修费用">
             {{ detailData?.repair_cost ?? '-' }}
@@ -33,8 +38,9 @@
           <n-descriptions-item label="付款日期">
             {{ detailData?.payment_date ? dayjs(detailData.payment_date).format('YYYY-MM-DD') : '-' }}
           </n-descriptions-item>-->
-          <n-descriptions-item label="故障机数量">
-            {{ detailData?.fault_count ?? '-' }}
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">故障机数量</span></template>
+            <span class="text-sm text-gray-600">{{ detailData?.fault_count ?? '-' }}</span>
           </n-descriptions-item>
           <!-- <n-descriptions-item label="短保内数量">
             {{ detailData?.in_warranty_count ?? '-' }}
@@ -60,16 +66,19 @@
       <!-- 故障设备列表 -->
       <n-card title="">
       <n-space justify="space-between" class="mb-2">
+            <NConfigProvider :theme-overrides="selectThemeOverrides">
             <NSpace>
               <NInput
                 v-model:value="sn"
-                size="medium"
+                size="small"
+                class="text-sm"
                 placeholder="请输入机器SN"
                 clearable
                 style="width: 180px"
               />
               <NSelect
-                size="medium"
+                size="small"
+                class="text-sm"
                 v-model:value="status"
                 :options="statusOptions"
                 placeholder="流转状态"
@@ -77,7 +86,8 @@
                 style="margin-left: 0px; width: 120px"
               />
               <NSelect
-                size="medium"
+                size="small"
+                class="text-sm"
                 v-model:value="resultStatus"
                 :options="repairResultOptions"
                 placeholder="维修状态"
@@ -85,13 +95,14 @@
                 style="margin-left: 0px; width: 120px"
               />
             </NSpace>
-            <NButton  circle size="medium" ghost @click="exportFaultDevicesCsv" title="导出 CSV"  style="margin-right: 50px;">
+            </NConfigProvider>
+            <NButton  circle size="small" class="text-sm" ghost @click="exportFaultDevicesCsv" title="导出 CSV"  style="margin-right: 50px;">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>
             </NButton>
         </n-space>
-        <n-data-table :columns="faultDeviceColumns" :data="filteredFaultDevices" :bordered="true" :pagination="faultDevicesPagination" />
+        <n-data-table :columns="faultDeviceColumns" :data="filteredFaultDevices" :bordered="true" :pagination="faultDevicesPagination" size="small" />
       </n-card>
       </n-tab-pane>
         <n-tab-pane name="logs">
@@ -106,7 +117,7 @@
                 </template>
               </NButton>
             </n-space>
-            <n-data-table :columns="operationHistoryColumns" :data="operationHistory" :bordered="true" :pagination="operationHistoryPagination" />
+            <n-data-table :columns="operationHistoryColumns" :data="operationHistory" :bordered="true" :pagination="operationHistoryPagination" size="small" />
           </n-card>
         </n-tab-pane>
       </n-tabs>
@@ -167,7 +178,7 @@
   import dayjs from 'dayjs';
   import { useMessage } from 'naive-ui';
   import { NTag } from 'naive-ui';
-  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace, NDataTable, NTabs, NTabPane } from "naive-ui"
+  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace, NDataTable, NTabs, NTabPane, NConfigProvider } from "naive-ui"
   import type { DataTableColumns, PaginationProps } from 'naive-ui'
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
   import { fetchOrdersDetail, fetchOrdersStatus } from '@/service/api/workflow'
@@ -187,13 +198,21 @@
   const resultStatus = ref<number | null>(null);
   const statusOptions = ref<{ label: string; value: number }[]>([]);
 
+  // 让 Select 的小号字号统一为 text-sm（约 12px）
+  const selectThemeOverrides = {
+    Select: {
+      fontSizeSmall: '12px',
+      optionFontSizeSmall: '12px'
+    }
+  } as const
+
   // 列定义：故障设备
   const faultDeviceColumns: DataTableColumns<any> = [
-    { title: '序号', key: 'sequence', width: 80 },
-    { title: '设备SN', key: 'sn' },
-    { title: '机型', key: 'model' },
-    { title: '场地', key: 'site_name' },
-    { title: '流转状态', key: 'current_status_text', width: 100,
+    { title: () => h('span', { class: 'text-sm text-gray-500' }, '序号'), key: 'sequence', width: 80, render: (row: any) => h('span', { class: 'text-sm text-gray-600' }, row.sequence ?? '-') },
+    { title: () => h('span', { class: 'text-sm text-gray-500' }, '设备SN'), key: 'sn', render: (row: any) => h('span', { class: 'text-sm text-gray-600' }, row.sn ?? '-') },
+    { title: () => h('span', { class: 'text-sm text-gray-500' }, '机型'), key: 'model', render: (row: any) => h('span', { class: 'text-sm text-gray-600' }, row.model ?? '-') },
+    { title: () => h('span', { class: 'text-sm text-gray-500' }, '场地'), key: 'site_name', render: (row: any) => h('span', { class: 'text-sm text-gray-600' }, row.site_name ?? '-') },
+    { title: () => h('span', { class: 'text-sm text-gray-500' }, '流转状态'), key: 'current_status_text', width: 100,
     render: (row: any) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         // '物流出': 'primary',
@@ -216,10 +235,10 @@
         // '新下架':'warning',
       };
       const label = row.current_status_text || '未知';
-      return h(NTag, {type: tagMap[row.current_status_text || '未知'] }, () => label)
+      return h(NTag, { type: tagMap[row.current_status_text || '未知'], size: 'small', class: 'text-sm' }, () => label)
     }
   },
-   { title: '维修状态', key: 'status_text', width: 100,
+   { title: () => h('span', { class: 'text-sm text-gray-500' }, '维修状态'), key: 'status_text', width: 100,
     render: (row: any) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         '已修复': 'success',
@@ -228,7 +247,7 @@
         '待修复': 'warning',
       };
       const label = row.repair_result_text || '未知';
-      return h(NTag, {type: tagMap[row.repair_result_text || '未知'] }, () => label)
+      return h(NTag, { type: tagMap[row.repair_result_text || '未知'], size: 'small', class: 'text-sm' }, () => label)
     }
   },
     // { title: '当前状态', key: 'current_status_text',
@@ -239,10 +258,10 @@
 
   // 列定义：操作日志
   const operationHistoryColumns: DataTableColumns<any> = [
-    { title: '时间', key: 'occurred_at', render: (row: any) => row.occurred_at ? dayjs(row.occurred_at).format('YYYY-MM-DD HH:mm:ss') : '-' },
-    { title: '操作', key: 'status_text' },
-    { title: '操作人', key: 'operator_name' },
-    { title: '说明', key: 'info' }
+    { title: () => h('span', { class: 'text-sm text-gray-500' }, '时间'), key: 'occurred_at', render: (row: any) => h('span', { class: 'text-sm text-gray-600' }, row.occurred_at ? dayjs(row.occurred_at).format('YYYY-MM-DD HH:mm:ss') : '-') },
+    { title: () => h('span', { class: 'text-sm text-gray-500' }, '操作'), key: 'status_text', render: (row: any) => h('span', { class: 'text-sm text-gray-600' }, row.status_text ?? '-') },
+    { title: () => h('span', { class: 'text-sm text-gray-500' }, '操作人'), key: 'operator_name', render: (row: any) => h('span', { class: 'text-sm text-gray-600' }, row.operator_name ?? '-') },
+    { title: () => h('span', { class: 'text-sm text-gray-500' }, '说明'), key: 'info', render: (row: any) => h('span', { class: 'text-sm text-gray-600' }, row.info ?? '-') }
   ];
 
   const activeTab = ref<'basic' | 'logs'>('basic')

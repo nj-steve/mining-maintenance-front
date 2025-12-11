@@ -326,7 +326,7 @@ const columns: DataTableColumns<Order> = [
   { 
     title: () => renderHeaderTitle('工单编号'), 
     key: 'OrderNo', 
-    width: 250,
+    width: 220,
     fixed: 'left',
     render: (row: Order) => {
       const full = row.OrderNo || '';
@@ -372,24 +372,8 @@ const columns: DataTableColumns<Order> = [
       );
     }
   },
-  { 
-    title: () => renderHeaderTitle('维修商'), 
-    key: 'StationName', 
-    width: 120,
-    render: (row: any) => {
-      const text = row.StationName || '';
-      return h(
-        NTooltip,
-        null,
-        {
-          trigger: () => h('div', { class: 'text-sm text-gray-500', style: 'max-width:120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
-          default: () => text
-        }
-      );
-    }
-  },
-  { title: () => renderHeaderTitle('场地'), key: 'SiteName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SiteName || '') },
-  { title: () => renderHeaderTitle('售后专员'), key: 'SalerName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SalerName || '') },
+
+  
   { title: () => renderHeaderTitle('故障机数量'), key: 'FaultCount', width: 200, render: (row: any ) => {
     const total = Number(row.FaultCount ?? 0)
     const repaired = Number(row.RepairedCount ?? 0)
@@ -477,6 +461,7 @@ const columns: DataTableColumns<Order> = [
         return h('span', { class: 'text-sm text-gray-500' }, dayjs(row.PaymentDate).format('YYYY-MM-DD'));
       }
     },
+
       { title: () => renderHeaderTitle('创建日期'), key: 'CreateDate',
       render: (row: Order) => {
         if (!row.CreatedAt) {
@@ -486,7 +471,25 @@ const columns: DataTableColumns<Order> = [
       }
     },
   ] : []),
- 
+  { title: () => renderHeaderTitle('场地'), key: 'SiteName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SiteName || '') },
+    { 
+    title: () => renderHeaderTitle('维修商'), 
+    key: 'StationName', 
+    width: 120,
+    render: (row: any) => {
+      const text = row.StationName || '';
+      return h(
+        NTooltip,
+        null,
+        {
+          trigger: () => h('div', { class: 'text-sm text-gray-500', style: 'max-width:120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, text),
+          default: () => text
+        }
+      );
+    }
+  },
+  ...(hasRole ? [{ title: () => renderHeaderTitle('售后专员'), key: 'SalerName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SalerName || '') }] : []),
+
   // { title: '短保期开始', key: 'warranty_status_text' },
   // { title: '剩余短保期', key: 'warranty_status_text' },
   { title: () => renderHeaderTitle('操作'),

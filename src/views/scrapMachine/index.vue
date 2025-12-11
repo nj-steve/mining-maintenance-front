@@ -2,16 +2,14 @@
 
 <template>
   <div class="min-h-screen bg-gray-50 p-6">
-    <div class="max-w-[1440px] mx-auto">
+    <div class=" mx-auto">
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">报废机管理</h1>
         <!-- <p class="text-gray-600">查看和管理所有报废设备信息</p> -->
       </div>
-      
       <!-- Stats Cards -->
-      <ScrapSummaryCards />
-      
+      <ScrapSummaryCards ref="summaryRef" />
       <!-- Filters and Actions -->
       <div class="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -19,6 +17,9 @@
             v-model:sn="filters.sn"
             v-model:siteId="filters.siteId"
             v-model:status="filters.status"
+            v-model:scrap_count="filters.scrap_count"
+            v-model:order_fields="filters.order_fields"
+            v-model:order_type="filters.order_type"
             :site-options="siteOptions"
             @change="handleSearchChange"
           />
@@ -27,10 +28,10 @@
               <i class="fas fa-download mr-2"></i>
               导出数据
             </button>
-            <button class="!rounded-button whitespace-nowrap px-4 py-2 text-sm bg-blue-600 text-white rounded-md flex items-center">
+            <!-- <button class="!rounded-button whitespace-nowrap px-4 py-2 text-sm bg-blue-600 text-white rounded-md flex items-center">
               <i class="fas fa-plus mr-2"></i>
               新增报废
-            </button>
+            </button> -->
           </div>
         </div>
       </div>
@@ -99,51 +100,56 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
                     <span class="mr-2">{{ item.control_sn }}</span>
-                    <i 
-                      :class="[
-                        item.control_sn_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
-                      ]"
-                    ></i>
+                    <Icon
+                      :icon="flagIcon(item.control_sn_flag)"
+                      :class="flagClass(item.control_sn_flag)"
+                      width="16"
+                      height="16"
+                    />
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
                     <span class="mr-2">{{ item.board_sn1 }}</span>
-                    <i 
-                      :class="[
-                        item.board_sn1_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
-                      ]"
-                    ></i>
+                    <Icon
+                      :icon="flagIcon(item.board_sn1_flag)"
+                      :class="flagClass(item.board_sn1_flag)"
+                      width="16"
+                      height="16"
+                    />
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
                     <span class="mr-2">{{ item.board_sn2 }}</span>
-                    <i 
-                      :class="[
-                        item.board_sn2_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
-                      ]"
-                    ></i>
+                    <Icon
+                      :icon="flagIcon(item.board_sn2_flag)"
+                      :class="flagClass(item.board_sn2_flag)"
+                      width="16"
+                      height="16"
+                    />
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
                     <span class="mr-2">{{ item.board_sn3 }}</span>
-                    <i 
-                      :class="[
-                        item.board_sn3_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
-                      ]"
-                    ></i>
+                    <Icon
+                      :icon="flagIcon(item.board_sn3_flag)"
+                      :class="flagClass(item.board_sn3_flag)"
+                      width="16"
+                      height="16"
+                    />
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <div class="flex items-center">
                     <span class="mr-2">{{ item.power_sn }}</span>
-                    <i 
-                      :class="[
-                        item.power_sn_flag === 2 ? 'fas fa-check-circle text-green-500' : 'fas fa-times-circle text-red-500'
-                      ]"
-                    ></i>
+                    <Icon
+                      :icon="flagIcon(item.power_sn_flag)"
+                      :class="flagClass(item.power_sn_flag)"
+                      width="16"
+                      height="16"
+                    />
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -152,42 +158,51 @@
                       'px-2 py-1 rounded-full text-xs',
                       item.status === 1 ? 'text-yellow-600 bg-yellow-100' : 
                       item.status === 2 ? 'text-blue-600 bg-blue-100' : 
-                      'text-green-600 bg-green-100'
+                      item.status === 4 ? 'text-green-600 bg-green-100' :
+                      'text-purple-600 bg-purple-100'
                     ]"
                   >
                     {{ statusLabel(item.status) }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ item.scrap_time }}
+                  {{ formatYMD(item.scrap_time) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <span class="font-medium text-gray-900">{{ item.scrap_count }} 次</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm sticky right-0 bg-white">
                   <div class="flex space-x-2">
+
                     <button
                       :class="[
                         'px-3 py-1 text-sm rounded whitespace-nowrap',
-                        item.status === 3 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white'
+                        item.status === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' :
+                        item.status === 2 ? 'bg-blue-600 text-white' :
+                        item.status === 4 ? 'bg-green-600 text-white' :
+                        'bg-purple-600 text-white'
                       ]"
-                      :disabled="item.status === 3"
+                      :disabled="item.status != 2 || Number(item.scrap_count) === 1"
+                      @click="confirmScrap(item)"
                     >
-                      {{ item.status === 3 ? (item.scrap_count > 1 ? '已修复' : '已确认') : '确认报废' }}
+                    <!-- {{ item.status === 3 ? '已审批' : '确认报废' }} -->
+                      {{ item.status >= 3 ? (item.status == 4 ? '已修复' : '已审批') : '确认报废' }}
                     </button>
-                    <button class="text-blue-600 hover:text-blue-900 text-sm px-2 py-1">
+
+
+                    <!-- <button class="text-blue-600 hover:text-blue-900 text-sm px-2 py-1" @click="openDetail(item)">
                       查看详情
-                    </button>
-                    <button class="text-red-600 hover:text-red-900 text-sm px-2 py-1">
+                    </button> -->
+                    <!-- <button class="text-red-600 hover:text-red-900 text-sm px-2 py-1">
                       删除
-                    </button>
+                    </button> -->
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        
+
         <!-- Pagination -->
         <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
           <div class="flex-1 flex justify-between sm:hidden">
@@ -254,10 +269,19 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, reactive } from 'vue';
-import { fetchScrapLists, exportScrapDetail } from '@/service/api/repair'
+import { fetchScrapLists, exportScrapDetail, updateScrapStatus } from '@/service/api/repair'
+import {  useMessage, useDialog } from 'naive-ui';
 import ScrapSummaryCards from './components/ScrapSummaryCards.vue'
+// import ScrapDetailDrawer from './components/ScrapDetailDrawer.vue'
 import ScrapSearchBar from './components/ScrapSearchBar.vue'
+import {fetchOrdersSite} from '@/service/api';
+import { Icon } from '@iconify/vue'
 
+const message = useMessage();
+const dialog = useDialog();
+const summaryRef = ref<any>(null)
+const showDetail = ref(false)
+const currentRow = ref<ScrapItemApi | null>(null)
 interface ScrapItemApi {
   id: number
   site_name: string
@@ -281,10 +305,11 @@ interface ScrapItemApi {
 
 // Data refs
 const filteredData = ref<ScrapItemApi[]>([]);
-const searchText = ref('');
-const selectedSite = ref('全部场地');
-const selectedModel = ref('全部机型');
-const selectedStatus = ref('全部状态');
+// const searchText = ref('');
+// const selectedSite = ref('全部场地');
+// const selectedModel = ref('全部机型');
+// const selectedStatus = ref('全部状态');
+const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
 const showSiteDropdown = ref(false);
 const showStatusDropdown = ref(false);
 const currentPage = ref(1);
@@ -292,46 +317,76 @@ const pageSize = ref(10);
 const serverPagination = ref({ page: 1, page_size: 10, pages: 0, total: 0 })
 
 // 搜索筛选（sn、site_id、status）
-const filters = reactive<{ sn: string; siteId: number | null; status: number | null }>({
+const filters = reactive<{ sn: string; siteId: number | null; 
+  status: number | null;
+  scrap_count: number | null;
+  order_fields: number | null;
+  order_type: string | null;
+ }>
+  ({
   sn: '',
   siteId: null,
-  status: null
+  status: null,
+  scrap_count: null,
+  order_fields: null,
+  order_type: null,
 })
+
 
 // 场地下拉选项（由接口数据汇总）
-const siteOptions = computed(() => {
-  const map = new Map<number, string>()
-  filteredData.value.forEach((item: any) => {
-    const id = item?.site_id
-    const name = item?.site_name
-    if (id != null && !map.has(id)) map.set(id, name || String(id))
-  })
-  return Array.from(map.entries()).map(([value, label]) => ({ label, value }))
-})
+// const siteOptions = computed(() => {
+//   const map = new Map<number, string>()
+//   filteredData.value.forEach((item: any) => {
+//     const id = item?.site_id
+//     const name = item?.site_name
+//     if (id != null && !map.has(id)) map.set(id, name || String(id))
+//   })
+//   return Array.from(map.entries()).map(([value, label]) => ({ label, value }))
+// })
+// 获取场地数据
+const fetchSiteData = async () => {
+  // console.log("hasRole>>fetchSiteData >> ",hasRole)
+  try {
+    // 这里需要根据实际的API接口来获取场地数据
+    const params: any = {
+      enable_all: (!(localStorage.getItem("onlyMySite")==='true'))?1:-1,
+    };
+    // console.log("params",params)
+    const { data, error } = await fetchOrdersSite(params);
+    if (!error && data) {
+      siteOptions.value = data.map((site: any) => ({
+        label: site.Name,
+        value: site.ID,
+      }));
+    }
+  } catch (err) {
+    message.error('获取场地数据失败');
+  }
+};
 
 // Toggle dropdowns
-const toggleSiteDropdown = () => {
-  showSiteDropdown.value = !showSiteDropdown.value;
-  showStatusDropdown.value = false;
-};
+// const toggleSiteDropdown = () => {
+//   showSiteDropdown.value = !showSiteDropdown.value;
+//   showStatusDropdown.value = false;
+// };
 
-const toggleStatusDropdown = () => {
-  showStatusDropdown.value = !showStatusDropdown.value;
-  showSiteDropdown.value = false;
-};
+// const toggleStatusDropdown = () => {
+//   showStatusDropdown.value = !showStatusDropdown.value;
+//   showSiteDropdown.value = false;
+// };
 
-// Select filters
-const selectSite = (site: string) => {
-  selectedSite.value = site;
-  showSiteDropdown.value = false;
-  currentPage.value = 1;
-};
+// // Select filters
+// const selectSite = (site: string) => {
+//   selectedSite.value = site;
+//   showSiteDropdown.value = false;
+//   currentPage.value = 1;
+// };
 
-const selectStatus = (status: string) => {
-  selectedStatus.value = status;
-  showStatusDropdown.value = false;
-  currentPage.value = 1;
-};
+// const selectStatus = (status: string) => {
+//   selectedStatus.value = status;
+//   showStatusDropdown.value = false;
+//   currentPage.value = 1;
+// };
 
 // Close dropdowns when clicking outside
 const handleClickOutside = (event: MouseEvent) => {
@@ -347,19 +402,52 @@ async function fetchData() {
   if (filters.sn) params.sn = filters.sn
   if (filters.siteId != null) params.site_id = filters.siteId
   if (filters.status != null) params.status = filters.status
+  if (filters.scrap_count != null) params.scrap_count = filters.scrap_count
+  if (filters.order_fields != null) params.order_fields = filters.order_fields
+  if (filters.order_type != null) params.order_type = filters.order_type
+  
   const { data, error } = await fetchScrapLists(params)
   if (error == null && data) {
-    filteredData.value = Array.isArray(data.data) ? data.data : []
+    filteredData.value = Array.isArray(data.list) ? data.list : []
     serverPagination.value = data.pagination || { page: 1, page_size: pageSize.value, pages: 0, total: 0 }
     currentPage.value = serverPagination.value.page || currentPage.value
     pageSize.value = serverPagination.value.page_size || pageSize.value
+    // 列表刷新后同步刷新统计数据
+    summaryRef.value?.reload?.()
   }
 }
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   fetchData()
+  fetchSiteData()
 });
+
+// 二次确认并更新报废状态为 3（已审批）
+async function confirmScrap(item: ScrapItemApi) {
+  if (!item || item.status === 3) {
+    message.info('该记录已审批，无需重复操作');
+    return;
+  }
+
+  dialog.warning({
+    title: '确认操作',
+    content: '确认该机器报废？',
+    positiveText: '确认',
+    negativeText: '取消',
+    maskClosable: true,
+    onPositiveClick: async () => {
+      const { error } = await updateScrapStatus({ id: item.id, status: 3 })
+      if (error == null) {
+        message.success('操作成功，列表已刷新')
+        await fetchData()
+
+      } else {
+        message.error(`操作失败：${String(error)}`)
+      }
+    }
+  })
+}
 
 // 使用后端分页数据，直接展示当前页数据
 const paginatedData = computed(() => filteredData.value);
@@ -367,24 +455,43 @@ const paginatedData = computed(() => filteredData.value);
 const totalPages = computed(() => serverPagination.value.pages || 0);
 
 // 将后端状态数值映射为中文标签
+// 1: 待处理；2:待审核；3:已审批；4: 已修复
 const statusLabel = (status: number) => {
-  if (status === 3) return '待审核';
+  if (status === 3) return '已审批';
   if (status === 1) return '待处理';
-  if (status === 2) return '已审批';
+  if (status === 2) return '待审核';
+  if (status === 4) return '已修复';
   return '未知';
 };
 
-const uniqueSites = computed(() => {
-  return Array.from(new Set(filteredData.value.map(item => item.site_name)));
-});
+// SN 标记图标与颜色（0: 未标注 -> 橙色提醒；2: 正常 -> 绿色勾；1: 损坏 -> 红色叉）
+function flagIcon(flag: number) {
+  return flag === 2
+    ? 'mdi:check-circle'
+    : flag === 1
+    ? 'mdi:close-circle'
+    : 'mdi:alert-circle-outline'
+}
 
-const uniqueModels = computed(() => {
-  return Array.from(new Set(filteredData.value.map(item => item.model)));
-});
+function flagClass(flag: number) {
+  return flag === 2
+    ? 'text-green-500'
+    : flag === 1
+    ? 'text-red-500'
+    : 'text-orange-500'
+}
 
-const uniqueStatuses = computed(() => {
-  return Array.from(new Set(filteredData.value.map(item => item.status)));
-});
+// const uniqueSites = computed(() => {
+//   return Array.from(new Set(filteredData.value.map(item => item.site_name)));
+// });
+
+// const uniqueModels = computed(() => {
+//   return Array.from(new Set(filteredData.value.map(item => item.model)));
+// });
+
+// const uniqueStatuses = computed(() => {
+//   return Array.from(new Set(filteredData.value.map(item => item.status)));
+// });
 
 // Pagination controls
 const visiblePages = computed(() => {
@@ -438,7 +545,6 @@ watch(() => [filters.sn, filters.siteId, filters.status], async () => {
   currentPage.value = 1
   await fetchData()
 })
-
 /**
  * 导出当前筛选条件下的报废明细为 Excel（.xls 兼容格式）
  * 通过调用后端 `exportScrapDetail` 接口获取数据并构造 Excel 兼容的 HTML 表格
@@ -490,9 +596,9 @@ async function exportExcel() {
         row.board_sn3,
         row.power_sn,
         statusLabel(Number(row.status)),
-        row.scrap_time,
+        formatYMD(row.scrap_time),
         row.scrap_count
-      ].map(v => `<td style="mso-number-format:'\@';border:1px solid #ddd;padding:6px;">${v ?? ''}</td>`)
+      ].map(v => `<td style=\"mso-number-format:'\\@';border:1px solid #ddd;padding:6px;\">${v ?? ''}</td>`)
       return `<tr>${cells.join('')}</tr>`
     }).join('')
 
@@ -513,7 +619,6 @@ async function exportExcel() {
         </body>
       </html>
     `
-
     const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -529,8 +634,24 @@ async function exportExcel() {
     window.$message?.error(`导出失败: ${err?.message || err}`)
   }
 }
+
+// 将日期格式化为 年-月-日（YYYY-MM-DD）
+function formatYMD(input: any) {
+  const d = new Date(input)
+  if (isNaN(d.getTime())) return input ?? ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+function openDetail(item: ScrapItemApi) {
+  currentRow.value = item
+  showDetail.value = true
+}
 </script>
 
 <style scoped>
 /* Custom styles if needed */
 </style>
+
+<!-- 详情抽屉 -->
+<ScrapDetailDrawer v-model:show="showDetail" :item="currentRow" />

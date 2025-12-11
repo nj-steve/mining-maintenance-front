@@ -100,7 +100,9 @@ async function loadSummary() {
 onMounted(() => {
   loadSummary()
 })
+
+// 暴露刷新方法，供父组件在列表数据更新后主动调用
+defineExpose({ reload: loadSummary })
 </script>
 
 <style scoped></style>
-

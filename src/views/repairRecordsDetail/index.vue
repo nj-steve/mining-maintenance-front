@@ -1,32 +1,37 @@
 <template>
-    <div class="p-4 space-y-6">
+    <n-config-provider :theme-overrides="selectThemeOverrides">
+    <div class="p-4 space-y-6 text-sm">
       <!-- 基础信息 -->
        <div class="flex justify-end gap-4 mt-4">
-        <n-button v-if="!isEdit" size="large" type="primary" @click="isEdit = true">编辑</n-button>
-        <n-button v-if="isEdit" type="primary" @click="save">保存</n-button>
-        <n-button v-if="isEdit" @click="cancel">取消</n-button>
+        <n-button v-if="!isEdit" size="small" class="text-sm" type="primary" @click="isEdit = true">编辑</n-button>
+        <n-button v-if="isEdit" size="small" class="text-sm" type="primary" @click="save">保存</n-button>
+        <n-button v-if="isEdit" size="small" class="text-sm" @click="cancel">取消</n-button>
       </div>
       <n-card title="基础信息">
         <n-space vertical>
-          <n-descriptions :column="2" label-placement="left" bordered>
-            <n-descriptions-item label="日期">
-              <template v-if="!isEdit">{{ dayjs(form.date).format('YYYY-MM-DD HH:mm:ss') }}</template>
-              <n-date-picker v-else v-model:formatted-value="form.date" type="date" value-format="yyyy-MM-dd" />
+          <n-descriptions :column="2" label-placement="left" bordered size="small" class="text-sm">
+            <n-descriptions-item>
+              <template #label><span class="text-sm text-gray-500">日期</span></template>
+              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ dayjs(form.date).format('YYYY-MM-DD HH:mm:ss') }}</span></template>
+              <n-date-picker v-else size="small" class="text-sm" v-model:formatted-value="form.date" type="date" value-format="yyyy-MM-dd" />
             </n-descriptions-item>
   
-            <n-descriptions-item label="工单编号">
-              <template v-if="!isEdit">{{ form.work_order_no }}</template>
-              <n-input v-else v-model:value="form.work_order_no" />
+            <n-descriptions-item>
+              <template #label><span class="text-sm text-gray-500">工单编号</span></template>
+              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.work_order_no }}</span></template>
+              <n-input v-else size="small" class="text-sm" v-model:value="form.work_order_no" />
             </n-descriptions-item>
   
-            <n-descriptions-item label="机型">
-              <template v-if="!isEdit">{{ form.machine_model }}</template>
-              <n-input v-else v-model:value="form.machine_model" />
+            <n-descriptions-item>
+              <template #label><span class="text-sm text-gray-500">机型</span></template>
+              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.machine_model }}</span></template>
+              <n-input v-else size="small" class="text-sm" v-model:value="form.machine_model" />
             </n-descriptions-item>
   
-            <n-descriptions-item label="维修站点">
-              <template v-if="!isEdit">{{ form.repairStation }}</template>
-              <n-select v-else v-model:value="form.repairStation" />
+            <n-descriptions-item>
+              <template #label><span class="text-sm text-gray-500">维修站点</span></template>
+              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.repairStation }}</span></template>
+              <n-select v-else size="small" class="text-sm" v-model:value="form.repairStation" />
             </n-descriptions-item>
           </n-descriptions>
         </n-space>
@@ -34,49 +39,55 @@
   
       <!-- 设备信息 -->
       <n-card title="设备信息">
-        <n-descriptions :column="1" label-placement="left" bordered>
-          <n-descriptions-item label="整机 SN">
-            <template v-if="!isEdit">{{ form.device_sn }}</template>
-            <n-input v-else v-model:value="form.device_sn" />
+        <n-descriptions :column="1" label-placement="left" bordered size="small" class="text-sm">
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">整机 SN</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.device_sn }}</span></template>
+            <n-input v-else size="small" class="text-sm" v-model:value="form.device_sn" />
           </n-descriptions-item>
-           <n-descriptions-item label="控制板 SN">
-            <template v-if="!isEdit">{{ form.control_sn }}</template>
-            <n-input v-else v-model:value="form.control_sn" />
+           <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">控制板 SN</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.control_sn }}</span></template>
+            <n-input v-else size="small" class="text-sm" v-model:value="form.control_sn" />
           </n-descriptions-item>
   
-          <n-descriptions-item label="电源 SN">
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">电源 SN</span></template>
             <template v-if="!isEdit">
-              {{ form.powerSN}}
+              <span class="text-sm text-gray-600">{{ form.powerSN}}</span>
               <!-- <div v-for="pwr in form.powerSN" :key="pwr">{{ pwr }}</div> -->
             </template>
             <div v-else>
               <!-- <n-dynamic-input v-model:value="form.powerSN" placeholder="请输入电源 SN" /> -->
-               <n-input v-model:value="form.powerSN" placeholder="请输入电源SN"  style="width: 100%; margin-bottom: 10px;" />
+               <n-input size="small" class="text-sm" v-model:value="form.powerSN" placeholder="请输入电源SN"  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
   
-          <n-descriptions-item label="板1 SN">
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">板1 SN</span></template>
             <template v-if="!isEdit">
-              <div>{{ form.board_sn_1 }}</div>
+              <span class="text-sm text-gray-600">{{ form.board_sn_1 }}</span>
             </template>
             <div v-else>
-               <n-input v-model:value="form.board_sn_1" placeholder="请输入板1 码"  style="width: 100%; margin-bottom: 10px;" />
+               <n-input size="small" class="text-sm" v-model:value="form.board_sn_1" placeholder="请输入板1 码"  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
-           <n-descriptions-item label="板2 SN">
+           <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">板2 SN</span></template>
             <template v-if="!isEdit">
-              <div>{{ form.board_sn_2 }}</div>
+              <span class="text-sm text-gray-600">{{ form.board_sn_2 }}</span>
             </template>
             <div v-else>
-               <n-input v-model:value="form.board_sn_2" placeholder="请输入板2 码 "  style="width: 100%; margin-bottom: 10px;" />
+               <n-input size="small" class="text-sm" v-model:value="form.board_sn_2" placeholder="请输入板2 码 "  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
-           <n-descriptions-item label="板3 SN">
+           <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">板3 SN</span></template>
             <template v-if="!isEdit">
-              <div>{{ form.board_sn_3 }}</div>
+              <span class="text-sm text-gray-600">{{ form.board_sn_3 }}</span>
             </template>
             <div v-else>
-               <n-input v-model:value="form.board_sn_3" placeholder="请输入板3 码 "  style="width: 100%; margin-bottom: 10px;" />
+               <n-input size="small" class="text-sm" v-model:value="form.board_sn_3" placeholder="请输入板3 码 "  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
         </n-descriptions>
@@ -84,9 +95,10 @@
   
       <!-- 维修详情 -->
       <n-card title="维修详情">
-        <n-descriptions :column="1" label-placement="left" bordered>
-          <n-descriptions-item label="维修部件">
-            <template v-if="!isEdit">{{ form.repair_component }}</template>
+        <n-descriptions :column="1" label-placement="left" bordered size="small" class="text-sm">
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">维修部件</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.repair_component }}</span></template>
             <div v-else style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <n-checkbox-group v-model:value="selectedComponents">
                 <n-space>
@@ -100,15 +112,16 @@
               </n-checkbox-group>
               <n-input
                 v-if="selectedComponents.includes('其他')"
-                v-model:value="otherComponent"
+                v-model:value="otherComponent" size="small" class="text-sm"
                 placeholder="请输入其他项"
                 style="max-width: 200px;"
               />
             </div>
           </n-descriptions-item>
 
-          <n-descriptions-item label="额外操作">
-            <template v-if="!isEdit">{{ form.extra_operations }}</template>
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">额外操作</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.extra_operations }}</span></template>
             <div v-else style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <n-checkbox-group v-model:value="selectedExtraOperations">
                 <n-space>
@@ -125,38 +138,44 @@
 
           <!-- 涂硅脂, 涂三防漆, 换升压模块, 清灰, 贴铝片 -->
 
-          <n-descriptions-item label="初测不良原因">
-            <template v-if="!isEdit">{{ form.defect_reason }}</template>
-            <n-input v-else v-model:value="form.defect_reason" />
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">初测不良原因</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.defect_reason }}</span></template>
+            <n-input v-else size="small" class="text-sm" v-model:value="form.defect_reason" />
           </n-descriptions-item>
   
-          <n-descriptions-item label="不良代码L2">
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">不良代码L2</span></template>
             <template v-if="!isEdit">
-              <div>{{ form.defect_code_2 }}</div>
+              <span class="text-sm text-gray-600">{{ form.defect_code_2 }}</span>
             </template>
-            <n-input v-else v-model:value="form.defect_code_2" placeholder="请输入不良代码L2" />
+            <n-input v-else size="small" class="text-sm" v-model:value="form.defect_code_2" placeholder="请输入不良代码L2" />
           </n-descriptions-item>
-           <n-descriptions-item label="不良代码L3">
+           <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">不良代码L3</span></template>
             <template v-if="!isEdit">
-              <div>{{ form.defect_code_3 }}</div>
+              <span class="text-sm text-gray-600">{{ form.defect_code_3 }}</span>
             </template>
-            <n-input v-else v-model:value="form.defect_code_3" placeholder="请输入不良代码L3" />
+            <n-input v-else size="small" class="text-sm" v-model:value="form.defect_code_3" placeholder="请输入不良代码L3" />
           </n-descriptions-item>
   
-          <n-descriptions-item label="位号信息">
-            <template v-if="!isEdit">{{ form.position }}</template>
-            <n-input v-else v-model:value="form.position" />
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">位号信息</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.position }}</span></template>
+            <n-input v-else size="small" class="text-sm" v-model:value="form.position" />
           </n-descriptions-item>
   
-          <n-descriptions-item label="查证缺陷">
-            <template v-if="!isEdit">{{ form.verify_defect }}</template>
-            <n-input v-else v-model:value="form.verify_defect" />
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">查证缺陷</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.verify_defect }}</span></template>
+            <n-input v-else size="small" class="text-sm" v-model:value="form.verify_defect" />
           </n-descriptions-item>
           
   
-          <n-descriptions-item label="维修部位图片">
+          <n-descriptions-item class="text-sm">
+            <template #label><span class="text-sm text-gray-500">维修部位图片</span></template>
             <template v-if="!isEdit">
-              <div class="flex gap-2">
+              <div class="flex gap-2 text-sm text-gray-600">
                 <div
                   v-for="img in form.images.filter(Boolean)"
                   :key="img"
@@ -166,7 +185,7 @@
                   <div
                     class="absolute inset-0 rounded bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
                   >
-                    <n-button text size="tiny" @click="previewSrc = img; previewVisible = true">
+                    <n-button text size="small" class="text-sm" @click="previewSrc = img; previewVisible = true">
                       <Icon icon="ant-design:eye-outlined" width="20" height="20" color="#fff" />
                     </n-button>
                   </div>
@@ -183,14 +202,15 @@
              @update="(urls: string[]) => form.images = urls"
              @update="(urls: string[]) => { if (Array.isArray(urls) && urls.length) form.images = urls.filter(Boolean) }
            /> -->
-            <QiniuImageUpload
-             v-else
-             v-model:images="form.images"
-             :max="10"
-             button-text="上传图片"
-             @uploaded="(url: string) => form.images.push(url)"
-             @removed="(url: string) => form.images = form.images.filter(u => u !== url)"
-           />
+            <div v-else class="text-sm text-gray-600">
+              <QiniuImageUpload
+                v-model:images="form.images"
+                :max="10"
+                button-text="上传图片"
+                @uploaded="(url: string) => form.images.push(url)"
+                @removed="(url: string) => form.images = form.images.filter(u => u !== url)"
+              />
+            </div>
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
@@ -202,24 +222,28 @@
 
       <!-- 维修进程 -->
       <n-card title="维修进程">
-        <n-descriptions :column="2" label-placement="left" bordered>
-          <n-descriptions-item label="开始时间">
-            <template v-if="!isEdit">{{ form.start_time ? dayjs(form.start_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</template>
-            <n-date-picker v-else v-model:formatted-value="form.start_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
+        <n-descriptions :column="2" label-placement="left" bordered size="small" class="text-sm">
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">开始时间</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.start_time ? dayjs(form.start_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</span></template>
+            <n-date-picker v-else size="small" class="text-sm" v-model:formatted-value="form.start_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
           </n-descriptions-item>
-           <n-descriptions-item label="结束时间">
-            <template v-if="!isEdit">{{ form.end_time ? dayjs(form.end_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</template>
-            <n-date-picker v-else v-model:formatted-value="form.end_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
-          </n-descriptions-item>
-  
-          <n-descriptions-item label="维修状态">
-            <template v-if="!isEdit">{{ repairResultMap[Number(form.repair_result)] }}</template>
-            <n-select v-else v-model:value="form.repair_result" :options="repairResultOptions" />
+           <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">结束时间</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.end_time ? dayjs(form.end_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</span></template>
+            <n-date-picker v-else size="small" class="text-sm" v-model:formatted-value="form.end_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
           </n-descriptions-item>
   
-          <n-descriptions-item label="维修人员">
-            <template v-if="!isEdit">{{ form.repairer_name }}</template>
-            <n-input v-else v-model:value="form.repairer_name" />
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">维修状态</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ repairResultMap[Number(form.repair_result)] }}</span></template>
+            <n-select v-else size="small" class="text-sm" v-model:value="form.repair_result" :options="repairResultOptions" />
+          </n-descriptions-item>
+  
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">维修人员</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.repairer_name }}</span></template>
+            <n-input v-else size="small" class="text-sm" v-model:value="form.repairer_name" />
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
@@ -231,6 +255,7 @@
         <!-- <n-button v-if="isEdit" @click="cancel">取消</n-button> -->
       </div>
     </div>
+    </n-config-provider>
   </template>
   
   <script setup lang="ts">
@@ -238,7 +263,7 @@
   import { useRoute } from "vue-router"
   import dayjs from 'dayjs';
   import { useMessage } from 'naive-ui';
-  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace, NCheckbox, NCheckboxGroup, NModal } from "naive-ui"
+  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace, NCheckbox, NCheckboxGroup, NModal, NConfigProvider } from "naive-ui"
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
   import { repairResultOptions, repairResultMap } from '@/constants/business'
   import QiniuImageUpload from '@/components/upload/QiniuImageUpload.vue'
@@ -255,6 +280,12 @@
   const isEdit = ref(false)
   const previewVisible = ref(false)
   const previewSrc = ref('')
+  const selectThemeOverrides = {
+    Select: {
+      fontSizeSmall: '12px',
+      optionFontSizeSmall: '12px'
+    }
+  } as const
   
   const form = ref({
     date: dayjs().format('YYYY-MM-DD'),
@@ -404,4 +435,3 @@
     width: 140px !important;
   }
   </style>
-

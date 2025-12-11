@@ -27,9 +27,9 @@ export const request = createFlatRequest<App.Service.Response, RequestInstanceSt
     isBackendSuccess(response) {
       // when the backend response code is "0000"(default), it means the request is success
       // to change this logic by yourself, you can modify the `VITE_SERVICE_SUCCESS_CODE` in `.env` file
-      console.log(response)
-      console.log(import.meta.env.VITE_SERVICE_SUCCESS_CODE)
-      console.log("结果",Number(response.data.code) === Number(import.meta.env.VITE_SERVICE_SUCCESS_CODE))
+      // console.log(response)
+      // console.log(import.meta.env.VITE_SERVICE_SUCCESS_CODE)
+      // console.log("结果",Number(response.data.code) === Number(import.meta.env.VITE_SERVICE_SUCCESS_CODE))
       return Number(response.data.code) === Number(import.meta.env.VITE_SERVICE_SUCCESS_CODE);
     },
     async onBackendFail(response, instance) {

@@ -896,8 +896,8 @@ const exportFaultsFile = async () => {
     />
     <!-- 查询框 -->
   <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: 50px;">
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
-      <div style="display: flex; align-items: center; gap: 12px;">
+    <div class="mb-4 flex items-center gap-2 text-sm" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
+      <div class="text-sm" style="display: flex; align-items: center; gap: 12px;">
         <UploadSiteMachineExcel 
         buttonText="导入" 
         :site-options="siteOptions"
@@ -908,6 +908,7 @@ const exportFaultsFile = async () => {
             type="primary" 
             ghost
             size="small"
+            class="text-sm"
             :disabled="selectedRows.length === 0"
             @click="handleCreateWorkOrder"
           >
@@ -930,8 +931,8 @@ const exportFaultsFile = async () => {
 
           <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
        
-       <NSwitch v-model:value="onlyMySite" size="medium" @update:value="onOnlyMySiteChange" />
-    <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
+       <NSwitch v-model:value="onlyMySite" size="small" class="text-sm" @update:value="onOnlyMySiteChange" />
+    <span class="text-sm text-gray-600" style="margin-left: 4px;">我的场地</span>
         </template>
         <template v-if="!hasRole">
   <!-- 批量修改状态组件 -->
@@ -946,7 +947,7 @@ const exportFaultsFile = async () => {
             @refresh="handleRefresh"
           />
         </template>
-         <NButton circle size="small" ghost @click="exportFaultsFile" title="导出 Excel">
+         <NButton circle size="small" ghost class="text-sm" @click="exportFaultsFile" title="导出 Excel">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>
@@ -973,39 +974,43 @@ const exportFaultsFile = async () => {
   </n-card>
 
     <!-- 创建工单弹框 -->
-    <NModal v-model:show="showWorkOrderModal" style="width: 800px" preset="card" title="创建工单">
-      <NForm :model="workOrderForm" label-width="120">
+    <NModal v-model:show="showWorkOrderModal" style="width: 800px" preset="card" title="创建工单" class="text-sm">
+      <NForm :model="workOrderForm" label-width="120" size="small" class="text-sm">
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-          <NFormItem label="工单编号">
-            <NInput v-model:value="workOrderForm.workOrderNo" readonly />
+          <NFormItem>
+            <template #label><span class="text-sm text-gray-500">工单编号</span></template>
+            <NInput v-model:value="workOrderForm.workOrderNo" readonly size="small" class="text-sm" />
           </NFormItem>
           
-          <NFormItem label="工单日期">
-            <NInput v-model:value="workOrderForm.workOrderDate" readonly />
+          <NFormItem>
+            <template #label><span class="text-sm text-gray-500">工单日期</span></template>
+            <NInput v-model:value="workOrderForm.workOrderDate" readonly size="small" class="text-sm" />
           </NFormItem>
           
-          <NFormItem label="场地">
-            <NInput v-model:value="workOrderForm.site" readonly />
+          <NFormItem>
+            <template #label><span class="text-sm text-gray-500">场地</span></template>
+            <NInput v-model:value="workOrderForm.site" readonly size="small" class="text-sm" />
           </NFormItem>
           
-          <NFormItem label="故障机台数">
-            <NInput :value="workOrderForm.faultMachineCount.toString()" readonly />
+          <NFormItem>
+            <template #label><span class="text-sm text-gray-500">故障机台数</span></template>
+            <NInput :value="workOrderForm.faultMachineCount.toString()" readonly size="small" class="text-sm" />
           </NFormItem>
         </div>
         
         <NFormItem label="选中故障机列表">
-          <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px; width: 100%;">
+          <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px; width: 100%;" class="text-sm">
             <div v-for="(machine, index) in workOrderForm.selectedMachines" :key="machine.id" 
                  style="display: flex; justify-content: space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 100%;">
               <!-- <div> -->
-                <div style="font-weight: 500;font-size: 12px; width:30%;color: #666;" >{{ machine.sn }}</div>
-                <div style="font-size: 12px; width:30%;color: #666;"> {{ machine.FaultsType?.name || machine.model }}</div>
-                <div style="font-size: 12px; width:30%;color: #666;">
+                <div class="text-sm text-gray-600" style="font-weight: 500; width:30%;" >{{ machine.sn }}</div>
+                <div class="text-sm text-gray-600" style="width:30%;"> {{ machine.FaultsType?.name || machine.model }}</div>
+                <div class="text-sm text-gray-600" style="width:30%;">
                   <!-- |  -->
                   {{ machine.Site?.name || machine.site_name }}
                 </div>
               <!-- </div> -->
-              <NTag type="warning">{{ machine.Status?.name || machine.status_text }}</NTag>
+              <NTag type="warning" size="small" class="text-sm">{{ machine.Status?.name || machine.status_text }}</NTag>
             </div>
           </div>
         </NFormItem>
@@ -1013,8 +1018,8 @@ const exportFaultsFile = async () => {
       
       <template #footer>
         <NSpace>
-          <NButton type="primary" @click="handleConfirmWorkOrder">创建</NButton>
-          <NButton @click="handleCancelWorkOrder">取消</NButton>
+          <NButton type="primary" size="small" class="text-sm" @click="handleConfirmWorkOrder">创建</NButton>
+          <NButton size="small" class="text-sm" @click="handleCancelWorkOrder">取消</NButton>
         </NSpace>
       </template>
     </NModal>
