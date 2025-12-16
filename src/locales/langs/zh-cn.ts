@@ -178,6 +178,7 @@ const local: App.I18n.Schema = {
     sitedetail:"矿场详情",
     'user-center': '个人中心',
     scrapmachine:"报废机管理",
+    repairreport:"维修报表",
   },
   page: {
     login: {

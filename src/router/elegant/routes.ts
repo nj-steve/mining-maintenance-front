@@ -131,6 +131,18 @@ export const generatedRoutes: GeneratedRoute[] = [
     props: true
   },
   {
+    name: 'repairreport',
+    path: '/repairreport',
+    component: 'layout.base$view.repairreport',
+    meta: {
+      title: 'repairreport',
+      i18nKey: 'route.repairreport',
+      icon: 'mdi:file-document-outline',
+      order: 15,
+      roles: ['1', '2']
+    }
+  },
+  {
     name: 'repairstation',
     path: '/repairstation',
     component: 'layout.base$view.repairstation',

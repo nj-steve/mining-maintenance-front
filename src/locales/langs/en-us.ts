@@ -178,6 +178,7 @@ const local: App.I18n.Schema = {
     sitedetail:"Site Detail",
    'user-center': 'User Center',
     scrapmachine:"Scrap Machines",
+    repairreport:"Repair Report",
   },
   page: {
     login: {
