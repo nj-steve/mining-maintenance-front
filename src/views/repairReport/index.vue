@@ -54,7 +54,7 @@ import dayjs from 'dayjs'
 // const message = useMessage()
 
 const periodMode = ref<'custom' | 'quick'>('quick')
-const quickRange = ref<number>(30)
+const quickRange = ref<number>(60)
 const customRange = ref<[number, number] | null>(null)
 const activeTab = ref<'site' | 'station'>('site')
 const loading = ref(false)

@@ -28,8 +28,6 @@ const seriesPendingData = computed<number[][]>(() => cardData.value.map(item => 
 const seriesRepairingData = computed<number[][]>(() => cardData.value.map(item => [item.repairing]));
 const seriesCompletedData = computed<number[][]>(() => cardData.value.map(item => [item.completed]));
 
-
-
 const { domRef, updateOptions } = useEcharts(() => ({
   tooltip: {
     trigger: 'axis',

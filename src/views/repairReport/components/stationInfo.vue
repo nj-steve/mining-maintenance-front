@@ -110,30 +110,51 @@
       </NCard>
     </div>
 
-    <NCard size="large">
+    <NCard size="large" >
       <template #header>
         <div class="flex items-center justify-between w-full">
           <div>
             <span class="text-18px font-bold text-gray-700">详细数据统计</span>
-            <span class="ml-8px text-12px text-gray-500">{{ recordCount }}</span>
+            <span class="ml-8px text-12px text-gray-500">
+              <n-tag  class="mt-6px text-10px text-gray-500" size="small" :bordered="false" round>
+                &nbsp;{{ recordCount }}&nbsp;
+              </n-tag>
+            </span>
           </div>
           <div class="flex items-center gap-12px">
              
-            <div class="flex items-center gap-8px">
-              <!-- <Icon icon="ant-design:filter-outlined" class="text-gray-500 text-16px" /> -->
-              <!-- <span class="text-13px text-gray-600">选择网点</span> -->
+            <!-- <div class="flex items-center gap-8px">
+              <Icon icon="ant-design:filter-outlined" class="text-gray-500 text-16px" />
               <NSelect 
                 v-model:value="selectedStations" 
                 multiple 
                 filterable 
-                placeholder="请选择网点" 
+                placeholder="搜索网点..." 
                 :options="stationOptions" 
-                :render-label="renderLabel"
                 size="small"
-                style="width: 200px" 
+                style="width: 240px" 
                 clearable
                 max-tag-count="responsive"
               />
+            </div> -->
+                 <div class="flex items-center gap-8px">
+              <!-- <span class="text-13px text-gray-600">选择场地</span> -->
+              <NSelect 
+                v-model:value="selectedStations" 
+                multiple 
+                filterable 
+                placeholder="搜索场地..." 
+                :options="stationOptions" 
+                :render-label="renderLabel"
+                size="small"
+                style="width: 240px" 
+                clearable
+                max-tag-count="responsive"
+              >
+                <template #arrow>
+                  <Icon icon="ant-design:filter-outlined" class="text-gray-400" />
+                </template>
+              </NSelect>
             </div>
 
             <!-- <div class="flex items-center gap-8px">
@@ -164,7 +185,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, h, watch, computed } from 'vue'
-import { NCard, NButton, NSelect, NDataTable, NTag, NInput, NProgress, NCheckbox } from 'naive-ui'
+import { NCard, NButton, NSelect, NDataTable, NTag, NCheckbox, NProgress, NTooltip } from 'naive-ui'
 import * as echarts from 'echarts'
 import { Icon } from '@iconify/vue'
 import { fetchRepairStatistics } from '@/service/api/summary'
@@ -194,6 +215,20 @@ type RowItem = {
   returnRate: number
   scrapCount: number
   scrapRate: number
+}
+
+const renderLabel = (option: { label: string, value: string }) => {
+  return h(
+    'div',
+    { class: 'flex items-center gap-2' },
+    [
+      h(NCheckbox, {
+        checked: selectedStations.value.includes(option.value),
+        style: { pointerEvents: 'none' }
+      }),
+      h('span', option.label)
+    ]
+  )
 }
 
 const tableData = ref<RowItem[]>([])
@@ -233,22 +268,8 @@ const stationOptions = computed(() => {
   return uniqueStations.map(site => ({ label: site, value: site }))
 })
 
-const renderLabel = (option: { label: string, value: string }) => {
-  return h(
-    'div',
-    { class: 'flex items-center gap-2' },
-    [
-      h(NCheckbox, {
-        checked: selectedStations.value.includes(option.value),
-        style: { pointerEvents: 'none' }
-      }),
-      h('span', option.label)
-    ]
-  )
-}
-
 const fetchData = async () => {
-  const start = props.startDate || dayjs().subtract(30, 'day').format('YYYY-MM-DD')
+  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
   const end = props.endDate || dayjs().format('YYYY-MM-DD')
   
   try {
@@ -256,8 +277,8 @@ const fetchData = async () => {
     if (!error && data) {
       summary.value = data.summary || {}
       trendChartData.value = data.trend_data || []
-      topReturnChartData.value = data.return_rate_top5 || []
-      topScrapChartData.value = data.scrap_rate_top5 || []
+      topReturnChartData.value = data.return_rate_top5.reverse() || []
+      topScrapChartData.value = data.scrap_rate_top5.reverse() || []
 
       // Assuming data structure based on typical API patterns. 
       // If the API returns the list directly or wrapped.
@@ -277,31 +298,8 @@ const fetchData = async () => {
       }))
       
       recordCount.value = tableData.value.length
-      
-      // Update summary stats if available in response
-      // if (data.summary) {
-      //   totalRepairs.value = data.summary.totalRepairs || 0
-      //   totalReturnRate.value = data.summary.totalReturnRate || 0
-      //   totalReturnCount.value = data.summary.totalReturnCount || 0
-      //   totalScrapRate.value = data.summary.totalScrapRate || 0
-      //   totalScrapCount.value = data.summary.totalScrapCount || 0
-      // } else {
-      //   // Calculate from table data if summary not provided
-      //   totalRepairs.value = tableData.value.reduce((acc, cur) => acc + cur.repairs, 0)
-      //   totalReturnCount.value = tableData.value.reduce((acc, cur) => acc + cur.returnCount, 0)
-      //   totalScrapCount.value = tableData.value.reduce((acc, cur) => acc + cur.scrapCount, 0)
-      //   // Rates might need weighted average or just sum? usually rates are avg.
-      //   // For now, let's leave rates as 0 or calculate if possible.
-      //   // totalReturnRate = (totalReturnCount / totalRepairs) * 100
-      //   if (totalRepairs.value > 0) {
-      //       totalReturnRate.value = Number(((totalReturnCount.value / totalRepairs.value) * 100).toFixed(2))
-      //       totalScrapRate.value = Number(((totalScrapCount.value / totalRepairs.value) * 100).toFixed(2))
-      //   }
-      // }
-      
       // Update charts
       updateCharts()
-
     }
   } catch (err) {
     console.error('Failed to fetch repair statistics', err)
@@ -312,13 +310,14 @@ function updateCharts() {
     // Update top charts based on tableData
     if (topReturnChart) {
         topReturnChart.setOption({
-            yAxis: { data: topReturnChartData.value.map(d => d.name.length > 14 ? d.name.substring(0, 14) + '...' : d.name) },
+            yAxis: { data: topReturnChartData.value.map(d => d.name) },
             series: [{ data: topReturnChartData.value.map(i => Number(i.return_rate.toFixed(2))).slice(0, 5) }]
         })
     }
     if (topScrapChart) {
         topScrapChart.setOption({
-            yAxis: { data: topScrapChartData.value.map(d => d.name.length > 14 ? d.name.substring(0, 14) + '...' : d.name) },
+            yAxis: { data: topScrapChartData.value.map(d => d.name) },
+            // yAxis: { data: topScrapChartData.value.map(d => d.name.length > 14 ? d.name.substring(0, 14) + '...' : d.name) },
             series: [{ data: topScrapChartData.value.map(i => Number(i.scrap_rate.toFixed(2))).slice(0, 5) }]
         })
     }
@@ -334,7 +333,23 @@ const columns = computed(() => [
     key: 'site',
     sorter: 'default' as const,
     render(row: RowItem) {
-      return h('span', { class: 'text-sm font-medium text-gray-900' }, row.site)
+      const content = row.site
+      return h(
+        NTooltip,
+        { placement: 'top', trigger: 'hover' },
+        {
+          trigger: () => h('div', { 
+            class: 'text-sm font-medium text-gray-900',
+            style: {
+              width: '200px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }
+          }, content),
+          default: () => content
+        }
+      )
     }
   },
   { 
@@ -368,7 +383,7 @@ const columns = computed(() => [
           height: 8,
           style: { width: '80px' }
         }),
-        h('span', { class: 'text-sm text-gray-500' }, `${row.returnRate.toFixed(2)}%`)
+        h(NTag, { type: type, size: 'small',round: true, bordered: false }, { default: () => `${row.returnRate.toFixed(2)}%` })
       ])
     }
   },
@@ -395,12 +410,11 @@ const columns = computed(() => [
           height: 8,
           style: { width: '80px' }
         }),
-        h('span', { class: 'text-sm text-gray-500' }, `${row.scrapRate.toFixed(2)}%`)
+        h(NTag, { type: type, size: 'small',round: true, bordered: false }, { default: () => `${row.scrapRate.toFixed(2)}%` })
       ])
     }
   }
 ])
-
 
 function buildChart() {
 
@@ -555,10 +569,10 @@ function buildTopCharts() {
     topReturnChart.setOption(
       {
     grid: {
-      left: '15%',
+      left: '120px',
       right: '3%',
-      top: '5%',
-      bottom: '15%'
+      top: '0%',
+      bottom: '10%'
     },
     xAxis: {
       type: 'value',
@@ -586,7 +600,10 @@ function buildTopCharts() {
       data: topReturnChartData.value.map(d => d.name.length > 14 ? d.name.substring(0, 14) + '...' : d.name),
       axisLabel: {
         fontSize: 11,
-        color: '#374151'
+        color: '#6b7280',
+        formatter: (value: string) => {
+          return value.length > 14 ? value.substring(0, 14) + '...' : value
+        }
       },
       axisLine: {
         show: false
@@ -602,7 +619,7 @@ function buildTopCharts() {
       borderRadius: 8,
       formatter: (params: any) => {
         const param = params[0];
-        return `${param.name}<br/>${param.seriesName}: ${param.value}%`;
+        return `${param.name}<br/>${param.marker} ${param.seriesName}: ${param.value}%`;
       }
     },
     series: [
@@ -639,17 +656,17 @@ function buildTopCharts() {
     topScrapChart.setOption(
       {
     grid: {
-      left: '15%',
+      left: '120px',
       right: '3%',
-      top: '5%',
-      bottom: '15%'
+      top: '0%',
+      bottom: '10%'
     },
     xAxis: {
       type: 'value',
       axisLabel: {
         formatter: '{value}%',
         fontSize: 11,
-        color: '#6b7280'
+        color: '#6b7280',
       },
       axisLine: {
         show: true,
@@ -667,10 +684,13 @@ function buildTopCharts() {
     },
     yAxis: {
       type: 'category',
-      data: topScrapChartData.value.map(d => d.name.length > 14 ? d.name.substring(0, 14) + '...' : d.name),
+      // data: topScrapChartData.value.map(d => d.name.length > 14 ? d.name.substring(0, 14) + '...' : d.name),
       axisLabel: {
         fontSize: 11,
-        color: '#374151'
+        color: '#6b7280',
+        formatter: (value: string) => {
+          return value.length > 14 ? value.substring(0, 14) + '...' : value
+        }
       },
       axisLine: {
         show: false
@@ -686,7 +706,7 @@ function buildTopCharts() {
       borderRadius: 8,
       formatter: (params: any) => {
         const param = params[0];
-        return `${param.name}<br/>${param.seriesName}: ${param.value}%`;
+        return `${param.name}<br/>${param.marker} ${param.seriesName}: ${param.value}%`;
       }
     },
     series: [

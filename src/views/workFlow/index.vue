@@ -330,8 +330,8 @@ const columns: DataTableColumns<Order> = [
     fixed: 'left',
     render: (row: Order) => {
       const full = row.OrderNo || '';
-      const prefix = full.slice(0, 12);
-      const suffix = full.slice(-7);
+      const prefix = full.slice(0, 10);
+      const suffix = full.slice(-5);
       const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
       const onCopy = async () => {
         try {
@@ -372,8 +372,6 @@ const columns: DataTableColumns<Order> = [
       );
     }
   },
-
-  
   { title: () => renderHeaderTitle('故障机数量'), key: 'FaultCount', width: 200, render: (row: any ) => {
     const total = Number(row.FaultCount ?? 0)
     const repaired = Number(row.RepairedCount ?? 0)
@@ -390,7 +388,7 @@ const columns: DataTableColumns<Order> = [
           indicatorPlacement: 'inside',
           status: percent >= 100 ? 'success' : undefined
         }),
-        h('span', { class: 'text-sm text-gray-500', style: 'white-space: nowrap;' }, `${safeRepaired}/${safeTotal} (${percent}%)`)
+        h('span', { class: 'text-xs text-gray-500', style: 'white-space: nowrap;' }, `${safeRepaired}/${safeTotal} (${percent}%)`)
       ]
     )
   }},
@@ -402,7 +400,7 @@ const columns: DataTableColumns<Order> = [
         3: 'primary',
       };
       // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, { class: 'text-sm', type: tagMap[row.RepairMethod || '无'],size:'small', round:true }, () => repairMethodRecord[row.RepairMethod || '未知'] || '未知')
+      return h(NTag, { class: 'text-xs', type: tagMap[row.RepairMethod || '无'],size:'small', round:true }, () => repairMethodRecord[row.RepairMethod || '未知'] || '未知')
     }
   },
   { title: () => renderHeaderTitle('工单状态'), key: 'OrderStatusText',
@@ -415,7 +413,7 @@ const columns: DataTableColumns<Order> = [
         '处理中':'primary',
         };
         const label = row.OrderStatusText || '未知';
-        return h(NTag, { class: 'text-sm', type: tagMap[row.OrderStatusText || '未知'],size:'small', round:true }, () => label)
+        return h(NTag, { class: 'text-xs', type: tagMap[row.OrderStatusText || '未知'],size:'small', round:true }, () => label)
       }
   },
    { title: () => renderHeaderTitle('创建时间'), key: 'CreatedAt',

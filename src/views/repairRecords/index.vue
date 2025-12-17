@@ -112,8 +112,8 @@ const columns: DataTableColumns<any> = [
    { title: () => renderHeaderTitle('整机SN码'), key: 'DeviceSN', 
    width: 150, render: (row) => {
       const full = (row as any).DeviceSN || '';
-      const prefix = full.slice(0, 6);
-      const suffix = full.slice(-6);
+      const prefix = full.slice(0, 5);
+      const suffix = full.slice(-5);
       const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
       const onCopy = async () => {
         try {
@@ -155,8 +155,8 @@ const columns: DataTableColumns<any> = [
   { title: () => renderHeaderTitle('工单号'), key: 'WorkOrderNo', width: 150,  render: (row: Faults) => {
       // const full = row.order_no || '';
       const full = (row as any).WorkOrderNo || '';
-      const prefix = full.slice(0, 6);
-      const suffix = full.slice(-7);
+      const prefix = full.slice(0, 5);
+      const suffix = full.slice(-5);
       const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
       const onCopy = async () => {
         try {
@@ -215,7 +215,7 @@ const columns: DataTableColumns<any> = [
         '待修复': 'warning',
       };
       const type = tagMap[label] || 'default';
-      return h(NTag, { type,class:'text-sm', size: 'small',round:true }, () => label)
+      return h(NTag, { type,class:'text-xs', size: 'small',round:true }, () => label)
     }
   },
   { 
@@ -243,7 +243,7 @@ const columns: DataTableColumns<any> = [
             size: 'small', 
             ghost: true, 
             style: 'margin-right: 8px;',
-            class:'text-sm',
+            class:'text-xs',
             onClick: () => goDetail(rowId) 
           },
           { default: () => '详情' }
@@ -256,7 +256,7 @@ const columns: DataTableColumns<any> = [
                 size: 'small',
                 ghost: true,
                 style: 'margin-right: 8px;',
-                class: 'text-sm',
+                class: 'text-xs',
                 onClick: () => openScrapModal(row)
               },
               { default: () => '部件标记' }
