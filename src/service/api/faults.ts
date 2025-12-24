@@ -118,6 +118,18 @@ export function exportFaults(params: {[key: string]: any }) {
   });
 }
 
+// /api/orders/import 导入创建工单
+// params:
+//   file：文件上传
+//   site_id： 场地id
+export function importOrders(params: {[key: string]: any }) {
+  return request({
+    url: '/api/orders/import',
+    method: 'post',
+    data:params
+  });
+}
+
 
 
 

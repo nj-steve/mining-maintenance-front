@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, h } from 'vue';
-import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip, NPopconfirm } from 'naive-ui';
+import { onMounted, ref, watch, h, computed } from 'vue';
+import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip, NPopconfirm, NDropdown } from 'naive-ui';
 import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
+import UploadWorkOrderExcel from './components/UploadWorkOrderExcel.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
 import { fetchFaults,updateFaultsStatus,updateFaults, exportFaults } from '@/service/api/faults';
@@ -96,6 +97,7 @@ const selectedRows = ref<Faults[]>([]);
 
 // 工单相关
 const showWorkOrderModal = ref(false);
+const showImportWorkOrderModal = ref(false);
 const workOrderForm = ref({
   workOrderNo: '',
   workOrderDate: new Date().toISOString().split('T')[0],
@@ -183,7 +185,6 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
 
   try {
     const {data,error} = await fetchOrdersStatus(params);
-    
     if(error==null && data){
       if(operate_type==='list'){
         statusOptions.value = data.map((item: any) => ({
@@ -197,7 +198,6 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
           value: item.id,
         }));
       }
-      
     }else{
         message.error(`加载失败: ${error}`);
     }
@@ -579,9 +579,30 @@ const handleSelectionChange = (keys: (string | number)[], rows: any[]) => {
 };
 
 // 创建工单
+const handleCreateWorkOrderSelect = (key: string) => {
+  if (key === 'batch') {
+    handleCreateWorkOrder();
+  } else if (key === 'import') {
+    showImportWorkOrderModal.value = true;
+  }
+};
+
+const createWorkOrderOptions = computed(() => [
+  {
+    label: `批量创建 (${selectedRows.value.length})`,
+    key: 'batch',
+    disabled: selectedRows.value.length === 0
+  },
+  {
+    label: '导入创建',
+    key: 'import'
+  }
+]);
+
+// 创建工单
 const handleCreateWorkOrder = () => {
   if (selectedRows.value.length === 0) {
-    message.warning('请先选择机器');
+    message.warning('请选择要创建工单的设备');
     return;
   }
   // 统计选中机器所属的唯一场地名数量（去重）
@@ -596,7 +617,7 @@ const handleCreateWorkOrder = () => {
     message.warning('仅可选择一个场地的机器');
     return;
   }
-  console.log('选中的场地:', uniqueSiteNames[0]);
+  // console.log('选中的场地:', uniqueSiteNames[0]);
 
   // 只选择状态为"新下架"的机器
   const downCheckMachines = selectedRows.value.filter(row => 
@@ -904,16 +925,21 @@ const exportFaultsFile = async () => {
         @success="fetchData"/>
        
         <template v-if="hasRole">
-          <NButton
-            type="primary" 
-            ghost
-            size="small"
-            class="text-sm"
-            :disabled="selectedRows.length === 0"
-            @click="handleCreateWorkOrder"
-          >
-            创建工单 ({{ selectedRows.length }})
-          </NButton>
+          <NDropdown :options="createWorkOrderOptions" trigger="click" @select="handleCreateWorkOrderSelect">
+            <NButton
+              type="primary" 
+              ghost
+              size="small"
+              class="text-sm"
+            >
+              创建工单
+              <template #icon>
+                 <Icon icon="ant-design:down-outlined" />
+              </template>
+            </NButton>
+          </NDropdown>
+
+          <UploadWorkOrderExcel v-model:show="showImportWorkOrderModal" :site-options="siteOptions" @success="fetchData" />
           
           <BindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
           
