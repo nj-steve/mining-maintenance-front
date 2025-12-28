@@ -1,6 +1,6 @@
 <template>
   <!-- 触发按钮 -->
-  <NButton 
+  <!-- <NButton 
     type="primary" 
     ghost
     size="small"
@@ -8,7 +8,8 @@
     @click="handleOpenModal"
   >
     绑定工单 ({{ selectedRows.length }})
-  </NButton>
+  </NButton> -->
+  <div />
 
   <!-- 绑定工单弹框 -->
   <NModal v-model:show="visible" style="width: 700px" preset="card" title="绑定工单">
@@ -207,6 +208,9 @@ const handleSubmit = async () => {
 const handleCancel = () => {
   visible.value = false;
 };
+defineExpose({
+  handleOpenModal
+});
 </script>
 
 <style scoped>

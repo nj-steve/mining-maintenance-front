@@ -28,7 +28,7 @@ interface User {
 
 interface EditUser {
   id:number,
-  assigned_company_id: string;
+  assigned_company_id: string[];
   company: string;
   password: string;
   contact_phone: string;
@@ -89,7 +89,7 @@ const dialogMode = ref<'add' | 'edit'>('add');
 
 const editForm = ref<EditUser>({
   id: 0,
-  assigned_company_id: "",
+  assigned_company_id: [],
   password: "",
   company: "",
   contact_phone: "",
@@ -106,7 +106,7 @@ const handleOpenAdd = () => {
   dialogMode.value = 'add';
   editForm.value = {
     id: 0,
-    assigned_company_id: "",
+    assigned_company_id: [],
     password: "",
     company: "",
     contact_phone: "",
@@ -131,7 +131,7 @@ function userToEditUser(user: User): EditUser {
   return {
     id: user.id || 0,
     real_name: user.real_name || "",
-    assigned_company_id: user.company_info?.[0]?.id?.toString() || "",
+    assigned_company_id: user.company_info?.map(item => item.id.toString()) || [],
     company: user.company_info?.[0]?.name || "",
     password: "",
     contact_phone: user.contact_phone || "",
@@ -156,7 +156,7 @@ const handleOpenEdit = async(row: User) => {
     // getCompanys(row.role);
     await getCompanys(row.role); // 等待加载完公司选项
     // 再次设置公司ID，确保选中
-    editForm.value.assigned_company_id = row.company_info?.[0]?.id?.toString() || "";
+    editForm.value.assigned_company_id = row.company_info?.map(item => item.id.toString()) || [];
   }
   
   showModal.value = true;
@@ -172,7 +172,7 @@ const handleSave = async () => {
   // 管理员(1)和售后管理(2)不需要选择公司
   if (!currentRole || currentRole === 1 || currentRole === 2) {
     console.log("当前角色不需要选择公司:", currentRole);
-  }else if (!editForm.value.assigned_company_id) {
+  }else if (!editForm.value.assigned_company_id || editForm.value.assigned_company_id.length === 0) {
       message.error('请选择所属公司');
       return;
     }
@@ -211,8 +211,16 @@ const handleSave = async () => {
     //   return;
     // }
 
+    // 转换 assigned_company_id 为逗号分隔字符串
+    const submitData: any = {
+      ...editForm.value,
+      assigned_company_id: Array.isArray(editForm.value.assigned_company_id) 
+        ? editForm.value.assigned_company_id.join(',') 
+        : editForm.value.assigned_company_id
+    };
+
     if (dialogMode.value === 'add') {
-      const res = await createUser(editForm.value);
+      const res = await createUser(submitData);
       console.log("addUser",res)
       if (res.response?.data?.msg === "Operation successful") {
         message.success('添加成功！');
@@ -224,7 +232,7 @@ const handleSave = async () => {
       // }
     } else {
       
-      const res = await updateUser(editForm.value.id!, editForm.value);
+      const res = await updateUser(editForm.value.id!, submitData);
       // console.log("updateUser",res)
       if (res.response?.data?.msg === "Operation successful") {
         message.success('修改成功！');
@@ -355,7 +363,7 @@ const getCompanys = async (role?: number) => {
     console.log("当前角色不需要选择公司:", currentRole);
     companyOptions.value = [];
     // 清空已选的公司
-    editForm.value.assigned_company_id = "";
+    editForm.value.assigned_company_id = [];
     return;
   }
 
@@ -387,7 +395,7 @@ const getCompanys = async (role?: number) => {
       }
       
       // 清空当前选中的公司，因为角色变了
-      editForm.value.assigned_company_id = "";
+      editForm.value.assigned_company_id = [];
     } else {
       message.error(`加载公司数据失败: ${error}`);
       companyOptions.value = [];
@@ -488,6 +496,7 @@ watch([searchSerial,searchRole], () => {
             v-model:value="editForm.assigned_company_id"
             :options="companyOptions"
             placeholder="请选择公司"
+            multiple
             clearable
           />
           <!-- <NInput v-model:value="editForm.Company" placeholder="请输入所属公司" /> -->

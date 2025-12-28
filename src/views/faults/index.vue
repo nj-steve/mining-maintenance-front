@@ -7,6 +7,8 @@ import UploadWorkOrderExcel from './components/UploadWorkOrderExcel.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
 import { fetchFaults,updateFaultsStatus,updateFaults, exportFaults } from '@/service/api/faults';
+import {fetchSites} from '@/service/api/site';
+
 import {fetchOrdersStatus} from '@/service/api/workflow';
 import { createOrder } from '@/service/api/workflow';
 import UploadSiteMachineExcel from "@/components/upload/UploadSiteMachineExcel.vue"
@@ -20,6 +22,7 @@ import EditFaultModalButton from './components/EditFaultModalButtonShouhou.vue'
 import EditFaultModalButtonYunwei from './components/EditFaultModalButtonYunwei.vue'
 import EditFaultModalButtonAdmin from './components/EditFaultModalButtonAdmin.vue'
 import { repairMethodRecord } from '@/constants/business';
+import UploadBindWorkOrderExcel from './components/UploadBindWorkOrderExcel.vue'
 
 
 
@@ -98,6 +101,7 @@ const selectedRows = ref<Faults[]>([]);
 // 工单相关
 const showWorkOrderModal = ref(false);
 const showImportWorkOrderModal = ref(false);
+const showImportBindWorkOrderModal = ref(false);
 const workOrderForm = ref({
   workOrderNo: '',
   workOrderDate: new Date().toISOString().split('T')[0],
@@ -106,6 +110,29 @@ const workOrderForm = ref({
   selectedMachines: [] as Faults[],
   site_id:0,
 });
+
+const bindWorkOrderRef = ref();
+
+const bindWorkOrderOptions = [
+  {
+    label: '批量绑定',
+    key: 'batch',
+    icon: () => h(Icon, { icon: 'ant-design:plus-outlined' })
+  },
+  {
+    label: '导入绑定',
+    key: 'import',
+    icon: () => h(Icon, { icon: 'ant-design:upload-outlined' })
+  }
+];
+
+const handleBindWorkOrderSelect = (key: string) => {
+  if (key === 'batch') {
+    bindWorkOrderRef.value?.handleOpenModal();
+  } else if (key === 'import') {
+    showImportBindWorkOrderModal.value = true;
+  }
+};
 
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
@@ -211,22 +238,35 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
 // 获取场地数据
 const fetchSiteData = async () => {
   // console.log("hasRole>>fetchSiteData >> ",hasRole)
-  if(!hasRole){
-    return
-  }
+  // if(!hasRole){
+  //   return
+  // }
   try {
     // 这里需要根据实际的API接口来获取场地数据
     const params: any = {
       enable_all: (hasRole===true && !(localStorage.getItem("onlyMySite")==='true'))?1:-1,
     };
-    // console.log("params",params)
-    const { data, error } = hasRole?await fetchOrdersSite(params):{data:[],error:null};
-    if (!error && data) {
-      siteOptions.value = data.map((site: any) => ({
-        label: site.Name,
-        value: site.ID,
-      }));
+    if(!hasRole){
+       const { data, error } = await fetchSites({page:1,page_size:100});
+        if (!error && data) {
+          siteOptions.value = data.list.map((site: any) => ({
+            label: site.name,
+            value: site.id,
+          }));
+        }
+    }else{
+      const { data, error } = await fetchOrdersSite(params);
+        if (!error && data) {
+          siteOptions.value = data.map((site: any) => ({
+            label: site.Name,
+            value: site.ID,
+          }));
+        }
     }
+    // console.log("params",params)
+    // const { data, error } = hasRole?await fetchOrdersSite(params):{data:[],error:null};
+  
+
   } catch (err) {
     message.error('获取场地数据失败');
   }
@@ -556,10 +596,10 @@ onMounted(() => {
   fetchData()
   fetchOrderStatusData('list');
   fetchOrderStatusData('update');
-  if(hasRole){
+  // if(hasRole){
     // console.log("hasRole>>onMounted",hasRole)
     fetchSiteData();
-  }
+  // }
 
   // fetchSiteData();
 });
@@ -593,10 +633,10 @@ const createWorkOrderOptions = computed(() => [
     key: 'batch',
     disabled: selectedRows.value.length === 0
   },
-  {
-    label: '导入创建',
-    key: 'import'
-  }
+  // {
+  //   label: '导入创建',
+  //   key: 'import'
+  // }
 ]);
 
 // 创建工单
@@ -941,7 +981,23 @@ const exportFaultsFile = async () => {
 
           <UploadWorkOrderExcel v-model:show="showImportWorkOrderModal" :site-options="siteOptions" @success="fetchData" />
           
-          <BindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
+          <NDropdown :options="bindWorkOrderOptions" trigger="click" @select="handleBindWorkOrderSelect">
+            <NButton
+              type="primary" 
+              ghost
+              size="small"
+              class="text-sm"
+            >
+              绑定工单
+              <template #icon>
+                 <Icon icon="ant-design:down-outlined" />
+              </template>
+            </NButton>
+          </NDropdown>
+
+          <BindWorkOrderModal ref="bindWorkOrderRef" style="display: none" :selectedRows="selectedRows" @refresh="handleRefresh" />
+
+          <UploadBindWorkOrderExcel v-model:show="showImportBindWorkOrderModal" :site-options="siteOptions" @success="fetchData" />
           
           <!-- 批量修改状态组件 -->
           <BatchStatusModal 

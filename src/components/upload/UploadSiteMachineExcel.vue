@@ -15,7 +15,7 @@
         <div style="display: flex; flex-direction: column; gap: 16px;">
           <!-- 场地下拉选择 -->
           <n-select
-           v-if="hasRole"
+           v-if="hasRole || siteOptions.length > 1"
             v-model:value="selectedSite"
             :options="siteOptions"
             size="small"

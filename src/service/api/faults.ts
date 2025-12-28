@@ -130,6 +130,18 @@ export function importOrders(params: {[key: string]: any }) {
   });
 }
 
+// orders/bind 故障机绑定工单
+// params:
+//   file: 文件上传
+//   order_no: string
+export function bindFaultsToOrders(params: {[key: string]: any }) {
+  return request({
+    url: '/api/orders/bind',
+    method: 'post',
+    data:params
+  });
+}
+
 
 
 
