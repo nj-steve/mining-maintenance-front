@@ -5,6 +5,13 @@ import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchRepairStations,deleteRepairStation } from '@/service/api/repair';
 import AddRepairStationModal from '@/components/custom/AddRepairStationModal.vue';
 import EditRepairStationModal from '@/components/custom/EditRepairStationModal.vue';
+import { useAuthStore } from '@/store/modules/auth';
+
+const authStore = useAuthStore();
+const hasRole=!authStore.userInfo.roles.includes('3')
+const isAdmin=authStore.userInfo.roles.includes('1') // 超管
+const isRead=authStore.userInfo.roles.includes('5') // 只读用户
+
 
 
 interface CompanyInfo {
@@ -135,6 +142,9 @@ const columns: DataTableColumns<CompanyInfo> = [
     key: 'actions',
     align:'center',
     render: (row: CompanyInfo) => {
+      if(isRead){
+        return []
+      }
       return [
         h(
           NButton,
@@ -247,7 +257,7 @@ watch([searchSerial], () => {
 <template>
   <div>
     <!-- 查询框和添加按钮 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
+    <div v-if="!isRead" class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
       <NButton type="primary" @click="handleOpenAdd">添加维修站</NButton>
         <!-- 添加维修站组件 -->
     <AddRepairStationModal 

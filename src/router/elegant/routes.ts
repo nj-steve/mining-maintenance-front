@@ -198,7 +198,7 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.users',
       icon: 'mdi:lock',
       order: 70,
-      roles: ['1', '2', '5']
+      roles: ['1', '2']
     }
   },
   {
