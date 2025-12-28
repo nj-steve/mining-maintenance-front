@@ -119,11 +119,11 @@ const bindWorkOrderOptions = [
     key: 'batch',
     icon: () => h(Icon, { icon: 'ant-design:plus-outlined' })
   },
-  {
-    label: '导入绑定',
-    key: 'import',
-    icon: () => h(Icon, { icon: 'ant-design:upload-outlined' })
-  }
+  // {
+  //   label: '导入绑定',
+  //   key: 'import',
+  //   icon: () => h(Icon, { icon: 'ant-design:upload-outlined' })
+  // }
 ];
 
 const handleBindWorkOrderSelect = (key: string) => {
