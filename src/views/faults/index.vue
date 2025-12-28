@@ -30,9 +30,8 @@ import { Icon } from '@iconify/vue';
 
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
-const isAdmin=authStore.userInfo.roles.includes('1')
-
-
+const isAdmin=authStore.userInfo.roles.includes('1') // 超管
+const isRead=authStore.userInfo.roles.includes('5') // 只读用户
 
 // console.log("Outer >> hasRole>>",hasRole)
 
@@ -530,6 +529,9 @@ const columns: DataTableColumns<Faults> = [
     width: 120,
     fixed: 'right',
     render: (row: Faults) => {
+      if(isRead){
+        return []
+      }
       if(isAdmin){
         return [
           h(
@@ -570,7 +572,7 @@ const columns: DataTableColumns<Faults> = [
           ]
       }
       return [  
-        hasRole
+         hasRole 
           ? h(
               EditFaultModalButton,
               {
@@ -957,14 +959,14 @@ const exportFaultsFile = async () => {
     />
     <!-- 查询框 -->
   <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: 50px;">
-    <div class="mb-4 flex items-center gap-2 text-sm" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
+    <div v-if="!isRead" class="mb-4 flex items-center gap-2 text-sm" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
       <div class="text-sm" style="display: flex; align-items: center; gap: 12px;">
         <UploadSiteMachineExcel 
         buttonText="导入" 
         :site-options="siteOptions"
         @success="fetchData"/>
        
-        <template v-if="hasRole">
+        <template v-if="hasRole ">
           <NDropdown :options="createWorkOrderOptions" trigger="click" @select="handleCreateWorkOrderSelect">
             <NButton
               type="primary" 

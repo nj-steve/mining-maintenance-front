@@ -80,6 +80,7 @@ export const roleRecord:Record<number, string> = {
     2: '售后管理',
     3: '运维人员',
     4: '维修人员',
+    5: '只读用户',
   };
 
 

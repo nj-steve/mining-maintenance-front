@@ -12,6 +12,7 @@ import SearchBar from './components/SearchBar.vue';
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
 const isAdmin=authStore.userInfo.roles.includes('1') // 超管
+const isRead=authStore.userInfo.roles.includes('5') // 只读用户
 
 interface Site {
   id: number;
@@ -463,7 +464,7 @@ const columns: DataTableColumns<Site> = [
     fixed: 'right',
     align:'center',
     render: (row: Site) => {
-      if(!hasRole){
+      if(!hasRole && !isRead){
              return h(
         NButton,
         {
@@ -530,29 +531,29 @@ const columns: DataTableColumns<Site> = [
           }
         )
       }
-      // 移除重复的 isAdmin 分支
-      // (重复代码已删除)
       // 已移除重复的 isAdmin 分支内容
       if (hasRole) {
-        return [
-          h(
+        const actions = [];
+        if (!isRead) {
+          actions.push(h(
+            NButton,
+            {
+              ghost: true,
+              size: 'small',
+              class: 'text-sm text-gray-500',
+              style: "margin-right: 8px;color: #6b7280;",
+              onClick: () => handleOpenEdit(row)
+            },
+            {
+              default: () => '编辑',
+            }
+          ));
+        }
+        actions.push(h(
           NButton,
           {
             ghost: true,
-            size:'small',
-            class: 'text-sm text-gray-500',
-            style: "margin-right: 8px;color: #6b7280;",
-            onClick: () => handleOpenEdit(row)
-          },
-          {
-            default: () => '编辑',
-          }
-        ),
-        h(
-          NButton,
-          {
-            ghost: true,
-            size:'small',
+            size: 'small',
             class: 'text-sm text-gray-500',
             style: 'color: #6b7280;',
             onClick: () => {
@@ -562,10 +563,10 @@ const columns: DataTableColumns<Site> = [
           {
             default: () => '查看',
           }
-        )
-      ]
+        ));
+        return actions;
+      }
     }
-  }
   }
 ];
 

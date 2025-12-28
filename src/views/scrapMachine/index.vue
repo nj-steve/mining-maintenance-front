@@ -23,7 +23,7 @@
             :site-options="siteOptions"
             @change="handleSearchChange"
           />
-          <div class="flex gap-2">
+          <div v-if="!isRead" class="flex gap-2">
             <button @click="exportExcel" class="!rounded-button whitespace-nowrap px-4 py-2 text-sm border border-gray-300 rounded-md flex items-center">
               <i class="fas fa-download mr-2"></i>
               导出数据
@@ -172,7 +172,7 @@
                   <span class="font-medium text-gray-900">{{ item.scrap_count }} 次</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm sticky right-0 bg-white">
-                  <div class="flex space-x-2">
+                  <div v-if="!isRead" class="flex space-x-2">
 
                     <button
                       :class="[
@@ -276,6 +276,12 @@ import ScrapSummaryCards from './components/ScrapSummaryCards.vue'
 import ScrapSearchBar from './components/ScrapSearchBar.vue'
 import {fetchOrdersSite} from '@/service/api';
 import { Icon } from '@iconify/vue'
+import { useAuthStore } from '@/store/modules/auth';
+
+const authStore = useAuthStore();
+const hasRole=!authStore.userInfo.roles.includes('3')
+const isAdmin=authStore.userInfo.roles.includes('1') // 超管
+const isRead=authStore.userInfo.roles.includes('5') // 只读用户
 
 const message = useMessage();
 const dialog = useDialog();

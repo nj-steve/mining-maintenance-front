@@ -12,6 +12,14 @@ import ScrapFlagsModal from './components/ScrapFlagsModal.vue'
 import { repairResultMap } from  '@/constants/business'
 
 const router = useRouter();
+import { useAuthStore } from '@/store/modules/auth';
+
+const authStore = useAuthStore();
+const hasRole=!authStore.userInfo.roles.includes('3')
+const isAdmin=authStore.userInfo.roles.includes('1') // 超管
+const isRead=authStore.userInfo.roles.includes('5') // 只读用户
+
+
 
 interface Faults {
   id: number;
@@ -235,6 +243,20 @@ const columns: DataTableColumns<any> = [
       // console.log("表格行数据:", row);
       const rowId = row.id || row.ID || row.Id || row.workOrderNo || row.WorkOrderNo;
       // console.log("提取的ID:", rowId); 
+      if(isRead){
+        return [ h(
+          NButton,
+          { 
+            type: 'primary', 
+            size: 'small', 
+            ghost: true, 
+            style: 'margin-right: 8px;',
+            class:'text-xs',
+            onClick: () => goDetail(rowId) 
+          },
+          { default: () => '详情' }
+        ),]
+      }
       return [
         h(
           NButton,
@@ -478,7 +500,7 @@ const handleFail = () => {
       <div  style="display: flex; gap: 8px; align-items: center;">
         <UploadRepairDetailsExcel v-if="isRepairStation" @success="fetchData" @fail="handleFail"/>
       </div>
-      <div style="display: flex; gap: 8px; align-items: center;">
+      <div v-if="!isRead" style="display: flex; gap: 8px; align-items: center;">
         <NButton circle size="medium" ghost @click="exportCsv" title="导出 CSV"  style="margin-right: 80px;">
           <template #icon>
             <icon-ant-design-download-outlined />

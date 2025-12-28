@@ -154,9 +154,14 @@ const handleOpenEdit = async(row: User) => {
   // 根据角色加载对应的公司选项
   if (row.role) {
     // getCompanys(row.role);
-    await getCompanys(row.role); // 等待加载完公司选项
-    // 再次设置公司ID，确保选中
-    editForm.value.assigned_company_id = row.company_info?.map(item => item.id.toString()) || [];
+    console.log("row.role",row.role)
+    if(row.role === 5) {
+      editForm.value.assigned_company_id = [];
+    }else{
+      await getCompanys(row.role); // 等待加载完公司选项
+      // 再次设置公司ID，确保选中
+      editForm.value.assigned_company_id = row.company_info?.map(item => item.id.toString()) || [];
+    }
   }
   
   showModal.value = true;
@@ -170,7 +175,7 @@ const handleSave = async () => {
   const currentRole = editForm.value.role;
   
   // 管理员(1)和售后管理(2)不需要选择公司
-  if (!currentRole || currentRole === 1 || currentRole === 2) {
+  if (!currentRole || currentRole === 1 || currentRole === 2 || currentRole === 5) {
     console.log("当前角色不需要选择公司:", currentRole);
   }else if (!editForm.value.assigned_company_id || editForm.value.assigned_company_id.length === 0) {
       message.error('请选择所属公司');
@@ -359,7 +364,7 @@ const getCompanys = async (role?: number) => {
   const currentRole = role || editForm.value.role;
   
   // 管理员(1)和售后管理(2)不需要选择公司
-  if (!currentRole || currentRole === 1 || currentRole === 2) {
+  if (!currentRole || currentRole === 1 || currentRole === 2 || currentRole === 5) {
     console.log("当前角色不需要选择公司:", currentRole);
     companyOptions.value = [];
     // 清空已选的公司

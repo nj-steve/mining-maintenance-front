@@ -2,7 +2,7 @@
     <n-config-provider :theme-overrides="selectThemeOverrides">
     <div class="p-4 space-y-6 text-sm">
       <!-- 基础信息 -->
-       <div class="flex justify-end gap-4 mt-4">
+       <div class="flex justify-end gap-4 mt-4" v-if="!isRead">
         <n-button v-if="!isEdit" size="small" class="text-sm" type="primary" @click="isEdit = true">编辑</n-button>
         <n-button v-if="isEdit" size="small" class="text-sm" type="primary" @click="save">保存</n-button>
         <n-button v-if="isEdit" size="small" class="text-sm" @click="cancel">取消</n-button>
@@ -268,6 +268,12 @@
   import { repairResultOptions, repairResultMap } from '@/constants/business'
   import QiniuImageUpload from '@/components/upload/QiniuImageUpload.vue'
   import { Icon } from '@iconify/vue'
+  import { useAuthStore } from '@/store/modules/auth';
+  
+  const authStore = useAuthStore();
+  const hasRole=!authStore.userInfo.roles.includes('3')
+  const isAdmin=authStore.userInfo.roles.includes('1') // 超管
+  const isRead=authStore.userInfo.roles.includes('5') // 只读用户
   
   
   const route = useRoute();
