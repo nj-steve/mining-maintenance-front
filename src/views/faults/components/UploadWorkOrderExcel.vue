@@ -16,8 +16,6 @@
             placeholder="请选择工单创建时间"
           />
         </n-form-item>
-
-        
         <!-- 场地下拉选择 -->
         <n-select
           v-if="hasRole"
@@ -39,7 +37,6 @@
         >
           <n-button size="small">选择文件</n-button>
         </n-upload>
-        
         <!-- 下载模板链接 -->
         <div style="text-align: left; margin-top: 8px;">
           <n-button text type="primary" @click="downloadTemplate">
@@ -47,7 +44,6 @@
           </n-button>
         </div>
       </div>
-
       <template #action>
         <n-button size="small" style="font-size: 12px;" @click="show = false">取消</n-button>
         <n-button size="small" style="font-size: 12px;" type="primary" :loading="uploading" @click="handleSubmit">

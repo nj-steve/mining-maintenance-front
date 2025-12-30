@@ -349,16 +349,16 @@ const isRepairStation = role === 4;
 
 
 // 下载模板
-const downloadTemplate = () => {
-  // 创建一个临时链接来下载模板文件
-  const link = document.createElement('a');
-  link.href = '/template/repair-detail-V002.xlsx'; // 模板文件路径
-  link.download = '维修明细导入模板.xlsx';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  message.success('模板下载已开始');
-};
+// const downloadTemplate = () => {
+//   // 创建一个临时链接来下载模板文件
+//   const link = document.createElement('a');
+//   link.href = '/template/repair-detail-V002.xlsx'; // 模板文件路径
+//   link.download = '维修明细导入模板.xlsx';
+//   document.body.appendChild(link);
+//   link.click();
+//   document.body.removeChild(link);
+//   message.success('模板下载已开始');
+// };
 const exportCsv = async () => {
   loading.value = true;
   try {
