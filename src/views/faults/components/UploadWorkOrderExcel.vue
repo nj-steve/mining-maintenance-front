@@ -29,6 +29,7 @@
         />
         <!-- 文件选择 -->
         <n-upload
+          v-model:file-list="fileList"
           size="small"
           :show-file-list="true"
           :default-upload="false"
@@ -108,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, watch } from 'vue'
 import { NButton, NModal, NSelect, NUpload, useMessage, NIcon } from 'naive-ui'
 import type { SelectOption } from 'naive-ui';
 import type { UploadFileInfo } from 'naive-ui'
@@ -174,6 +175,20 @@ const importResult = ref<{
 
 const selectedSite = ref<number | null>(null)
 const selectedFile = ref<File | null>(null)
+const fileList = ref<UploadFileInfo[]>([])
+
+watch(() => props.show, (val) => {
+  if (val) {
+    form.order_no = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`
+    form.site_id = null
+    form.site_name = ''
+    form.file = null
+    form.date = new Date().toISOString().split('T')[0]
+    fileList.value = []
+    importResult.value = null
+    showResult.value = false
+  }
+})
 
 const handleFileChange = ({ file }: { file: UploadFileInfo }) => {
   form.file = file.file || null
@@ -301,42 +316,12 @@ const handleCloseResult = () => {
 
   // 下载Excel模板
   const downloadTemplate = () => {
-    const headers = ['sn']
-    const rows = [['NGSBEEABCJDAA02JZ']]
-
-    const th = headers.map(h => `<th style="mso-number-format:'\@';border:1px solid #ddd;padding:6px;background:#f5f5f5;">${h}</th>`).join('')
-    const trs = rows.map(row => {
-      const tds = row.map(v => `<td style="mso-number-format:'\@';border:1px solid #ddd;padding:6px;">${v}</td>`).join('')
-      return `<tr>${tds}</tr>`
-    }).join('')
-
-    const html = `
-      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-          <meta charset="UTF-8" />
-          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
-          <x:Name>工单导入模板</x:Name>
-          <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
-          </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
-        </head>
-        <body>
-          <table border="1" cellspacing="0" cellpadding="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;font-size:12px;">
-            <thead><tr>${th}</tr></thead>
-            <tbody>${trs}</tbody>
-          </table>
-        </body>
-      </html>
-    `
-    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.href = url
-    link.download = '工单导入模板.xls'
+    link.href = '/template/import_faults_to_order_template.xlsx'
+    link.download = '工单导入模板.xlsx'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-    message.success('模板下载已开始')
   }
 
   // ---------------- 数据获取 ----------------
