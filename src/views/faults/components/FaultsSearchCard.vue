@@ -118,7 +118,7 @@ function toggleExpand() {
         v-model:value="siteId"
         :options="props.siteOptions"
         placeholder="请选择场地"
-        v-if="hasRole"
+        v-if="props.siteOptions.length > 1"
         class="site-select"
         clearable
         filterable
