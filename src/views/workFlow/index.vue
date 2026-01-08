@@ -689,7 +689,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
 </script>
 
 <template>
-  <div class="flex gap-16px flex-col-stretch overflow-hidden lt-sm:overflow-auto">
+  <div class="h-full flex gap-16px flex-col-stretch overflow-hidden lt-sm:overflow-auto">
  <!-- 第二行：筛选条件 -->
     <SearchFilters
         v-model:serial="searchSerial"
@@ -707,7 +707,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
         @reset="handleReset"
       />
     
-    <div class="min-h-550px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto"> 
+    <div class="flex-1 flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto"> 
     <!-- 查询框和批量操作 -->
     <div class="mb-4" style="margin-bottom: 16px; display: flex; justify-content: flex-end;">
       <!-- 第一行：批量操作按钮 -->
