@@ -13,16 +13,37 @@
         style="width: 95%;"
       />
       <!-- 场地筛选 -->
-      <NSelect 
-        v-model:value="siteIdModel" 
-        :options="siteOptions" 
-        placeholder="请选择场地" 
-        clearable 
-        filterable
-        size="small"
-        class="text-sm text-gray-500"
-        style="width: 95%;"
-      />
+       <div class="relative" style="width: 95%;">
+         <NButton 
+         size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter"> 
+           <span class="truncate">{{ getSelectedSiteLabel() }}</span>
+           <Icon icon="ant-design:down-outlined" class="ml-2 text-xs" />
+         </NButton> 
+         <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]"> 
+           <div class="font-medium text-gray-900 mb-3">选择场地</div> 
+           <NInput size="small" placeholder="搜索场地..." class="mb-3" v-model:value="siteNameFilter" /> 
+           <div class="max-h-60 overflow-y-auto"> 
+             <div 
+               v-for="site in filteredSiteOptions" 
+               :key="String(site.value)" 
+               class="flex items-center py-2 hover:bg-gray-50 rounded px-2" 
+             > 
+               <input 
+                 type="checkbox" 
+                 :id="`site-${site.value}`" 
+                 class="h-4 w-4 text-blue-600 rounded border-gray-300" 
+                 :checked="isSiteSelected(Number(site.value))" 
+                 @change="toggleSiteSelection(Number(site.value))" 
+               /> 
+               <label :for="`site-${site.value}`" class="ml-2 text-gray-700 cursor-pointer flex-grow">{{ site.label }}</label> 
+             </div> 
+           </div> 
+           <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200 gap-2"> 
+             <NButton size="small" @click="showSiteFilter = false">取消</NButton> 
+             <NButton size="small" type="primary" @click="applySiteFilter">应用</NButton> 
+           </div> 
+         </div> 
+       </div>
       
       <!-- 维修站筛选 -->
       <NSelect 
@@ -102,6 +123,7 @@ import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { NCard, NInput, NSelect, NDatePicker, NButton } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 import { fetchUser } from '@/service/api';
+import { Icon } from '@iconify/vue';
 const salerMap = ref<Record<number, string>>({});
 // import { useAuthStore } from '@/stores/auth';
 
@@ -118,41 +140,59 @@ const salerMap = ref<Record<number, string>>({});
 
 // 使用 ref 保存状态，并实时同步 localStorage 的变化
 const onlyMySiteLocal = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
-let onlyMySitePoller: number | null = null;
-const readOnlyMySite = () => localStorage.getItem('onlyMySite') === 'true';
 
-onMounted(() => {
-  const update = () => {
-    const val = readOnlyMySite();
-    if (onlyMySiteLocal.value !== val) {
-      onlyMySiteLocal.value = val;
-    }
-  };
-  // 初始化一次
-  update();
-  // 在同一标签页内轮询以捕获 setItem 引发的变化
-  onlyMySitePoller = window.setInterval(update, 250);
-  // 监听其它标签页/窗口的存储变化
-  window.addEventListener('storage', (e: StorageEvent) => {
-    if (e.key === 'onlyMySite') {
-      update();
-    }
-  });
+// 场地筛选相关逻辑
+const showSiteFilter = ref(false);
+const siteNameFilter = ref('');
+const tempSelectedSiteId = ref<number | null>(null); // 临时选中的场地ID，目前只支持单选，若要多选需改为数组
+
+const filteredSiteOptions = computed(() => {
+  if (!siteNameFilter.value) return props.siteOptions;
+  return props.siteOptions.filter(site => 
+    String(site.label).toLowerCase().includes(siteNameFilter.value.toLowerCase())
+  );
 });
 
-onUnmounted(() => {
-  if (onlyMySitePoller !== null) {
-    clearInterval(onlyMySitePoller);
-    onlyMySitePoller = null;
+const getSelectedSiteLabel = () => {
+  if (!siteIdModel.value) return '场地筛选';
+  const site = props.siteOptions.find(s => s.value === siteIdModel.value);
+  return site ? String(site.label) : '场地筛选';
+};
+
+const isSiteSelected = (id: number) => {
+  // 如果尚未应用，显示临时选择；否则显示当前生效的选择
+  const current = showSiteFilter.value ? (tempSelectedSiteId.value ?? siteIdModel.value) : siteIdModel.value;
+  return current === id;
+};
+
+const toggleSiteSelection = (id: number) => {
+  if (tempSelectedSiteId.value === id) {
+    tempSelectedSiteId.value = null; // 取消选择
+  } else {
+    tempSelectedSiteId.value = id; // 选中
+  }
+};
+
+const applySiteFilter = () => {
+  siteIdModel.value = tempSelectedSiteId.value;
+  showSiteFilter.value = false;
+};
+
+// 监听弹窗打开，初始化临时选中状态
+watch(showSiteFilter, (val) => {
+  if (val) {
+    tempSelectedSiteId.value = siteIdModel.value;
+    siteNameFilter.value = '';
   }
 });
 
-// 根据是否勾选“我的场地”，清空售后专员筛选
-watch(onlyMySiteLocal, (newVal) => {
-  if (newVal) {
-    salerIdModel.value = null;
+// 点击外部关闭下拉框 (简单实现，实际可能需要更复杂的点击监听)
+const closeSiteFilter = (e: MouseEvent) => {
+  const target = e.target as HTMLElement;
+  if (!target.closest('.relative')) {
+    // showSiteFilter.value = false; // 暂时注释，避免与内部点击冲突，需要更精确的判断或使用 vueuse/onClickOutside
   }
-});
+};
 
 onMounted(() => {
   fetchUsers();
