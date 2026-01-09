@@ -5,6 +5,7 @@ import { NCard, NButton, NInput, NSelect, NDatePicker, NSwitch } from 'naive-ui'
 import type { SelectOption } from 'naive-ui';
 import { repairResultOptions } from '@/constants/business';
 import { fetchUser } from '@/service/api';
+import { Icon } from '@iconify/vue';
 
 const serial = defineModel<string>('serial', { default: '' });
 const workOrderNo = defineModel<string>('workOrderNo', { default: '' });
@@ -98,6 +99,51 @@ watch(onlyMySiteLocal, (newVal) => {
   }
 });
 
+// 场地筛选相关逻辑
+const showSiteFilter = ref(false);
+const siteNameFilter = ref('');
+const tempSelectedSiteId = ref<number | null>(null);
+
+const filteredSiteOptions = computed(() => {
+  if (!siteNameFilter.value) return props.siteOptions;
+  return props.siteOptions.filter(site => 
+    String(site.label).toLowerCase().includes(siteNameFilter.value.toLowerCase())
+  );
+});
+
+const getSelectedSiteLabel = () => {
+  if (!siteId.value) return '场地筛选';
+  const site = props.siteOptions.find(s => s.value === siteId.value);
+  return site ? String(site.label) : '场地筛选';
+};
+
+const isSiteSelected = (id: number) => {
+  // 如果尚未应用，显示临时选择；否则显示当前生效的选择
+  const current = showSiteFilter.value ? (tempSelectedSiteId.value ?? siteId.value) : siteId.value;
+  return current === id;
+};
+
+const toggleSiteSelection = (id: number) => {
+  if (tempSelectedSiteId.value === id) {
+    tempSelectedSiteId.value = null; // 取消选择
+  } else {
+    tempSelectedSiteId.value = id; // 选中
+  }
+};
+
+const applySiteFilter = () => {
+  siteId.value = tempSelectedSiteId.value;
+  showSiteFilter.value = false;
+};
+
+// 监听弹窗打开，初始化临时选中状态
+watch(showSiteFilter, (val) => {
+  if (val) {
+    tempSelectedSiteId.value = siteId.value;
+    siteNameFilter.value = '';
+  }
+});
+
 function onSearch() {
   emit('search');
 }
@@ -113,7 +159,7 @@ function toggleExpand() {
       <!-- <span></span> -->
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
       
-       <NSelect
+       <!-- <NSelect
         size="medium"
         v-model:value="siteId"
         :options="props.siteOptions"
@@ -123,17 +169,49 @@ function toggleExpand() {
         clearable
         filterable
         style="width: 100%"
-      />
-        
-      <NInput
+      /> -->
+
+       <div class="relative" style="width: 95%;" v-if="props.siteOptions.length > 1">
+         <NButton 
+         size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter"> 
+           <span class="truncate">{{ getSelectedSiteLabel() }}</span>
+           <Icon icon="ant-design:down-outlined" class="ml-2 text-xs" />
+         </NButton> 
+         <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]"> 
+           <div class="font-medium text-gray-900 mb-3">选择场地</div> 
+           <NInput size="small" placeholder="搜索场地..." class="mb-3" v-model:value="siteNameFilter" /> 
+           <div class="max-h-60 overflow-y-auto"> 
+             <div 
+               v-for="site in filteredSiteOptions" 
+               :key="String(site.value)" 
+               class="flex items-center py-2 hover:bg-gray-50 rounded px-2" 
+             > 
+               <input 
+                 type="checkbox" 
+                 :id="`site-${site.value}`" 
+                 class="h-4 w-4 text-blue-600 rounded border-gray-300" 
+                 :checked="isSiteSelected(Number(site.value))" 
+                 @change="toggleSiteSelection(Number(site.value))" 
+               /> 
+               <label :for="`site-${site.value}`" class="ml-2 text-gray-700 cursor-pointer flex-grow">{{ site.label }}</label> 
+             </div> 
+           </div> 
+           <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200 gap-2"> 
+             <NButton size="small" @click="showSiteFilter = false">取消</NButton> 
+             <NButton size="small" type="primary" @click="applySiteFilter">应用</NButton> 
+           </div> 
+         </div> 
+       </div>
+         
+       <NInput
         v-model:value="workOrderNo"
-        size="medium"
+        size="small"
         placeholder="请输入工单号"
         clearable
         style="width: 100%"
       />
        <NSelect
-        size="medium"
+        size="small"
         v-model:value="status"
         :options="props.statusOptions"
         placeholder="流转状态"
@@ -141,7 +219,7 @@ function toggleExpand() {
         style="width: 100%"
       />
       <NSelect
-        size="medium"
+        size="small"
         v-model:value="resultStatus"
         :options="repairResultOptions"
         placeholder="维修状态"
@@ -153,7 +231,7 @@ function toggleExpand() {
       <div v-if="expanded" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; align-items: center; margin-top: 8px;">
       <NInput
         v-model:value="serial"
-        size="medium"
+        size="small"
         placeholder="请输入机器SN"
         clearable
         style="width: 100%"
@@ -163,7 +241,7 @@ function toggleExpand() {
         v-model:value="salerIdModel" 
         :options="salerOptions" 
         placeholder="售后专员" 
-        size="medium"
+        size="small"
         clearable 
         style="width: 100%; font-size: 12px;"
       />
@@ -173,14 +251,14 @@ function toggleExpand() {
         type="date"
         placeholder="开始时间"
         clearable
-        size="medium"
+        size="small"
         style="width: 100%"
       />
 
       <NDatePicker
         v-model:value="endDate"
         type="date"
-        size="medium"
+        size="small"
         placeholder="结束时间"
         clearable
         style="width: 100%"
@@ -195,8 +273,8 @@ function toggleExpand() {
     </template>
     <template #header-extra>
       <div style="display: flex; justify-content: flex-end;margin-left: 20px;  gap: 12px;">
-        <NButton type="primary" size="medium" @click="onSearch">搜索</NButton>
-        <NButton size="medium" quaternary @click="toggleExpand">{{ expanded ? '折叠' : '展开' }}</NButton>
+        <NButton type="primary" size="small" @click="onSearch">搜索</NButton>
+        <NButton size="small" quaternary @click="toggleExpand">{{ expanded ? '折叠' : '展开' }}</NButton>
       </div>
     </template>
     <!-- 移除底部按钮容器，按钮固定在右上角 -->
