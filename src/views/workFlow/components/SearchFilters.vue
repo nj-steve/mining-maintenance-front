@@ -17,7 +17,13 @@
          <NButton 
          size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter"> 
            <span class="truncate">{{ getSelectedSiteLabel() }}</span>
-           <Icon icon="ant-design:down-outlined" class="ml-2 text-xs" />
+           <Icon 
+             v-if="siteIdModel" 
+             icon="ant-design:close-circle-outlined" 
+             class="ml-2 text-xs text-gray-400 hover:text-gray-600 z-10" 
+             @click.stop="clearSiteSelection" 
+           />
+           <Icon v-else icon="ant-design:down-outlined" class="ml-2 text-xs" />
          </NButton> 
          <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]"> 
            <div class="font-medium text-gray-900 mb-3">选择场地</div> 
@@ -176,6 +182,11 @@ const toggleSiteSelection = (id: number) => {
 const applySiteFilter = () => {
   siteIdModel.value = tempSelectedSiteId.value;
   showSiteFilter.value = false;
+};
+
+const clearSiteSelection = () => {
+  siteIdModel.value = null;
+  tempSelectedSiteId.value = null;
 };
 
 // 监听弹窗打开，初始化临时选中状态

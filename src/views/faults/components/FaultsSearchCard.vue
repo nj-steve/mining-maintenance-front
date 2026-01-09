@@ -7,6 +7,7 @@ import { repairResultOptions } from '@/constants/business';
 import { fetchUser } from '@/service/api';
 import { Icon } from '@iconify/vue';
 
+
 const serial = defineModel<string>('serial', { default: '' });
 const workOrderNo = defineModel<string>('workOrderNo', { default: '' });
 const siteId = defineModel<number | null>('siteId', { default: null });
@@ -33,6 +34,7 @@ const onlyMySiteLocal = ref<boolean>(localStorage.getItem('onlyMySite') === 'tru
 let onlyMySitePoller: number | null = null;
 const readOnlyMySite = () => localStorage.getItem('onlyMySite') === 'true';
 const salerMap = ref<Record<number, string>>({});
+
 
 const fetchUsers = async () => {
   const {data,error} = await fetchUser({
@@ -136,6 +138,11 @@ const applySiteFilter = () => {
   showSiteFilter.value = false;
 };
 
+const clearSiteSelection = () => {
+  siteId.value = null;
+  tempSelectedSiteId.value = null;
+};
+
 // 监听弹窗打开，初始化临时选中状态
 watch(showSiteFilter, (val) => {
   if (val) {
@@ -175,11 +182,20 @@ function toggleExpand() {
          <NButton 
          size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter"> 
            <span class="truncate">{{ getSelectedSiteLabel() }}</span>
-           <Icon icon="ant-design:down-outlined" class="ml-2 text-xs" />
+           <!-- <Icon icon="ant-design:down-outlined" class="ml-2 text-xs" /> -->
+            <Icon 
+             v-if="siteId" 
+             icon="ant-design:close-circle-outlined" 
+             class="ml-2 text-xs text-gray-400 hover:text-gray-600 z-10" 
+             @click.stop="clearSiteSelection" 
+           />
+           <Icon v-else icon="ant-design:down-outlined" class="ml-2 text-xs" />  
          </NButton> 
          <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]"> 
            <div class="font-medium text-gray-900 mb-3">选择场地</div> 
-           <NInput size="small" placeholder="搜索场地..." class="mb-3" v-model:value="siteNameFilter" /> 
+           <NInput size="small" placeholder="搜索场地..." class="mb-3" v-model:value="siteNameFilter" >
+            
+          </NInput> 
            <div class="max-h-60 overflow-y-auto"> 
              <div 
                v-for="site in filteredSiteOptions" 
