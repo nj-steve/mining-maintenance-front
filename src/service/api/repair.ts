@@ -51,7 +51,7 @@ export function fetchRepairDetailsByID(id: number) {
 }
 
 // 修改矿机
-// /api/faults/:id 
+// /api/faults/:id
 export function updateRepairDetails(id:number,params: {[key: string]: any }) {
   return request({
     url: '/api/repair_details/'+id,
@@ -60,9 +60,29 @@ export function updateRepairDetails(id:number,params: {[key: string]: any }) {
   });
 }
 
+// 添加矿机
+// /api/faults/:id
+export function createRepairDetails(params: {[key: string]: any }) {
+  return request({
+    url: '/api/repair_details',
+    method: 'post',
+    data:params
+  });
+}
+
+// /api/repair_details/fault
+export function fetchRepairDetailsByFaults(id:number,params: {[key: string]: any }) {
+  return request({
+    url: '/api/repair_details/fault/'+id,
+    method: 'get',
+    params // 这里会拼接到 URL ?page=1&limit=10
+  });
+}
+
+
 
 // 修改矿机
-// /api/repair_stations/:id 
+// /api/repair_stations/:id
 // export function updateRepairStation(id:number,params: {[key: string]: any }) {
 //   return request({
 //     url: '/api/repair_stations/'+id,
@@ -71,7 +91,7 @@ export function updateRepairDetails(id:number,params: {[key: string]: any }) {
 //   });
 // }
 
-// /api/repair_stations/:id 
+// /api/repair_stations/:id
 export function createRepairStation(params: {[key: string]: any }) {
   return request({
     url: '/api/repair_stations',
@@ -80,7 +100,7 @@ export function createRepairStation(params: {[key: string]: any }) {
   });
 }
 //修改维修站
-// /api/repair_stations/:id 
+// /api/repair_stations/:id
 export function updateRepairStation(id:number,params: {[key: string]: any }) {
   return request({
     url: '/api/repair_stations/'+id,
@@ -90,7 +110,7 @@ export function updateRepairStation(id:number,params: {[key: string]: any }) {
 }
 
 //删除维修站
-// /api/repair_stations/:id 
+// /api/repair_stations/:id
 export function deleteRepairStation(id:number) {
   return request({
     url: '/api/repair_stations/'+id,
@@ -127,7 +147,7 @@ export function fetchScrapLists(params: { page?: number; limit?: number; [key: s
 }
 
 
-// /api/scraps/info?detail_id=25 
+// /api/scraps/info?detail_id=25
 // 维修标注查看
 export function fetchScrapsDetailInfo(detail_id: number) {
   return request({
@@ -167,7 +187,7 @@ export function updateScrapStatus(params: {[key: string]: any }) {
   });
 }
 
-// /api/scraps/info?scrap_id=25 
+// /api/scraps/info?scrap_id=25
 // 维修标注查看
 export function fetchScrapsDetail(scrap_id: number) {
   return request({

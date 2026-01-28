@@ -31,7 +31,7 @@
           </n-descriptions-item>
           <n-descriptions-item label="总费用">
             {{ detailData?.total_cost ?? '-' }}
-          </n-descriptions-item> 
+          </n-descriptions-item>
           <n-descriptions-item label="付款状态">
             {{ detailData?.settlement_status_text || '-' }}
           </n-descriptions-item>
@@ -47,7 +47,7 @@
           </n-descriptions-item>
           <n-descriptions-item label="短保外数量">
             {{ detailData?.out_of_warranty_count ?? '-' }}
-          </n-descriptions-item> 
+          </n-descriptions-item>
           <n-descriptions-item label="创建时间">
             {{ detailData?.created_at ? dayjs(detailData.created_at).format('YYYY-MM-DD HH:mm:ss') : '-' }}
           </n-descriptions-item>
@@ -65,7 +65,7 @@
         </template>
       <!-- 故障设备列表 -->
       <n-card title="">
-      <n-space justify="space-between" class="mb-2">
+        <n-space justify="space-between" class="mb-2">
             <NConfigProvider :theme-overrides="selectThemeOverrides">
             <NSpace>
               <NInput
@@ -110,7 +110,7 @@
             <n-text strong style="font-size: 16px;">操作日志</n-text>
           </template>
           <n-card title="">
-            <n-space justify="end" class="mb-2"> 
+            <n-space justify="end" class="mb-2">
               <NButton circle size="medium" ghost @click="exportOperationHistoryCsv" title="导出 CSV">
                 <template #icon>
                   <icon-ant-design-download-outlined />
@@ -169,16 +169,26 @@
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
-    </div>
-  </template>
-  
+      <!-- 维修详情弹窗 -->
+  <n-drawer v-model:show="showRepairModal" :width="602" placement="right">
+    <n-drawer-content title="维修详情">
+      <RepairDetail :detail-data="detailData" :repair-data="currentRepair"  @success="handleRepairSuccess" />
+    </n-drawer-content>
+    </n-drawer>
+    <!-- <n-modal v-model:show="showRepairModal" preset="card" title="维修详情" style="width: 800px; height: 80vh; overflow-y: auto;">
+      <RepairDetail :repair-id="currentRepairId" @success="handleRepairSuccess" />
+    </n-modal> -->
+  </div>
+</template>
+
   <script setup lang="ts">
   import { ref, onMounted, computed, watch, h } from "vue"
   import { useRoute } from "vue-router"
   import dayjs from 'dayjs';
   import { useMessage } from 'naive-ui';
   import { NTag } from 'naive-ui';
-  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace, NDataTable, NTabs, NTabPane, NConfigProvider } from "naive-ui"
+  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NUpload, NSpace, NDataTable, NTabs, NTabPane, NConfigProvider, NModal } from "naive-ui"
+import RepairDetail from './components/RepairDetail.vue'
   import type { DataTableColumns, PaginationProps } from 'naive-ui'
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
   import { fetchOrdersDetail, fetchOrdersStatus } from '@/service/api/workflow'
@@ -197,6 +207,14 @@
   const status = ref<number | null>(null);
   const resultStatus = ref<number | null>(null);
   const statusOptions = ref<{ label: string; value: number }[]>([]);
+
+  const showRepairModal = ref(false)
+  const currentRepair = ref<any>({})
+
+  const handleRepairSuccess = () => {
+    showRepairModal.value = false
+    fetchDetailData()
+  }
 
   // 让 Select 的小号字号统一为 text-sm（约 12px）
   const selectThemeOverrides = {
@@ -253,7 +271,28 @@
     // { title: '当前状态', key: 'current_status_text',
     //   render: (row: any) => repairResultMap[row.current_status_text] || '-'
     // },
-    // { title: '可操作', key: 'can_operate', render: (row: any) => row.can_operate ? '是' : '否' }
+    {
+      title: '可操作',
+      key: 'can_operate',
+      render: (row: any) => {
+        // if (row.can_operate) {
+          return h(
+            NButton,
+            {
+              size: 'tiny',
+              type: 'primary',
+              ghost: true,
+              onClick: () => {
+                currentRepair.value = row
+                showRepairModal.value = true
+              }
+            },
+            { default: () => '维修明细' }
+          )
+        // }
+        // return '否'
+      }
+    }
   ];
 
   // 列定义：操作日志
@@ -314,7 +353,7 @@
     }
   }
   const isEdit = ref(false)
-  
+
   const form = ref({
     date: dayjs().format('YYYY-MM-DD'),
     work_order_no: "",
@@ -341,7 +380,7 @@
     power_sn: "",
     motherboard_sn: ""
   })
-  
+
 
   // 获取详情数据
   const fetchDetailData = async () => {
@@ -371,7 +410,7 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
 
   try {
     const {data,error} = await fetchOrdersStatus(params);
-    
+
     if(error==null && data){
       if(operate_type==='list'){
         statusOptions.value = data.map((item: any) => ({
@@ -379,7 +418,7 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
           value: item.id,
         }));
       }
-      
+
     }else{
         message.error(`加载失败: ${error}`);
     }
@@ -394,7 +433,7 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
     fetchDetailData();
     fetchOrderStatusData('list');
   });
-  
+
   const faultDevicesPagination = ref<PaginationProps>({
     page: 1,
     pageSize: 10,

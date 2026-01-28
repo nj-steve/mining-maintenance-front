@@ -2,36 +2,35 @@
     <n-config-provider :theme-overrides="selectThemeOverrides">
     <div class="p-4 space-y-6 text-sm">
       <!-- 基础信息 -->
-       <div class="flex justify-end gap-4 mt-4" v-if="!isRead">
-        <n-button v-if="!isEdit" size="small" class="text-sm" type="primary" @click="isEdit = true">编辑</n-button>
-        <n-button v-if="isEdit" size="small" class="text-sm" type="primary" @click="save">保存</n-button>
-        <n-button v-if="isEdit" size="small" class="text-sm" @click="cancel">取消</n-button>
-      </div>
+       <!-- <div class="flex justify-end gap-4 mt-4" v-if="!isRead">
+        <n-button size="small" class="text-sm" type="primary" @click="save">保存</n-button>
+      </div> -->
       <n-card title="基础信息">
         <n-space vertical>
           <n-descriptions :column="2" label-placement="left" bordered size="small" class="text-sm">
             <n-descriptions-item>
               <template #label><span class="text-sm text-gray-500">日期</span></template>
-              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ dayjs(form.date).format('YYYY-MM-DD HH:mm:ss') }}</span></template>
-              <n-date-picker v-else size="small" class="text-sm" v-model:formatted-value="form.date" type="date" value-format="yyyy-MM-dd" />
+              <n-date-picker size="small" class="text-sm" v-model:formatted-value="form.date" type="date" value-format="yyyy-MM-dd" />
             </n-descriptions-item>
 
             <n-descriptions-item>
               <template #label><span class="text-sm text-gray-500">工单编号</span></template>
-              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.work_order_no }}</span></template>
-              <n-input v-else size="small" class="text-sm" v-model:value="form.work_order_no" />
+              <n-input size="small" class="text-sm" disabled v-model:value="form.work_order_no" />
             </n-descriptions-item>
 
             <n-descriptions-item>
               <template #label><span class="text-sm text-gray-500">机型</span></template>
-              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.machine_model }}</span></template>
-              <n-input v-else size="small" class="text-sm" v-model:value="form.machine_model" />
+              <n-input size="small" class="text-sm" disabled v-model:value="form.machine_model" />
             </n-descriptions-item>
 
             <n-descriptions-item>
               <template #label><span class="text-sm text-gray-500">维修站点</span></template>
-              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.repairStation }}</span></template>
-              <n-select v-else size="small" class="text-sm" v-model:value="form.repairStation" />
+              <n-select size="small" class="text-sm" disabled v-model:value="form.repairStation" />
+            </n-descriptions-item>
+
+            <n-descriptions-item>
+              <template #label><span class="text-sm text-gray-500">MAC 地址</span></template>
+              <n-input size="small" class="text-sm" v-model:value="form.mac_address" />
             </n-descriptions-item>
           </n-descriptions>
         </n-space>
@@ -42,22 +41,16 @@
         <n-descriptions :column="1" label-placement="left" bordered size="small" class="text-sm">
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">整机 SN</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.device_sn }}</span></template>
-            <n-input v-else size="small" class="text-sm" v-model:value="form.device_sn" />
+            <n-input size="small" class="text-sm" disabled v-model:value="form.device_sn" />
           </n-descriptions-item>
            <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">控制板 SN</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.control_sn }}</span></template>
-            <n-input v-else size="small" class="text-sm" v-model:value="form.control_sn" />
+            <n-input size="small" class="text-sm" v-model:value="form.control_sn" />
           </n-descriptions-item>
 
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">电源 SN</span></template>
-            <template v-if="!isEdit">
-              <span class="text-sm text-gray-600">{{ form.power_sn }}</span>
-              <!-- <div v-for="pwr in form.powerSN" :key="pwr">{{ pwr }}</div> -->
-            </template>
-            <div v-else>
+            <div>
               <!-- <n-dynamic-input v-model:value="form.powerSN" placeholder="请输入电源 SN" /> -->
                <n-input size="small" class="text-sm" v-model:value="form.power_sn" placeholder="请输入电源SN"  style="width: 100%; margin-bottom: 10px;" />
             </div>
@@ -65,28 +58,19 @@
 
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">板1 SN</span></template>
-            <template v-if="!isEdit">
-              <span class="text-sm text-gray-600">{{ form.board_sn_1 }}</span>
-            </template>
-            <div v-else>
+            <div>
                <n-input size="small" class="text-sm" v-model:value="form.board_sn_1" placeholder="请输入板1 码"  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
            <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">板2 SN</span></template>
-            <template v-if="!isEdit">
-              <span class="text-sm text-gray-600">{{ form.board_sn_2 }}</span>
-            </template>
-            <div v-else>
+            <div>
                <n-input size="small" class="text-sm" v-model:value="form.board_sn_2" placeholder="请输入板2 码 "  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
            <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">板3 SN</span></template>
-            <template v-if="!isEdit">
-              <span class="text-sm text-gray-600">{{ form.board_sn_3 }}</span>
-            </template>
-            <div v-else>
+            <div>
                <n-input size="small" class="text-sm" v-model:value="form.board_sn_3" placeholder="请输入板3 码 "  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
@@ -98,8 +82,7 @@
         <n-descriptions :column="1" label-placement="left" bordered size="small" class="text-sm">
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">维修部件</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.repair_component }}</span></template>
-            <div v-else style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <n-checkbox-group v-model:value="selectedComponents">
                 <n-space>
                   <n-checkbox
@@ -121,8 +104,7 @@
 
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">额外操作</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.extra_operations }}</span></template>
-            <div v-else style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <n-checkbox-group v-model:value="selectedExtraOperations">
                 <n-space>
                   <n-checkbox
@@ -140,69 +122,32 @@
 
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">初测不良原因</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.defect_reason }}</span></template>
-            <n-input v-else size="small" class="text-sm" v-model:value="form.defect_reason" />
+            <n-input size="small" class="text-sm" v-model:value="form.defect_reason" />
           </n-descriptions-item>
 
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">不良代码L2</span></template>
-            <template v-if="!isEdit">
-              <span class="text-sm text-gray-600">{{ form.defect_code_2 }}</span>
-            </template>
-            <n-input v-else size="small" class="text-sm" v-model:value="form.defect_code_2" placeholder="请输入不良代码L2" />
+            <n-input size="small" class="text-sm" v-model:value="form.defect_code_2" placeholder="请输入不良代码L2" />
           </n-descriptions-item>
            <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">不良代码L3</span></template>
-            <template v-if="!isEdit">
-              <span class="text-sm text-gray-600">{{ form.defect_code_3 }}</span>
-            </template>
-            <n-input v-else size="small" class="text-sm" v-model:value="form.defect_code_3" placeholder="请输入不良代码L3" />
+            <n-input size="small" class="text-sm" v-model:value="form.defect_code_3" placeholder="请输入不良代码L3" />
           </n-descriptions-item>
 
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">位号信息</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.position }}</span></template>
-            <n-input v-else size="small" class="text-sm" v-model:value="form.position" />
+            <n-input size="small" class="text-sm" v-model:value="form.position" />
           </n-descriptions-item>
 
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">查证缺陷</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.verify_defect }}</span></template>
-            <n-input v-else size="small" class="text-sm" v-model:value="form.verify_defect" />
+            <n-input size="small" class="text-sm" v-model:value="form.verify_defect" />
           </n-descriptions-item>
 
 
           <n-descriptions-item class="text-sm">
             <template #label><span class="text-sm text-gray-500">维修部位图片</span></template>
-            <template v-if="!isEdit">
-              <div class="flex gap-2 text-sm text-gray-600">
-                <div
-                  v-for="img in form.images.filter(Boolean)"
-                  :key="img"
-                  class="relative w-24 h-24 group"
-                >
-                  <img :src="img" class="w-24 h-24 object-cover rounded" />
-                  <div
-                    class="absolute inset-0 rounded bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                  >
-                    <n-button text size="small" class="text-sm" @click="previewSrc = img; previewVisible = true">
-                      <Icon icon="ant-design:eye-outlined" width="20" height="20" color="#fff" />
-                    </n-button>
-                  </div>
-                </div>
-              </div>
-            </template>
-           <!-- <QiniuImageUpload
-             v-else
-             :images="form.images"
-             :max="10"
-             button-text="上传图片"
-             @uploaded="(url: string) => form.images.push(url)"
-             @remove="(url: string) => form.images = form.images.filter(u => u !== url)"
-             @update="(urls: string[]) => form.images = urls"
-             @update="(urls: string[]) => { if (Array.isArray(urls) && urls.length) form.images = urls.filter(Boolean) }
-           /> -->
-            <div v-else class="text-sm text-gray-600">
+            <div class="text-sm text-gray-600">
               <QiniuImageUpload
                 v-model:images="form.images"
                 :max="10"
@@ -225,25 +170,21 @@
         <n-descriptions :column="2" label-placement="left" bordered size="small" class="text-sm">
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">开始时间</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.start_time ? dayjs(form.start_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</span></template>
-            <n-date-picker v-else size="small" class="text-sm" v-model:formatted-value="form.start_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
+            <n-date-picker size="small" class="text-sm" v-model:formatted-value="form.start_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
           </n-descriptions-item>
            <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">结束时间</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.end_time ? dayjs(form.end_time).format('YYYY-MM-DD HH:mm:ss') : '' }}</span></template>
-            <n-date-picker v-else size="small" class="text-sm" v-model:formatted-value="form.end_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
+            <n-date-picker size="small" class="text-sm" v-model:formatted-value="form.end_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
           </n-descriptions-item>
 
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">维修状态</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ repairResultMap[Number(form.repair_result)] }}</span></template>
-            <n-select v-else size="small" class="text-sm" v-model:value="form.repair_result" :options="repairResultOptions" />
+            <n-select size="small" class="text-sm" v-model:value="form.repair_result" :options="repairResultOptions" />
           </n-descriptions-item>
 
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">维修人员</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.repairer_name }}</span></template>
-            <n-input v-else size="small" class="text-sm" v-model:value="form.repairer_name" />
+            <n-input size="small" class="text-sm" v-model:value="form.repairer_name" />
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
@@ -251,23 +192,22 @@
       <!-- 操作按钮 -->
       <div class="flex justify-end gap-4 mt-4">
         <!-- <n-button v-if="!isEdit" @click="isEdit = true">编辑</n-button> -->
-        <!-- <n-button v-if="isEdit" type="primary" @click="save">保存</n-button> -->
-        <!-- <n-button v-if="isEdit" @click="cancel">取消</n-button> -->
+        <n-button type="primary" @click="save">保存</n-button>
+        <!-- <n-button @click="cancel">取消</n-button> -->
       </div>
     </div>
     </n-config-provider>
   </template>
 
   <script setup lang="ts">
-  import { ref, onMounted } from "vue"
+  import { ref, onMounted, watch } from "vue"
   import { useRoute } from "vue-router"
   import dayjs from 'dayjs';
   import { useMessage } from 'naive-ui';
   import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace, NCheckbox, NCheckboxGroup, NModal, NConfigProvider } from "naive-ui"
-  import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
+  import { fetchRepairDetailsByFaults, createRepairDetails,updateRepairDetails } from '@/service/api/repair'
   import { repairResultOptions, repairResultMap } from '@/constants/business'
   import QiniuImageUpload from '@/components/upload/QiniuImageUpload.vue'
-  import { Icon } from '@iconify/vue'
   import { useAuthStore } from '@/store/modules/auth';
 
   const authStore = useAuthStore();
@@ -276,14 +216,27 @@
   const isRead=authStore.userInfo.roles.includes('5') // 只读用户
 
 
+  const props = defineProps<{
+    repairData?: any
+    detailData?: any
+  }>()
+
+  const emit = defineEmits(['success', 'close'])
+
   const route = useRoute();
   const message = useMessage()
   // const id = route.params.id; // 用它去请求详情数据
-  const id = ref(route.params.id as string);
+  const id = ref((props.repairData?.id || route.params.id) as string);
+
+  watch(() => props.repairData?.id, (newId) => {
+    if (newId) {
+      id.value = String(newId)
+      fetchDetailData()
+    }
+  })
   const loading = ref(false);
   const imgAuthString = ref("")
 
-  const isEdit = ref(false)
   const previewVisible = ref(false)
   const previewSrc = ref('')
   const selectThemeOverrides = {
@@ -295,10 +248,11 @@
 
   const form = ref({
     date: dayjs().format('YYYY-MM-DD'),
-    work_order_no: "",
-    machine_model: "",
-    repairStation: Number(route.params.repairStation),
-    device_sn: "",
+    work_order_no: props.detailData?.order_no || "",
+    machine_model: props.repairData?.model || "",
+    repairStation: props.detailData?.station_name,
+    repair_result: props.repairData?.repair_result || 0,
+    device_sn: props.repairData?.sn,
     defect_code_2: "",
     defect_code_3: "",
     // boardSN: ["BRD120240118001234556", "BRD220240118001234556", "BRD320240118001234556"],
@@ -315,12 +269,14 @@
     repair_image_urls: "",
     start_time: dayjs().format('YYYY-MM-DD HH:mm'),
     end_time: dayjs().format('YYYY-MM-DD HH:mm'),
-    repair_result: 0,
+    // repair_result: 0,
     repairer_name: "",
     power_sn: "",
     motherboard_sn: "",
-    extra_operations: ""
-
+    mac_address:  "",
+    extra_operations: "",
+    fault_id: props.repairData?.fault_id || 0,
+    repair_station_id: props.detailData?.station_id || 0,
   })
 
   // 维修部件选项与编辑态状态
@@ -345,16 +301,23 @@
     form.value.date = dayjs(form.value.date).format('YYYY-MM-DD')
     form.value.start_time = String(form.value.start_time)
     form.value.end_time = String(form.value.end_time)
+    form.value.work_order_no=props.detailData?.order_no || ""
+    form.value.repairStation=props.detailData?.station_id || ""
+    form.value.device_sn=props.repairData?.sn || ""
+    // form.value.mac_address=props.repairData?.mac_address || ""
+    form.value.repair_station_id=props.detailData?.station_id || 0
+
+
+
+    // form.value.fault_id=repairResultMap[form.value.repair_result] || 0
+
     // console.log("form.value.images", form.value.images)
     // return false
     form.value.repair_image_urls = form.value.images.join(',')
-    updateRepairDetails(Number(id.value), form.value).then(() => {
-      message.success('修改成功')
-      isEdit.value = false
+    createRepairDetails(form.value).then(() => {
+      message.success('添加成功')
+      emit('success')
     })
-  }
-  function cancel() {
-    isEdit.value = false
   }
 
   // 获取详情数据
@@ -363,7 +326,7 @@
 
     loading.value = true;
     try {
-      const { data, error } = await fetchRepairDetailsByID(Number(id.value));
+      const { data, error } = await fetchRepairDetailsByFaults(Number(props.repairData?.fault_id),{});
       // console.log("data",data)
       if (error === null && data !== null) {
         const detail = data; // 假设返回的是数组，取第一个
@@ -392,8 +355,11 @@
           repair_result: detail.RepairResult ?? 1,
           repairer_name: detail.RepairerName || '',
           power_sn: detail.PowerSN || '',
+          mac_address: detail.MacAddress || '',
           motherboard_sn: detail.BoardSN || '',
-          extra_operations: detail.extra_operations || ''
+          fault_id: detail.FaultID || 0,
+          extra_operations: detail.extra_operations || '',
+          repair_station_id: detail.RepairStationID || 0,
         };
         // 初始化组件选择
         const parts = (form.value.repair_component || '').split(',').map(s => s.trim()).filter(Boolean)
@@ -412,6 +378,9 @@
             selectedExtraOperations.value.push(opt)
           }
         })
+
+      }
+      else{
 
       }
     } catch (error) {

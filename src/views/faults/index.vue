@@ -159,7 +159,7 @@ const fetchData = async () => {
 
   try {
     const {data,error} = await fetchFaults(params);
-    
+
     if(error==null && data){
         tableData.value = data.list;
         pagination.value.itemCount = data.pagination.total;
@@ -264,7 +264,7 @@ const fetchSiteData = async () => {
     }
     // console.log("params",params)
     // const { data, error } = hasRole?await fetchOrdersSite(params):{data:[],error:null};
-  
+
 
   } catch (err) {
     message.error('获取场地数据失败');
@@ -274,13 +274,13 @@ const fetchSiteData = async () => {
 // ---------------- 表格列 ----------------
 const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<Faults> = [
-  { 
+  {
     type: 'selection',
     multiple: true,
     width: 60
   },
   // { title: '序号', key: 'id', width: 80 },
-  { title: () => renderHeaderTitle('SN码'), key: 'sn', width: 180, 
+  { title: () => renderHeaderTitle('SN码'), key: 'sn', width: 180,
     render: (row: Faults) => {
       const sn = row.sn || '未知';
       const onCopy = async () => {
@@ -304,7 +304,7 @@ const columns: DataTableColumns<Faults> = [
     render: (row: Faults) => {
        const siteName = row.site_name || '未知';
        const siteId = row.site_id || 0;
-       
+
        if (siteId) {
          return h(
            NTooltip,
@@ -331,7 +331,7 @@ const columns: DataTableColumns<Faults> = [
            }
          );
        }
-       
+
        return h(
          NTooltip,
          null,
@@ -343,9 +343,9 @@ const columns: DataTableColumns<Faults> = [
      }
   },
   { title: () => renderHeaderTitle('型号'), key: 'model', width: 120, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.model || '未知') },
-  { 
-    title: () => renderHeaderTitle('工单编号'), 
-    key: 'order_no', 
+  {
+    title: () => renderHeaderTitle('工单编号'),
+    key: 'order_no',
     width: 170,
      render: (row: Faults) => {
       // const full = row.order_no || '';
@@ -366,10 +366,10 @@ const columns: DataTableColumns<Faults> = [
         null,
         {
           trigger: () => h(
-            'div', 
-            { 
+            'div',
+            {
               style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
-            }, 
+            },
             [
               h(
                 'span',
@@ -384,7 +384,7 @@ const columns: DataTableColumns<Faults> = [
                 { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
                 { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
               ) : null,
-           
+
             ]
           ),
           default: () => full
@@ -394,10 +394,10 @@ const columns: DataTableColumns<Faults> = [
         null,
         {
           trigger: () => h(
-            'div', 
-            { 
+            'div',
+            {
               style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
-            }, 
+            },
             [
               h(
                 'span',
@@ -428,7 +428,7 @@ const columns: DataTableColumns<Faults> = [
     //       trigger: () => h('div',
     //        { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' ,
     //         onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
-    //        }, 
+    //        },
     //        text),
     //       default: () => text
     //     }
@@ -568,11 +568,11 @@ const columns: DataTableColumns<Faults> = [
                   ),
                   default: () => '确认删除该故障机？'
                 }
-              ) 
+              )
           ]
       }
-      return [  
-         hasRole 
+      return [
+         hasRole
           ? h(
               EditFaultModalButton,
               {
@@ -662,11 +662,11 @@ const handleCreateWorkOrder = () => {
   // console.log('选中的场地:', uniqueSiteNames[0]);
 
   // 只选择状态为"新下架"的机器
-  const downCheckMachines = selectedRows.value.filter(row => 
+  const downCheckMachines = selectedRows.value.filter(row =>
      row.status_text === '新下架'
   );
   // 只选择状态为"新下架"的机器
-  const failureCheckMachines = selectedRows.value.filter(row => 
+  const failureCheckMachines = selectedRows.value.filter(row =>
     row.status_text !== '新下架'
   );
    if (failureCheckMachines.length > 0 || downCheckMachines.length === 0) {
@@ -674,13 +674,13 @@ const handleCreateWorkOrder = () => {
     return;
   }
 
-  
+
   // 生成工单编号
   const workOrderNo = `${uniqueSiteNames[0]}${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
-  
+
   // 获取场地信息（取第一个选中机器的场地）
   const site = downCheckMachines[0]?.Site?.name || downCheckMachines[0]?.site_name || '';
-  
+
   workOrderForm.value = {
     workOrderNo,
     workOrderDate: new Date().toISOString().split('T')[0],
@@ -689,7 +689,7 @@ const handleCreateWorkOrder = () => {
     faultMachineCount: downCheckMachines.length,
     selectedMachines: downCheckMachines
   };
-  
+
   showWorkOrderModal.value = true;
 };
 
@@ -704,7 +704,7 @@ const handleConfirmWorkOrder = async () => {
       site_id:workOrderForm.value.site_id,
       // site_id: workOrderForm.value.selectedMachines[0]?.Site?.id || 0 // 假设第一个机器的场地ID
     };
-    
+
     // 调用创建工单API
     const { error, response: { data } } = await createOrder(submitData);
     // console.log('创建工单响应:', data, error);
@@ -721,7 +721,7 @@ const handleConfirmWorkOrder = async () => {
         // 刷新数据
         fetchData();
       }
-    }  
+    }
   } catch (error) {
     console.error('创建工单失败:', error);
   }
@@ -941,7 +941,7 @@ const exportFaultsFile = async () => {
 
 <template>
   <div class="flex  gap-16px flex-col-stretch  lt-sm:overflow-auto">
-    <FaultsSearchCard 
+    <FaultsSearchCard
       v-model:serial="searchSerial"
       v-model:workOrderNo="searchWorkOrderNo"
       v-model:siteId="searchSiteId"
@@ -953,21 +953,21 @@ const exportFaultsFile = async () => {
       :site-options="siteOptions"
       :status-options="statusOptions"
       :hasRole="hasRole"
-      @search="fetchData" 
+      @search="fetchData"
     />
     <!-- 查询框 -->
   <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: 50px;">
     <div v-if="!isRead" class="mb-4 flex items-center gap-2 text-sm" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
       <div class="text-sm" style="display: flex; align-items: center; gap: 12px;">
-        <UploadSiteMachineExcel 
-        buttonText="导入" 
+        <UploadSiteMachineExcel
+        buttonText="导入"
         :site-options="siteOptions"
         @success="fetchData"/>
-       
+
         <template v-if="hasRole ">
           <NDropdown :options="createWorkOrderOptions" trigger="click" @select="handleCreateWorkOrderSelect">
             <NButton
-              type="primary" 
+              type="primary"
               ghost
               size="small"
               class="text-sm"
@@ -980,10 +980,10 @@ const exportFaultsFile = async () => {
           </NDropdown>
 
           <UploadWorkOrderExcel v-model:show="showImportWorkOrderModal" :site-options="siteOptions" @success="fetchData" />
-          
+
           <NDropdown :options="bindWorkOrderOptions" trigger="click" @select="handleBindWorkOrderSelect">
             <NButton
-              type="primary" 
+              type="primary"
               ghost
               size="small"
               class="text-sm"
@@ -998,33 +998,33 @@ const exportFaultsFile = async () => {
           <BindWorkOrderModal ref="bindWorkOrderRef" style="display: none" :selectedRows="selectedRows" @refresh="handleRefresh" />
 
           <UploadBindWorkOrderExcel v-model:show="showImportBindWorkOrderModal" :site-options="siteOptions" @success="fetchData" />
-          
+
           <!-- 批量修改状态组件 -->
-          <BatchStatusModal 
+          <BatchStatusModal
             :status-options="hasRole ? statusOptions : statusUpdateOptions"
             :selectedRows="selectedRows"
             @refresh="handleRefresh"
           />
 
-          <UploadFileBathStatusModal 
+          <UploadFileBathStatusModal
             :status-options="hasRole ? statusOptions : statusUpdateOptions"
             @refresh="handleRefresh"
           />
 
           <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
-       
+
        <NSwitch v-model:value="onlyMySite" size="small" class="text-sm" @update:value="onOnlyMySiteChange" />
     <span class="text-sm text-gray-600" style="margin-left: 4px;">我的场地</span>
         </template>
         <template v-if="!hasRole">
   <!-- 批量修改状态组件 -->
-          <BatchStatusModal 
+          <BatchStatusModal
             :status-options=statusUpdateOptions
             :selectedRows="selectedRows"
             @refresh="handleRefresh"
           />
 
-          <UploadFileBathStatusModal 
+          <UploadFileBathStatusModal
             :status-options=statusUpdateOptions
             @refresh="handleRefresh"
           />
@@ -1035,16 +1035,16 @@ const exportFaultsFile = async () => {
           </template>
         </NButton>
 
-        
+
       </div>
     </div>
     <!-- 表格 -->
-      <NDataTable 
+      <NDataTable
         flex-height
-        :columns="columns" 
-        :data="tableData" 
-        :pagination="pagination" 
-        :loading="loading" 
+        :columns="columns"
+        :data="tableData"
+        :pagination="pagination"
+        :loading="loading"
         remote
         :row-key="(row: Faults) => row.id"
         :checked-row-keys="selectedRowKeys"
@@ -1063,26 +1063,26 @@ const exportFaultsFile = async () => {
             <template #label><span class="text-sm text-gray-500">工单编号</span></template>
             <NInput v-model:value="workOrderForm.workOrderNo" readonly size="small" class="text-sm" />
           </NFormItem>
-          
+
           <NFormItem>
             <template #label><span class="text-sm text-gray-500">工单日期</span></template>
             <NInput v-model:value="workOrderForm.workOrderDate" readonly size="small" class="text-sm" />
           </NFormItem>
-          
+
           <NFormItem>
             <template #label><span class="text-sm text-gray-500">场地</span></template>
             <NInput v-model:value="workOrderForm.site" readonly size="small" class="text-sm" />
           </NFormItem>
-          
+
           <NFormItem>
             <template #label><span class="text-sm text-gray-500">故障机台数</span></template>
             <NInput :value="workOrderForm.faultMachineCount.toString()" readonly size="small" class="text-sm" />
           </NFormItem>
         </div>
-        
+
         <NFormItem label="选中故障机列表">
           <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px; width: 100%;" class="text-sm">
-            <div v-for="(machine, index) in workOrderForm.selectedMachines" :key="machine.id" 
+            <div v-for="(machine, index) in workOrderForm.selectedMachines" :key="machine.id"
                  style="display: flex; justify-content: space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 100%;">
               <!-- <div> -->
                 <div class="text-sm text-gray-600" style="font-weight: 500; width:30%;" >{{ machine.sn }}</div>
@@ -1097,7 +1097,7 @@ const exportFaultsFile = async () => {
           </div>
         </NFormItem>
       </NForm>
-      
+
       <template #footer>
         <NSpace>
           <NButton type="primary" size="small" class="text-sm" @click="handleConfirmWorkOrder">创建</NButton>
@@ -1105,7 +1105,7 @@ const exportFaultsFile = async () => {
         </NSpace>
       </template>
     </NModal>
-    
+
   </div>
 </template>
 <style scoped>
