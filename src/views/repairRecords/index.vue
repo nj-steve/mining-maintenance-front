@@ -117,7 +117,7 @@ const formatDateTime = (value: any) => {
 const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 
 const columns: DataTableColumns<any> = [
-   { title: () => renderHeaderTitle('整机SN码'), key: 'DeviceSN', 
+   { title: () => renderHeaderTitle('整机SN码'), key: 'DeviceSN',
    width: 150, render: (row) => {
       const full = (row as any).DeviceSN || '';
       const prefix = full.slice(0, 5);
@@ -179,10 +179,10 @@ const columns: DataTableColumns<any> = [
         null,
         {
           trigger: () => h(
-            'div', 
-            { 
+            'div',
+            {
               style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
-            }, 
+            },
             [
               h(
                 'span',
@@ -211,7 +211,30 @@ const columns: DataTableColumns<any> = [
   { title: () => renderHeaderTitle('机型'), key: 'MachineModel', width: 200, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.MachineModel || '-') },
   { title: () => renderHeaderTitle('损坏部件'), key: 'RepairComponent', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.RepairComponent || '-') },
   // { title: '额外操作', key: 'extra_operations', width: 120 },
-  { title: () => renderHeaderTitle('初测不良原因'), key: 'DefectReason', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.DefectReason || '-') },
+  {
+      title: () => renderHeaderTitle('初测不良原因'),
+      key: 'DefectReason',
+      width: 120,
+      render: (row) => {
+        const content = row.DefectReason || '-'
+        return h(
+          NTooltip,
+          { trigger: 'hover' },
+          {
+            trigger: () =>
+              h(
+                'div',
+                {
+                  class: 'text-sm text-gray-500',
+                  style: 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+                },
+                content
+              ),
+            default: () => h('div', { style: 'max-width: 300px; white-space: normal; word-break: break-word;' }, content)
+          }
+        )
+      }
+    },
   { title: () => renderHeaderTitle('查证缺陷'), key: 'VerifyDefect', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.VerifyDefect || '-') },
   { title: () => renderHeaderTitle('维修状态'), key: 'RepairResult',
     render: (row) => {
@@ -226,9 +249,9 @@ const columns: DataTableColumns<any> = [
       return h(NTag, { type,class:'text-xs', size: 'small',round:true }, () => label)
     }
   },
-  { 
-    title: () => renderHeaderTitle('日期'), 
-    key: 'Date', 
+  {
+    title: () => renderHeaderTitle('日期'),
+    key: 'Date',
     width: 160,
     align: 'center',
     render: (row: any) => h('span', { class: 'cell-date text-sm text-gray-500' }, formatDateTime(row?.Date))
@@ -242,17 +265,17 @@ const columns: DataTableColumns<any> = [
     render: (row) => {
       // console.log("表格行数据:", row);
       const rowId = row.id || row.ID || row.Id || row.workOrderNo || row.WorkOrderNo;
-      // console.log("提取的ID:", rowId); 
+      // console.log("提取的ID:", rowId);
       if(isRead){
         return [ h(
           NButton,
-          { 
-            type: 'primary', 
-            size: 'small', 
-            ghost: true, 
+          {
+            type: 'primary',
+            size: 'small',
+            ghost: true,
             style: 'margin-right: 8px;',
             class:'text-xs',
-            onClick: () => goDetail(rowId) 
+            onClick: () => goDetail(rowId)
           },
           { default: () => '详情' }
         ),]
@@ -260,13 +283,13 @@ const columns: DataTableColumns<any> = [
       return [
         h(
           NButton,
-          { 
-            type: 'primary', 
-            size: 'small', 
-            ghost: true, 
+          {
+            type: 'primary',
+            size: 'small',
+            ghost: true,
             style: 'margin-right: 8px;',
             class:'text-xs',
-            onClick: () => goDetail(rowId) 
+            onClick: () => goDetail(rowId)
           },
           { default: () => '详情' }
         ),
@@ -286,11 +309,11 @@ const columns: DataTableColumns<any> = [
           : null,
         // h(
         //   NButton,
-        //   { 
-        //     type: 'info', 
-        //     size: 'small', 
-        //     ghost: true, 
-        //     onClick: () => console.log('编辑:', row) 
+        //   {
+        //     type: 'info',
+        //     size: 'small',
+        //     ghost: true,
+        //     onClick: () => console.log('编辑:', row)
         //   },
         //   { default: () => '编辑' }
         // )
@@ -338,7 +361,7 @@ watch([work_order_no,repair_result,sn], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
-  
+
 });
 
 // const isRepairStation = computed(() => {
@@ -373,7 +396,7 @@ const exportCsv = async () => {
         exportData.value = data;
         exportExcel();
         // 处理导出成功逻辑
-        
+
         // const blob = new Blob([data], { type: 'application/vnd.ms-excel' });
         // const url = URL.createObjectURL(blob);
         // const link = document.createElement('a');
@@ -394,7 +417,7 @@ const exportCsv = async () => {
   }
 
   // 获取所有待导出数据
- 
+
 };
 const exportExcel=async () => {
 
@@ -449,7 +472,7 @@ const exportExcel=async () => {
     row.DefectCode3,
     row.Position,
     row.VerifyDefect,
-    
+
     row.StartTime,
     row.EndTime,
     repairResultMap[row.RepairResult],
@@ -509,18 +532,18 @@ const handleFail = () => {
       </div>
     </div>
     <!-- 表格 -->
-    <!-- <NDataTable flex-height small :columns="columns" 
-    :data="tableData" :pagination="pagination" 
-    :loading="loading" :scroll-x="1400" 
+    <!-- <NDataTable flex-height small :columns="columns"
+    :data="tableData" :pagination="pagination"
+    :loading="loading" :scroll-x="1400"
     remote striped
         class="sm:h-full" /> -->
 
-        <NDataTable 
+        <NDataTable
         flex-height
-        :columns="columns" 
-        :data="tableData" 
-        :pagination="pagination" 
-        :loading="loading" 
+        :columns="columns"
+        :data="tableData"
+        :pagination="pagination"
+        :loading="loading"
         remote
         :row-key="(row: any) => row.ID"
         :scroll-x="1600"
