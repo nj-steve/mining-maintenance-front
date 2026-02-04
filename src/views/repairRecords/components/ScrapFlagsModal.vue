@@ -42,13 +42,13 @@ type RowItem = {
 const tableRows = ref<RowItem[]>([])
 const editRow =ref({
     date: dayjs().format('YYYY-MM-DD'),
-    work_order_no: "",
-    machine_model: "",
-    repairStation: "",
+    // work_order_no: "",
+    // machine_model: "",
+    // repairStation: "",
     device_sn: "",
     powerSN: "",
-    defect_code_2: "",
-    defect_code_3: "",
+    // defect_code_2: "",
+    // defect_code_3: "",
     // boardSN: ["BRD120240118001234556", "BRD220240118001234556", "BRD320240118001234556"],
     repair_component: "",
     defect_reason: "",
@@ -57,22 +57,22 @@ const editRow =ref({
     board_sn_1: "",
     board_sn_2: "",
     board_sn_3: "",
-    position: "",
-    verify_defect: "",
+    // position: "",
+    // verify_defect: "",
     images: "",
     repair_image_urls: "",
-    start_time: dayjs().format('YYYY-MM-DD HH:mm'),
-    end_time: dayjs().format('YYYY-MM-DD HH:mm'),
-    repair_result: 0,
-    repairer_name: "",
-    power_sn: "",
-    motherboard_sn: "",
-    extra_operations: ""
-    
+    // start_time: dayjs().format('YYYY-MM-DD HH:mm'),
+    // end_time: dayjs().format('YYYY-MM-DD HH:mm'),
+    // repair_result: 0,
+    // repairer_name: "",
+    // power_sn: "",
+    // motherboard_sn: "",
+    // extra_operations: ""
+
   })
 const newestRow = ref<Record<string, any> | null>(null)
 
-  
+
 // 当前正在编辑的行（按 key 标识）与输入值
 const editingKey = ref<RowItem['key'] | null>(null)
 const editingValue = ref('')
@@ -108,13 +108,13 @@ async function loadDetail() {
       const detail = data;
       editRow.value = {
           date: detail.Date ? dayjs(detail.Date).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-          work_order_no: detail.WorkOrderNo || '',
-          machine_model: detail.MachineModel || '',
-          repairStation: detail.RepairStationName || '',
+          // work_order_no: detail.WorkOrderNo || '',
+          // machine_model: detail.MachineModel || '',
+          // repairStation: detail.RepairStationName || '',
           device_sn: detail.DeviceSN || '',
           powerSN: detail.PowerSN || '',
-          defect_code_2: detail.DefectCode2 || '',
-          defect_code_3: detail.DefectCode3 || '',
+          // defect_code_2: detail.DefectCode2 || '',
+          // defect_code_3: detail.DefectCode3 || '',
           // boardSN: detail.BoardSN ? detail.BoardSN.split(',') : [],
           repair_component: detail.RepairComponent || '',
           defect_reason: detail.DefectReason || '',
@@ -123,22 +123,22 @@ async function loadDetail() {
           board_sn_1: detail.BoardSN1 || '',
           board_sn_2: detail.BoardSN2 || '',
           board_sn_3: detail.BoardSN3 || '',
-          position: detail.Position || '',
-          verify_defect: detail.VerifyDefect || '',
+          // position: detail.Position || '',
+          // verify_defect: detail.VerifyDefect || '',
           images:detail.RepairImageUrls ? detail.RepairImageUrls.split(',') : [],
           repair_image_urls: detail.RepairImageUrls || '',
-          start_time: detail.StartTime ? dayjs(detail.StartTime).format('YYYY-MM-DD HH:mm') : dayjs().format('YYYY-MM-DD HH:mm'),
-          end_time: detail.EndTime ? dayjs(detail.EndTime).format('YYYY-MM-DD HH:mm') : dayjs().format('YYYY-MM-DD HH:mm'),
-          repair_result: detail.RepairResult ?? 1,
-          repairer_name: detail.RepairerName || '',
-          power_sn: detail.PowerSN || '',
-          motherboard_sn: detail.BoardSN || '',
-          extra_operations: detail.extra_operations || ''
+          // start_time: detail.StartTime ? dayjs(detail.StartTime).format('YYYY-MM-DD HH:mm') : dayjs().format('YYYY-MM-DD HH:mm'),
+          // end_time: detail.EndTime ? dayjs(detail.EndTime).format('YYYY-MM-DD HH:mm') : dayjs().format('YYYY-MM-DD HH:mm'),
+          // repair_result: detail.RepairResult ?? 1,
+          // repairer_name: detail.RepairerName || '',
+          // power_sn: detail.PowerSN || '',
+          // motherboard_sn: detail.BoardSN || '',
+          // extra_operations: detail.extra_operations || ''
         };
       newestRow.value = detail
-     
+
     }
-    
+
     //  else {
     //   message.error(`加载标记失败：${error}`)
     // }
@@ -298,7 +298,7 @@ async function saveSnInline(row?: RowItem) {
     loading.value = true
 
     const payload: Record<string, any> = { ...editRow.value, [field]: value }
-    
+
     const { data,error } = await updateRepairDetails(props.detailId, payload)
     // console.log("update repair details:", data)
     if (error === null ) {
