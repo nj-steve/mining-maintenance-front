@@ -1,7 +1,7 @@
 <template>
     <div>
       <!-- 触发按钮 -->
-      <n-button size="small" ghost type="primary" @click="showModal = true">
+      <n-button v-if="showTrigger" size="small" ghost type="primary" @click="showModal = true">
         <template #icon>
           <NIcon>
             <SvgIcon icon="material-symbols:upload" />
@@ -9,9 +9,9 @@
         </template>
         {{ buttonText }}
       </n-button>
-  
+
       <!-- 导入对话框 -->
-      <n-modal v-model:show="showModal" preset="dialog" title="导入 Excel">
+      <n-modal v-model:show="showModal" preset="dialog" :title="currentTitle">
         <div style="display: flex; flex-direction: column; gap: 16px;">
           <!-- 场地下拉选择 -->
           <n-select
@@ -33,7 +33,7 @@
           >
             <n-button size="small">选择文件</n-button>
           </n-upload>
-          
+
           <!-- 下载模板链接 -->
           <div style="text-align: left; margin-top: 8px;">
             <n-button text type="primary" @click="downloadTemplate">
@@ -41,7 +41,7 @@
             </n-button>
           </div>
         </div>
-  
+
         <template #action>
           <n-button size="small" style="font-size: 12px;" @click="showModal = false">取消</n-button>
           <n-button size="small" style="font-size: 12px;" type="primary" :loading="uploading" @click="handleSubmit">
@@ -49,7 +49,7 @@
           </n-button>
         </template>
       </n-modal>
-      
+
       <!-- 导入结果弹框 -->
       <n-modal v-model:show="showResult" preset="dialog" title="导入结果" style="width: 600px;">
         <div v-if="importResult" style="display: flex; flex-direction: column; gap: 16px;">
@@ -64,7 +64,7 @@
               <div style="color: #666;">导入失败</div>
             </div>
           </div>
-          
+
           <!-- 错误详情 -->
           <div v-if="importResult.errors && importResult.errors.length > 0">
             <h4 style="margin: 0 0 12px 0; color: #ff4d4f;">错误详情：</h4>
@@ -95,20 +95,20 @@
               </div>
             </div>
           </div>
-          
+
           <!-- 成功提示 -->
           <div v-if="importResult.failure_count === 0" style="padding: 12px; background-color: #f6ffed; border: 1px solid #b7eb8f; border-radius: 4px; color: #52c41a;">
             ✅ 所有数据导入成功！
           </div>
         </div>
-        
+
         <template #action>
           <n-button size="small" style="font-size: 12px;" type="primary" @click="handleCloseResult">关闭</n-button>
         </template>
       </n-modal>
     </div>
   </template>
-  
+
   <script setup lang="ts">
   import { ref,onMounted } from 'vue'
   import { NButton, NModal, NSelect, NUpload, useMessage, NIcon } from 'naive-ui'
@@ -121,44 +121,47 @@
   import { useAuthStore } from '@/store/modules/auth';
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
-  
+
   // ---------------- Props ----------------
   // interface Props {
   //   params?: Record<string, any>,
   //   buttonText?: string,
   //   siteOptions: SelectOption[]
   // }
-  const props = defineProps<{
+  const props = withDefaults(defineProps<{
     params?: Record<string, any>,
     buttonText?: string,
-    siteOptions: SelectOption[]
-  }>()
+    siteOptions: SelectOption[],
+    showTrigger?: boolean
+  }>(), {
+    showTrigger: true
+  })
 
-//   const props = defineProps<{
-//    siteOptions: SelectOption[]; 
-//   statusOptions: SelectOption[],
-//   hasRole:boolean
-//   // salerOptions: SelectOption[]
-
-//  }>();
   // ---------------- Emits ----------------
   const emit = defineEmits<{
     success: []
   }>()
 
   // const tableData = ref([]);
-  
+
   // ---------------- State ----------------
   const message = useMessage()
   const { baseURL } = getServiceBaseURL(
     import.meta.env,
     import.meta.env.DEV && import.meta.env.VITE_HTTP_PROXY === 'Y'
   )
+
+  // Dynamic Configuration State
+  const currentTitle = ref('导入 Excel')
+  const currentUploadUrl = ref('/api/faults/import')
+  const currentTemplateUrl = ref('/template/site_machine_template.xlsx')
+  const currentTemplateName = ref('场地故障机导入模板.xlsx')
+
   onMounted(() => {
     if(!hasRole){
       return
     }
-    // fetchData() 
+    // fetchData()
   });
 
   const showModal = ref(false)
@@ -169,16 +172,38 @@ const hasRole=!authStore.userInfo.roles.includes('3')
     failure_count: number
     errors: string[]
   } | null>(null)
-  
+
   // const siteOptions = ref([])
   const selectedSite = ref<number | null>(null)
   const selectedFile = ref<File | null>(null)
-  
+
+  // ---------------- Expose ----------------
+  interface OpenOptions {
+    uploadUrl?: string
+    templateUrl?: string
+    templateName?: string
+    title?: string
+  }
+
+  const open = (options?: OpenOptions) => {
+    // Reset to defaults or apply options
+    currentUploadUrl.value = options?.uploadUrl || '/api/faults/import'
+    currentTemplateUrl.value = options?.templateUrl || '/template/site_machine_template.xlsx'
+    currentTemplateName.value = options?.templateName || '场地故障机导入模板.xlsx'
+    currentTitle.value = options?.title || '导入 Excel'
+
+    selectedFile.value = null
+    selectedSite.value = null
+    showModal.value = true
+  }
+
+  defineExpose({ open })
+
   // ---------------- Methods ----------------
   const handleFileChange = ({ file }: { file: UploadFileInfo }) => {
     selectedFile.value = file.file || null
   }
-  
+
   const handleSubmit = async () => {
     if (!selectedSite.value && hasRole) {
       message.warning('请选择场地')
@@ -188,23 +213,23 @@ const hasRole=!authStore.userInfo.roles.includes('3')
       message.warning('请先选择文件')
       return
     }
-  
+
     try {
       uploading.value = true
-  
+
       const formData = new FormData()
       formData.append('file', selectedFile.value)
       formData.append('site_id', String(selectedSite.value))
-  
+
       Object.entries(props?.params || {}).forEach(([key, value]) => {
         formData.append(key, String(value))
       })
-  
+
       const token = localStg.get('token')
       const Authorization = token ? `Bearer ${token}` : ''
-  
+
       const response = await axios.request({
-        url: baseURL + '/api/faults/import',
+        url: baseURL + currentUploadUrl.value,
         method: 'post',
         data: formData,
         headers: {
@@ -227,7 +252,7 @@ const hasRole=!authStore.userInfo.roles.includes('3')
         // 触发成功事件，通知父组件刷新数据
         emit('success')
       }
-      
+
       selectedFile.value = null
       selectedSite.value = null
     } catch (e) {
@@ -237,7 +262,7 @@ const hasRole=!authStore.userInfo.roles.includes('3')
       uploading.value = false
     }
   }
-  
+
   // 复制错误信息到剪贴板
   const copyErrors = async () => {
     const errors = importResult.value?.errors || []
@@ -311,8 +336,8 @@ const hasRole=!authStore.userInfo.roles.includes('3')
   const downloadTemplate = () => {
     // 创建一个临时链接来下载模板文件
     const link = document.createElement('a')
-    link.href = '/template/site_machine_template.xlsx' // 模板文件路径
-    link.download = '场地故障机导入模板.xlsx'
+    link.href = currentTemplateUrl.value // 模板文件路径
+    link.download = currentTemplateName.value
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

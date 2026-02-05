@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
-import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip, NPopconfirm, NDropdown } from 'naive-ui';
+import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip, NPopconfirm, NDropdown, NIcon } from 'naive-ui';
 import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import UploadWorkOrderExcel from './components/UploadWorkOrderExcel.vue';
@@ -48,6 +48,7 @@ interface Faults {
   repair_result?: number;
   repair_result_text?: string;
   repair_method?: number;
+  repair_type?: string;
   repair_method_text?: string;
   warranty_status?: number;
   warranty_status_text?: string;
@@ -88,10 +89,15 @@ const searchModel = ref<number | null>(null);
 const searchWorkOrderNo = ref<string>('');
 const searchResultStatus = ref<number | null>(null);
 const searchSalerId = ref<number | null>(null);
+const searchRepairType = ref<number | null>(null);
 
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
 const statusOptions = ref<{ label: string; value: number }[]>([]);
 const statusUpdateOptions = ref<{ label: string; value: number }[]>([]);
+const repairTypeOptions = [
+  { label: '整机', value: '整机' },
+  { label: '算力板', value: '算力板' }
+]
 
 // 批量选择相关
 const selectedRowKeys = ref<number[]>([]);
@@ -133,6 +139,31 @@ const handleBindWorkOrderSelect = (key: string) => {
   }
 };
 
+const uploadRef = ref<any>(null)
+
+const importOptions = [
+  { label: '矿机导入', key: 'machine' },
+  { label: '算力板导入', key: 'hash_board' }
+]
+
+const handleImportSelect = (key: string) => {
+  if (key === 'machine') {
+    uploadRef.value?.open({
+       uploadUrl: '/api/faults/import',
+       templateUrl: '/template/site_machine_template.xlsx',
+       templateName: '场地故障机导入模板.xlsx',
+       title: '导入 Excel'
+    })
+  } else if (key === 'hash_board') {
+    uploadRef.value?.open({
+       uploadUrl: '/api/faults/hash_board/import',
+       templateUrl: '/template/site_board_template.xlsx',
+       templateName: '算力板导入模板.xlsx',
+       title: '算力板导入'
+    })
+  }
+}
+
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
   // 重新查询前清空之前的选择状态
@@ -152,6 +183,7 @@ const fetchData = async () => {
     saler_id: searchSalerId.value || undefined,
     enable_all: onlyMySite,//1 全部，-1 我的
     repair_result: searchResultStatus.value || undefined,
+    repair_type: searchRepairType.value || undefined,
     start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
     end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
     model: searchModel.value || undefined
@@ -298,6 +330,24 @@ const columns: DataTableColumns<Faults> = [
         ]),
         default: () => sn
       });
+    }
+  },
+  { title: () => renderHeaderTitle('类型'), key: 'repair_type', width: 100,
+    render: (row: Faults) => {
+      const type = row.repair_type;
+      let tagType: 'primary' | 'info' | 'success' | 'warning' | 'error' | 'default' = 'default';
+      let label = type || '未知';
+
+      // 兼容可能返回的数字或文本
+      if (type === '整机' ) {
+        tagType = 'info';
+        label = '整机';
+      } else if (type === '算力板') {
+        tagType = 'warning';
+        label = '算力板';
+      }
+
+      return h(NTag, { class: 'text-sm', type: tagType, size: 'small', round: true, bordered: false }, () => label);
     }
   },
   { title: () => renderHeaderTitle('场地'), key: 'site_name', width: 150,
@@ -605,7 +655,7 @@ onMounted(() => {
 
   // fetchSiteData();
 });
-watch([searchSerial,searchWorkOrderNo, searchSalerId, searchResultStatus, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel], () => {
+watch([searchSerial,searchWorkOrderNo, searchSalerId, searchResultStatus, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel, searchRepairType], () => {
   tableData.value = [];
   selectedRowKeys.value = [];
   selectedRows.value = [];
@@ -950,8 +1000,10 @@ const exportFaultsFile = async () => {
       v-model:status="searchStatus"
       v-model:resultStatus="searchResultStatus"
       v-model:salerId="searchSalerId"
+      v-model:repairType="searchRepairType"
       :site-options="siteOptions"
       :status-options="statusOptions"
+      :repair-type-options="repairTypeOptions"
       :hasRole="hasRole"
       @search="fetchData"
     />
@@ -959,7 +1011,22 @@ const exportFaultsFile = async () => {
   <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: 50px;">
     <div v-if="!isRead" class="mb-4 flex items-center gap-2 text-sm" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
       <div class="text-sm" style="display: flex; align-items: center; gap: 12px;">
+        <n-dropdown :options="importOptions" @select="handleImportSelect">
+          <n-button size="small" ghost type="primary">
+            <template #icon>
+              <n-icon>
+                <Icon icon="material-symbols:upload" />
+              </n-icon>
+            </template>
+            导入
+            <n-icon style="margin-left: 4px">
+              <Icon icon="ant-design:down-outlined" />
+            </n-icon>
+          </n-button>
+        </n-dropdown>
         <UploadSiteMachineExcel
+        ref="uploadRef"
+        :show-trigger="false"
         buttonText="导入"
         :site-options="siteOptions"
         @success="fetchData"/>

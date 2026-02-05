@@ -23,9 +23,9 @@
             </n-descriptions-item>
 
             <n-descriptions-item>
-              <template #label><span class="text-sm text-gray-500">机型</span></template>
-              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.machine_model }}</span></template>
-              <n-input v-else size="small" class="text-sm" v-model:value="form.machine_model" />
+              <template #label><span class="text-sm text-gray-500">维修类型</span></template>
+              <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.repair_type }}</span></template>
+              <n-select v-else size="small" class="text-sm" v-model:value="form.repair_type" :options="repairTypeOptions" />
             </n-descriptions-item>
 
             <n-descriptions-item>
@@ -38,7 +38,7 @@
       </n-card>
 
       <!-- 设备信息 -->
-      <n-card title="设备信息">
+      <n-card title="设备信息" v-if="form.repair_type == '整机'">
         <n-descriptions :column="1" label-placement="left" bordered size="small" class="text-sm">
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">整机 SN</span></template>
@@ -286,6 +286,11 @@
   const isEdit = ref(false)
   const previewVisible = ref(false)
   const previewSrc = ref('')
+  const repairTypeOptions = [
+    { label: '整机', value: '整机' },
+    { label: '算力板', value: '算力板' }
+  ]
+
   const selectThemeOverrides = {
     Select: {
       fontSizeSmall: '12px',
@@ -297,6 +302,7 @@
     date: dayjs().format('YYYY-MM-DD'),
     work_order_no: "",
     machine_model: "",
+    repair_type: "",
     repairStation: Number(route.params.repairStation),
     device_sn: "",
     defect_code_2: "",
@@ -371,6 +377,7 @@
           date: detail.Date ? dayjs(detail.Date).format('YYYY-MM-DD') : dayjs(detail.CreatedAt).format('YYYY-MM-DD HH:mm'),
           work_order_no: detail.WorkOrderNo || '',
           machine_model: detail.MachineModel || '',
+          repair_type: detail.repair_type || 0,
           repairStation: detail.RepairStationName || '',
           device_sn: detail.DeviceSN || '',
           defect_code_2: detail.DefectCode2 || '',

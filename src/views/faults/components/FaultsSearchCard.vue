@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import { ref, watch } from 'vue';
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';  
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { NCard, NButton, NInput, NSelect, NDatePicker, NSwitch } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 import { repairResultOptions } from '@/constants/business';
@@ -16,12 +16,14 @@ const endDate = defineModel<number | null>('endDate', { default: null });
 const status = defineModel<number | null>('status', { default: null });
 const resultStatus = defineModel<number | null>('resultStatus', { default: null });
 const salerIdModel = defineModel<number | null>('salerId', { default: null });
+const repairType = defineModel<number | null>('repairType', { default: null });
 
 
 
 const props = defineProps<{
-   siteOptions: SelectOption[]; 
+   siteOptions: SelectOption[];
   statusOptions: SelectOption[],
+  repairTypeOptions?: SelectOption[],
   hasRole:boolean
   // salerOptions: SelectOption[]
 
@@ -108,7 +110,7 @@ const tempSelectedSiteId = ref<number | null>(null);
 
 const filteredSiteOptions = computed(() => {
   if (!siteNameFilter.value) return props.siteOptions;
-  return props.siteOptions.filter(site => 
+  return props.siteOptions.filter(site =>
     String(site.label).toLowerCase().includes(siteNameFilter.value.toLowerCase())
   );
 });
@@ -165,7 +167,7 @@ function toggleExpand() {
     <template #header>
       <!-- <span></span> -->
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
-      
+
        <!-- <NSelect
         size="medium"
         v-model:value="siteId"
@@ -179,46 +181,46 @@ function toggleExpand() {
       /> -->
 
        <div class="relative" style="width: 95%;" v-if="props.siteOptions.length > 1">
-         <NButton 
-         size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter"> 
+         <NButton
+         size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter">
            <span class="truncate">{{ getSelectedSiteLabel() }}</span>
            <!-- <Icon icon="ant-design:down-outlined" class="ml-2 text-xs" /> -->
-            <Icon 
-             v-if="siteId" 
-             icon="ant-design:close-circle-outlined" 
-             class="ml-2 text-xs text-gray-400 hover:text-gray-600 z-10" 
-             @click.stop="clearSiteSelection" 
+            <Icon
+             v-if="siteId"
+             icon="ant-design:close-circle-outlined"
+             class="ml-2 text-xs text-gray-400 hover:text-gray-600 z-10"
+             @click.stop="clearSiteSelection"
            />
-           <Icon v-else icon="ant-design:down-outlined" class="ml-2 text-xs" />  
-         </NButton> 
-         <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]"> 
-           <div class="font-medium text-gray-900 mb-3">选择场地</div> 
+           <Icon v-else icon="ant-design:down-outlined" class="ml-2 text-xs" />
+         </NButton>
+         <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]">
+           <div class="font-medium text-gray-900 mb-3">选择场地</div>
            <NInput size="small" placeholder="搜索场地..." class="mb-3" v-model:value="siteNameFilter" >
-            
-          </NInput> 
-           <div class="max-h-60 overflow-y-auto"> 
-             <div 
-               v-for="site in filteredSiteOptions" 
-               :key="String(site.value)" 
-               class="flex items-center py-2 hover:bg-gray-50 rounded px-2" 
-             > 
-               <input 
-                 type="checkbox" 
-                 :id="`site-${site.value}`" 
-                 class="h-4 w-4 text-blue-600 rounded border-gray-300" 
-                 :checked="isSiteSelected(Number(site.value))" 
-                 @change="toggleSiteSelection(Number(site.value))" 
-               /> 
-               <label :for="`site-${site.value}`" class="ml-2 text-gray-700 cursor-pointer flex-grow">{{ site.label }}</label> 
-             </div> 
-           </div> 
-           <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200 gap-2"> 
-             <NButton size="small" @click="showSiteFilter = false">取消</NButton> 
-             <NButton size="small" type="primary" @click="applySiteFilter">应用</NButton> 
-           </div> 
-         </div> 
+
+          </NInput>
+           <div class="max-h-60 overflow-y-auto">
+             <div
+               v-for="site in filteredSiteOptions"
+               :key="String(site.value)"
+               class="flex items-center py-2 hover:bg-gray-50 rounded px-2"
+             >
+               <input
+                 type="checkbox"
+                 :id="`site-${site.value}`"
+                 class="h-4 w-4 text-blue-600 rounded border-gray-300"
+                 :checked="isSiteSelected(Number(site.value))"
+                 @change="toggleSiteSelection(Number(site.value))"
+               />
+               <label :for="`site-${site.value}`" class="ml-2 text-gray-700 cursor-pointer flex-grow">{{ site.label }}</label>
+             </div>
+           </div>
+           <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200 gap-2">
+             <NButton size="small" @click="showSiteFilter = false">取消</NButton>
+             <NButton size="small" type="primary" @click="applySiteFilter">应用</NButton>
+           </div>
+         </div>
        </div>
-         
+
        <NInput
         v-model:value="workOrderNo"
         size="small"
@@ -242,7 +244,15 @@ function toggleExpand() {
         clearable
         style="width: 100%"
       />
-      
+      <NSelect
+        size="small"
+        v-model:value="repairType"
+        :options="props.repairTypeOptions"
+        placeholder="类型"
+        clearable
+        style="width: 100%"
+      />
+
       </div>
       <div v-if="expanded" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; align-items: center; margin-top: 8px;">
       <NInput
@@ -252,16 +262,16 @@ function toggleExpand() {
         clearable
         style="width: 100%"
       />
-       <NSelect 
+       <NSelect
         v-show="!onlyMySiteLocal && props.hasRole"
-        v-model:value="salerIdModel" 
-        :options="salerOptions" 
-        placeholder="售后专员" 
+        v-model:value="salerIdModel"
+        :options="salerOptions"
+        placeholder="售后专员"
         size="small"
-        clearable 
+        clearable
         style="width: 100%; font-size: 12px;"
       />
-      
+
       <NDatePicker
         v-model:value="startDate"
         type="date"
@@ -279,12 +289,11 @@ function toggleExpand() {
         clearable
         style="width: 100%"
       />
-     
+
       <div>
       <!-- <NSwitch v-model:value="onlyMySite" size="medium" />
     <span style="font-size: 12px; margin-left: 4px;">我的场地</span> -->
     </div>
-     
     </div>
     </template>
     <template #header-extra>

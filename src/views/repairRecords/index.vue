@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h } from 'vue';
-import { NDataTable, useMessage, NButton, NTooltip,NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
+import { NDataTable, useMessage, NButton, NTooltip,NTag, NModal, NForm, NFormItem, NInput, NSelect, NDropdown, NIcon } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
+import { fetchOrdersSite } from '@/service/api/site';
 import { Icon } from '@iconify/vue';
 
 import { useRouter } from 'vue-router';
@@ -18,7 +19,6 @@ const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
 const isAdmin=authStore.userInfo.roles.includes('1') // 超管
 const isRead=authStore.userInfo.roles.includes('5') // 只读用户
-
 
 
 interface Faults {
@@ -40,6 +40,10 @@ interface Faults {
   Status?: {
     name?: string;
   };
+  repair_type?: {
+    name?: string;
+  };
+  site_name?: string;
 }
 
 const message = useMessage();
@@ -49,10 +53,40 @@ const exportData = ref<Faults[]>([]);
 const loading = ref(false);
 const work_order_no = ref<string>('');
 const sn = ref<string>('');
+const site_id = ref<number | undefined>(undefined);
+const repair_type = ref<number | undefined>(undefined);
+const siteOptions = ref<{ label: string; value: number }[]>([]);
+
 // 报废标记弹窗
 const showScrapModal = ref(false)
 const currentDetailId = ref<number | null>(null)
 const currentDetailRow = ref<any | null>(null)
+
+// 导入相关
+const uploadRef = ref<any>(null);
+const importOptions = [
+  { label: '矿机维修', key: 'machine' },
+  { label: '板子维修', key: 'board' }
+]
+
+const handleImportSelect = (key: string) => {
+  if (key === 'machine') {
+    uploadRef.value?.open({
+      uploadUrl: '/api/repair_stations/import_repair_details',
+      templateUrl: '/template/repair-detail-V002.xlsx',
+      templateName: '矿机维修明细导入模板.xlsx',
+      title: '矿机维修明细导入'
+    })
+  } else if (key === 'board') {
+    uploadRef.value?.open({
+      uploadUrl: '/api/repair_stations/import_board_repair_details',
+      templateUrl: '/template/board-repair-detail.xlsx', // 假设的模板路径，如果没有提供则需要确认
+      templateName: '板子维修明细导入模板.xlsx',
+      title: '板子维修明细导入'
+    })
+  }
+}
+
 const openScrapModal = (row: any) => {
   const rowId = row?.id || row?.ID || row?.Id || row?.workOrderNo || row?.WorkOrderNo
   const numId = Number(rowId)
@@ -98,6 +132,25 @@ function goDetail(id: number | string) {
     console.error("路由跳转失败:", error);
   }
 }
+
+// 获取场地列表
+const getSiteList = async () => {
+  try {
+    const params: any = {
+      enable_all: (hasRole===true && !(localStorage.getItem("onlyMySite")==='true'))?1:-1,
+    };
+    const { data } = await fetchOrdersSite(params); // 获取所有场地
+    if (data) {
+      siteOptions.value = data.map((item: any) => ({
+        label: item.Name,
+        value: item.ID
+      }));
+    }
+  } catch (error) {
+    console.error('获取场地列表失败:', error);
+  }
+};
+
 // 维修结果映射
 // const repairResultMap: Record<number, string> = {
 //   9: '已修复',
@@ -117,7 +170,7 @@ const formatDateTime = (value: any) => {
 const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 
 const columns: DataTableColumns<any> = [
-   { title: () => renderHeaderTitle('整机SN码'), key: 'DeviceSN',
+   { title: () => renderHeaderTitle('SN码'), key: 'DeviceSN',
    width: 150, render: (row) => {
       const full = (row as any).DeviceSN || '';
       const prefix = full.slice(0, 5);
@@ -160,6 +213,27 @@ const columns: DataTableColumns<any> = [
         }
       );
     } },
+    { title: () => renderHeaderTitle('类型'), key: 'repair_type', width: 100,
+    render: (row) => {
+      const type = row.repair_type;
+      let tagType: 'primary' | 'info' | 'success' | 'warning' | 'error' | 'default' = 'default';
+      let label = type || '未知';
+
+      // 兼容可能返回的数字或文本
+      if (type === '整机' ) {
+        tagType = 'info';
+        label = '整机';
+      } else if (type === '算力板') {
+        tagType = 'warning';
+        label = '算力板';
+      }
+
+      return h(NTag, { class: 'text-sm', type: tagType, size: 'small', round: true, bordered: false }, () => label);
+    }
+   },
+   { title: () => renderHeaderTitle('场地'), key: 'site_name', width: 180,
+    render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.site_name || '-')
+   },
   { title: () => renderHeaderTitle('工单号'), key: 'WorkOrderNo', width: 150,  render: (row: Faults) => {
       // const full = row.order_no || '';
       const full = (row as any).WorkOrderNo || '';
@@ -324,19 +398,26 @@ const columns: DataTableColumns<any> = [
 
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
-  loading.value = true;
-  tableData.value=[];
-  const params: any = {
-    page: pagination.value.page,
-    page_size: pagination.value.pageSize,
-    sn: sn.value || undefined,
-    repair_result: repair_result.value || undefined,
-    work_order_no: work_order_no.value || undefined,
-  };
-
-  // console.log("请求参数:", params);
   try {
-    const {data,error} = await fetchRepairDetails(params);
+    loading.value = true;
+    const params: any = {
+      page: pagination.value.page,
+      limit: pagination.value.pageSize,
+      work_order_no: work_order_no.value,
+      sn: sn.value,
+      repair_result: repair_result.value,
+      site_id: site_id.value,
+      repair_type: repair_type.value
+    };
+
+    // 移除空值参数
+    Object.keys(params).forEach(key => {
+      if (params[key] === '' || params[key] === undefined || params[key] === null) {
+        delete params[key];
+      }
+    });
+
+    const { data, error } = await fetchRepairDetails(params);
     if(error==null){
         tableData.value = data.list;
         pagination.value.itemCount = data.pagination.total;
@@ -354,14 +435,12 @@ const fetchData = async () => {
 
 
 onMounted(() => {
-  fetchData()
-//   loadFaultsTypes();
+  fetchData();
+  getSiteList();
 });
-watch([work_order_no,repair_result,sn], () => {
-  tableData.value = [];
+watch(() => [work_order_no.value, sn.value, repair_result.value, site_id.value, repair_type.value], () => {
   pagination.value.page = 1;
   fetchData();
-
 });
 
 // const isRepairStation = computed(() => {
@@ -511,9 +590,14 @@ const handleFail = () => {
               :work-order-no="work_order_no"
               :sn="sn"
               :repair-result="repair_result"
+              :site-id="site_id"
+              :repair-type="repair_type"
+              :site-options="siteOptions"
               @update:work-order-no="work_order_no = $event"
               @update:sn="sn = $event"
               @update:repair-result="repair_result = $event"
+              @update:site-id="site_id = $event"
+              @update:repair-type="repair_type = $event"
             />
     </NCard>
     <!-- <NCard> -->
@@ -521,7 +605,22 @@ const handleFail = () => {
     <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-200px)]">
        <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 6px">
       <div  style="display: flex; gap: 8px; align-items: center;">
-        <UploadRepairDetailsExcel v-if="isRepairStation" @success="fetchData" @fail="handleFail"/>
+        <NDropdown :options="importOptions" @select="handleImportSelect" v-if="isRepairStation">
+          <NButton size="small" ghost type="primary">
+            <template #icon>
+              <NIcon>
+                <Icon icon="material-symbols:upload" />
+              </NIcon>
+            </template>
+            导入
+          </NButton>
+        </NDropdown>
+        <UploadRepairDetailsExcel
+          ref="uploadRef"
+          :show-trigger="false"
+          @success="fetchData"
+          @fail="handleFail"
+        />
       </div>
       <div v-if="!isRead" style="display: flex; gap: 8px; align-items: center;">
         <NButton circle size="medium" ghost @click="exportCsv" title="导出 CSV"  style="margin-right: 80px;">
@@ -546,7 +645,7 @@ const handleFail = () => {
         :loading="loading"
         remote
         :row-key="(row: any) => row.ID"
-        :scroll-x="1600"
+        :scroll-x="1800"
         striped
         class="sm:h-full"
       />

@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 触发按钮 -->
-    <n-button size="small" ghost type="primary" @click="showModal = true">
+    <n-button v-if="showTrigger" size="small" ghost type="primary" @click="showModal = true">
       <template #icon>
         <NIcon>
           <SvgIcon icon="material-symbols:upload" />
@@ -11,7 +11,7 @@
     </n-button>
 
     <!-- 导入弹窗 -->
-    <n-modal v-model:show="showModal" preset="dialog" title="导入维修明细 Excel">
+    <n-modal v-model:show="showModal" preset="dialog" :title="currentConfig.title">
       <div style="display: flex; flex-direction: column; gap: 16px;">
         <!-- 文件选择 -->
         <n-upload
@@ -108,12 +108,20 @@ interface Props {
   uploadUrl?: string            // 上传接口，默认维修明细导入
   params?: Record<string, any>  // 额外参数（默认空对象）
   buttonText?: string           // 按钮文字（默认 “导入”）
+  templateUrl?: string          // 模板下载链接
+  templateName?: string         // 模板下载文件名
+  title?: string                // 弹窗标题
+  showTrigger?: boolean         // 是否显示触发按钮
 }
 
 const props = withDefaults(defineProps<Props>(), {
   uploadUrl: '/api/repair_stations/import_repair_details',
   params: () => ({}),
-  buttonText: '导入'
+  buttonText: '导入',
+  templateUrl: '/template/repair-detail-V002.xlsx',
+  templateName: '维修明细导入模板.xlsx',
+  title: '导入维修明细 Excel',
+  showTrigger: true
 })
 
 // ---------------- Emits ----------------
@@ -136,6 +144,37 @@ const importResult = ref<{
 } | null>(null)
 
 const selectedFile = ref<File | null>(null)
+
+// 动态配置
+const currentConfig = ref({
+  uploadUrl: props.uploadUrl,
+  templateUrl: props.templateUrl,
+  templateName: props.templateName,
+  title: props.title
+})
+
+// 暴露 open 方法供父组件调用
+const open = (config?: { uploadUrl?: string, templateUrl?: string, templateName?: string, title?: string }) => {
+  if (config) {
+    currentConfig.value = {
+      uploadUrl: config.uploadUrl || props.uploadUrl,
+      templateUrl: config.templateUrl || props.templateUrl,
+      templateName: config.templateName || props.templateName,
+      title: config.title || props.title
+    }
+  } else {
+    // 重置为 props 默认值
+    currentConfig.value = {
+      uploadUrl: props.uploadUrl,
+      templateUrl: props.templateUrl,
+      templateName: props.templateName,
+      title: props.title
+    }
+  }
+  showModal.value = true
+}
+
+defineExpose({ open })
 
 // ---------------- Methods ----------------
 const handleFileChange = ({ file }: { file: UploadFileInfo }) => {
@@ -162,7 +201,7 @@ const handleSubmit = async () => {
     const Authorization = token ? `Bearer ${token}` : ''
 
     const response = await axios.request({
-      url: baseURL + props.uploadUrl,
+      url: baseURL + currentConfig.value.uploadUrl,
       method: 'post',
       data: formData,
       headers: {
@@ -199,11 +238,12 @@ const handleCloseResult = () => {
 
 const downloadTemplate = () => {
   const link = document.createElement('a')
-  link.href = '/template/repair-detail-V3.xlsm'
-  link.download = '维修明细_导入模板.xlsm'
+  link.href = currentConfig.value.templateUrl || '/template/repair-detail-V002.xlsx'
+  link.download = currentConfig.value.templateName || '维修明细导入模板.xlsx'
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+  message.success('模板下载已开始')
 }
 
 // 复制错误信息到剪贴板

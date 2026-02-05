@@ -37,6 +37,11 @@ export const enableStatusRecord:Record<string, string> = {
       { label: '报废', value: 4 },
     ]
 
+    export const repairTypeOptions = [
+      { label: '整机', value: "整机" },
+      { label: '算力板', value: "算力板" },
+    ]
+
 
 export const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
     '在架': 'success',
@@ -50,10 +55,10 @@ export const tagMap: Record<string, "primary" | "info" | "success" | "warning" |
     Leave = 0,
     Disabled = -1,
   }
-  
+
 
 export const userStatusMap: Record<number, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-  [UserStatus.Active]: 'success',  
+  [UserStatus.Active]: 'success',
   [UserStatus.Leave]: 'error',
   [UserStatus.Disabled]: 'warning',
 };
@@ -91,4 +96,3 @@ export const roleRecord:Record<number, string> = {
 //   ]
 
 
-  
