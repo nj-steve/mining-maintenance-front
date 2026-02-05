@@ -73,15 +73,15 @@ const handleImportSelect = (key: string) => {
   if (key === 'machine') {
     uploadRef.value?.open({
       uploadUrl: '/api/repair_stations/import_repair_details',
-      templateUrl: '/template/repair-detail-V002.xlsx',
-      templateName: '矿机维修明细导入模板.xlsx',
+      templateUrl: '/template/repair-detail-V3.xlsm',
+      templateName: '矿机维修明细导入模板.xlsm',
       title: '矿机维修明细导入'
     })
   } else if (key === 'board') {
     uploadRef.value?.open({
       uploadUrl: '/api/repair_stations/import_board_repair_details',
-      templateUrl: '/template/board-repair-detail.xlsx', // 假设的模板路径，如果没有提供则需要确认
-      templateName: '板子维修明细导入模板.xlsx',
+      templateUrl: '/template/board-repair-detail.xlsm', // 假设的模板路径，如果没有提供则需要确认
+      templateName: '板子维修明细导入模板.xlsm',
       title: '板子维修明细导入'
     })
   }
