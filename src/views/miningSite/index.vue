@@ -39,10 +39,10 @@ interface Site {
   wait_on_shelf_count: number;
   on_shelf_wait_repair_count: number;
   bind_type?: string;
-  order_id?: string;
+  order_id?: string | number;
   order_no?: string;
   board_bind_type?: string;
-  board_order_id?: string;
+  board_order_id?: string | number;
   board_order_no?: string;
 }
 
@@ -90,12 +90,12 @@ const editForm = ref<EditForm>({
   site_status: 0,
   saler_id: 0,
   bind_type: "manual",
-  order_id: '',
+  order_id: 0,
   board_bind_type: "manual",
-  board_order_id: ''
+  board_order_id: 0
 });
 
-const orderOptions = ref<{ label: string; value: string }[]>([]);
+const orderOptions = ref<{ label: string; value: string | number }[]>([]);
 const orderLoading = ref(false);
 
 const getOrders = async (siteId: number) => {
@@ -127,9 +127,9 @@ const handleOpenEdit = (row: Site) => {
     site_status: row.site_status ?? 0,
     saler_id: row.saler_id ?? 0,
     bind_type: row.bind_type || 'manual',
-    order_id: row.order_id || '',
+    order_id: Number(row.order_id || 0),
     board_bind_type: row.board_bind_type || 'manual',
-    board_order_id: row.board_order_id || ''
+    board_order_id: Number(row.board_order_id || 0)
   };
   // editForm.value = JSON.parse(JSON.stringify(row)); // 深拷贝
   getOrders(row.id);
