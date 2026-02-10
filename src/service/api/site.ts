@@ -33,7 +33,7 @@ export function fetchSitesHistory(id: number) {
 
 
 // 修改矿机
-// /api/sites/:id 
+// /api/sites/:id
 export function updateSites(id:number,params: {[key: string]: any }) {
   return request({
     url: '/api/sites/'+id,
@@ -43,7 +43,7 @@ export function updateSites(id:number,params: {[key: string]: any }) {
 }
 
 // orders_site 工单场地【维修账户】
-// /api/orders_site/:id 
+// /api/orders_site/:id
 export function fetchOrdersSite(params: {[key: string]: any }) {
   return request({
     url: '/api/orders_site',

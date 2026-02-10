@@ -61,7 +61,7 @@ export function createOrdersLog(id:number,params: {[key: string]: any }) {
 }
 
 // 修改工单
-// /api/faults/:id 
+// /api/faults/:id
 export function updateOrders(id:number,params: {[key: string]: any }) {
   return request({
     url: '/api/orders/'+id,

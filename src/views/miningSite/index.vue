@@ -2,10 +2,10 @@
 import { onMounted, ref, watch, h, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/modules/auth';
-import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace, NTooltip } from 'naive-ui';
+import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace, NTooltip, NSwitch, NCheckbox, NCheckboxGroup } from 'naive-ui';
 import { Icon } from '@iconify/vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchSites,updateSites,fetchUser, UpdateSiteHistory } from '@/service/api';
+import { fetchSites,updateSites,fetchUser, UpdateSiteHistory, fetchOrders } from '@/service/api';
 import { siteStatusRecord } from '@/constants/business';
 import SearchBar from './components/SearchBar.vue';
 
@@ -38,9 +38,14 @@ interface Site {
   is_onsite_default?: number;
   wait_on_shelf_count: number;
   on_shelf_wait_repair_count: number;
+  bind_type?: string;
+  order_id?: string;
+  order_no?: string;
+  board_bind_type?: string;
+  board_order_id?: string;
+  board_order_no?: string;
 }
 
-const dialog = useDialog()
 const message = useMessage();
 const router = useRouter();
 
@@ -49,11 +54,13 @@ const loading = ref(false);
 const searchSerial = ref<string>('');
 const selectedSalerId = ref<number | null>(null);
 const selectedSiteStatus = ref<number | null>(null);
+const bindTypeModel = ref<string | null>(null);
+const borderBindTypeModel = ref<string | null>(null);
+
 // 分页
 const pagination = ref<PaginationProps>({
   page: 1,
   pageSize: 20,
-  itemCount: 0,
   showSizePicker: true,
   pageSizes: [10, 20, 50, 100],
   prefix({ itemCount }) {
@@ -61,16 +68,14 @@ const pagination = ref<PaginationProps>({
   },
   onChange: page => {
     pagination.value.page = page;
-    fetchData();
   },
   onUpdatePageSize: pageSize => {
     pagination.value.pageSize = pageSize;
     pagination.value.page = 1;
-    fetchData();
   }
 });
 
-type EditForm = Pick<Site, 'id' | 'name' | 'address' | 'asset_count' | 'is_onsite_default' | 'site_status' | 'saler_id'>
+type EditForm = Pick<Site, 'id' | 'name' | 'address' | 'asset_count' | 'is_onsite_default' | 'site_status' | 'saler_id' | 'bind_type' | 'order_id' | 'board_bind_type' | 'board_order_id'>
 // ---------------- 修改弹框 ----------------
 const showEditModal = ref(false);
 const showEditHistoryModal = ref(false);
@@ -83,8 +88,33 @@ const editForm = ref<EditForm>({
   asset_count: 0,
   is_onsite_default: 0,
   site_status: 0,
-  saler_id: 0
+  saler_id: 0,
+  bind_type: "manual",
+  order_id: '',
+  board_bind_type: "manual",
+  board_order_id: ''
 });
+
+const orderOptions = ref<{ label: string; value: string }[]>([]);
+const orderLoading = ref(false);
+
+const getOrders = async (siteId: number) => {
+  if (!siteId) return;
+  orderLoading.value = true;
+  try {
+    const { data, error } = await fetchOrders({ site_id: siteId });
+    if (!error && data.list) {
+      orderOptions.value = data.list.map((item: any) => ({
+        label: item.OrderNo || item.ID,
+        value: item.ID|| String(item.ID)
+      }));
+    }
+  } catch (err) {
+    console.error('获取工单失败', err);
+  } finally {
+    orderLoading.value = false;
+  }
+};
 
 // 打开修改弹框
 const handleOpenEdit = (row: Site) => {
@@ -96,8 +126,13 @@ const handleOpenEdit = (row: Site) => {
     is_onsite_default: row.is_onsite_default ?? 0,
     site_status: row.site_status ?? 0,
     saler_id: row.saler_id ?? 0,
+    bind_type: row.bind_type || 'manual',
+    order_id: row.order_id || '',
+    board_bind_type: row.board_bind_type || 'manual',
+    board_order_id: row.board_order_id || ''
   };
   // editForm.value = JSON.parse(JSON.stringify(row)); // 深拷贝
+  getOrders(row.id);
   showEditModal.value = true;
 };
 
@@ -113,6 +148,15 @@ const handleOpenEditHistory = (row: Site) => {
 };
 // 保存修改
 const handleSaveEdit = async () => {
+  // console.log("editForm.value>>",editForm.value)
+  if (editForm.value.bind_type === "auto" && !editForm.value.order_id) {
+    message.error('开启自动绑定时，工单编号必填');
+    return;
+  }
+  if (editForm.value.board_bind_type === "auto" && !editForm.value.board_order_id) {
+    message.error('开启自动绑定算力板工单时，工单编号必填');
+    return;
+  }
   try {
     // TODO: 调用后端接口 updateSites(editForm.value)
     const {error} = await updateSites(editForm.value.id, editForm.value);
@@ -159,12 +203,12 @@ const fetchUsers = async () => {
     role: 2,
   });
   if(error==null){
-    console.log("data.list",data.list)
+    // console.log("data.list",data.list)
     const salerMap_byId = data.list.reduce((acc:any, cur:any) => {
       acc[cur.id] = cur.real_name;
       return acc;
     }, {} as Record<number, string>);
-    console.log("salerMap_byId",salerMap_byId)
+    // console.log("salerMap_byId",salerMap_byId)
     salerMap.value = salerMap_byId;
 
     // editForm.value.saler_id = data[0].id;
@@ -234,6 +278,7 @@ const columns: DataTableColumns<Site> = [
         ]
       ), width: 120,
     key: 'asset_count',
+    sorter: (row1: Site, row2: Site) => (row1.asset_count || 0) - (row2.asset_count || 0),
     render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.asset_count.toLocaleString() || 0)
   },
   { title: () =>
@@ -258,7 +303,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ),width: 120, key: 'fault_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.fault_count)},
+      ),width: 120, key: 'fault_count', sorter: (row1: Site, row2: Site) => (row1.fault_count || 0) - (row2.fault_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.fault_count)},
   { title: () =>
       h(
         'div',
@@ -281,7 +326,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'in_logistics_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.in_logistics_count.toLocaleString() || 0) },
+      ), width: 120, key: 'in_logistics_count', sorter: (row1: Site, row2: Site) => (row1.in_logistics_count || 0) - (row2.in_logistics_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.in_logistics_count.toLocaleString() || 0) },
   { title: () =>
       h(
         'div',
@@ -304,7 +349,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'wait_on_shelf_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.wait_on_shelf_count.toLocaleString() || 0) },
+      ), width: 120, key: 'wait_on_shelf_count', sorter: (row1: Site, row2: Site) => (row1.wait_on_shelf_count || 0) - (row2.wait_on_shelf_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.wait_on_shelf_count.toLocaleString() || 0) },
   // { title: '待上架', width: 120, key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
   { title: () =>
       h(
@@ -328,7 +373,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'repairing',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.repairing.toLocaleString() || 0) },
+      ), width: 120, key: 'repairing', sorter: (row1: Site, row2: Site) => (row1.repairing || 0) - (row2.repairing || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.repairing.toLocaleString() || 0) },
   // { title: '在修数', width: 120, key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
   { title: () =>
       h(
@@ -352,7 +397,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'on_shelf_wait_repair_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.on_shelf_wait_repair_count.toLocaleString() || 0) },
+      ), width: 120, key: 'on_shelf_wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.on_shelf_wait_repair_count || 0) - (row2.on_shelf_wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.on_shelf_wait_repair_count.toLocaleString() || 0) },
   { title: () =>
       h(
         'div',
@@ -375,7 +420,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'wait_repair_count', render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.wait_repair_count)?.toLocaleString?.() || '0') },
+      ), width: 120, key: 'wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.wait_repair_count || 0) - (row2.wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.wait_repair_count)?.toLocaleString?.() || '0') },
   { title: () =>
       h(
         'div',
@@ -398,7 +443,7 @@ const columns: DataTableColumns<Site> = [
           //   }
           // )
         ]
-      ), width: 120, key: 'wait_repair_rate', render: (row: Site) => h('span', { class: 'text-sm text-gray-500', title: '未下架+已下架+待处理 故障机器数占比' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
+      ), width: 120, key: 'wait_repair_rate', sorter: (row1: Site, row2: Site) => (row1.wait_repair_rate || 0) - (row2.wait_repair_rate || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500', title: '未下架+已下架+待处理 故障机器数占比' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
   // { title: '待修率', width: 120, key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
   { title: () =>
       h(
@@ -422,7 +467,7 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'fault_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.in_logistics_count+row.wait_repair_count+row.repairing).toLocaleString?.() || String(row.in_logistics_count+row.wait_repair_count+row.repairing)) },
+      ), width: 120, key: 'net_fault_count', sorter: (row1: Site, row2: Site) => ((row1.in_logistics_count||0)+(row1.wait_repair_count||0)+(row1.repairing||0)) - ((row2.in_logistics_count||0)+(row2.wait_repair_count||0)+(row2.repairing||0)), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, ((row.in_logistics_count||0)+(row.wait_repair_count||0)+(row.repairing||0)).toLocaleString?.() || String((row.in_logistics_count||0)+(row.wait_repair_count||0)+(row.repairing||0))) },
   { title: () =>
       h(
         'div',
@@ -445,8 +490,40 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'scrapped_count',render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.scrapped_count.toLocaleString() || 0) },
+      ), width: 120, key: 'scrapped_count', sorter: (row1: Site, row2: Site) => (row1.scrapped_count || 0) - (row2.scrapped_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.scrapped_count.toLocaleString() || 0) },
   // { title: '预报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
+   { title: () => renderHeaderTitle('整机工单绑定'), width: 220, key: 'bind_type', render: (row: Site) => {
+      const typeMap: Record<string, { text: string, type: 'success' | 'warning' | 'default' }> = {
+          'auto': { text: '自动', type: 'success' },
+          'manual': { text: '手动', type: 'warning' }
+      };
+      const type = row.bind_type || 'manual';
+      const config = typeMap[type] || { text: type, type: 'default' };
+
+      return h('div', { class: 'flex flex-col gap-1' }, [
+        h('div', { class: 'flex items-center gap-2' }, [
+          h(NTag, { class: 'text-sm', type: config.type, size: 'small' }, () => config.text),
+          // 如果需要展示绑定类型文本，可以在这里添加
+        ]),
+        row.order_no ? h('span', { class: 'text-xs text-gray-500' }, row.order_no) : null
+      ]);
+  }},
+  { title: () => renderHeaderTitle('板子工单绑定'), width: 220, key: 'board_bind_type', render: (row: Site) => {
+      const typeMap: Record<string, { text: string, type: 'success' | 'warning' | 'default' }> = {
+          'auto': { text: '自动', type: 'success' },
+          'manual': { text: '手动', type: 'warning' }
+      };
+      const type = row.board_bind_type || 'manual';
+      const config = typeMap[type] || { text: type, type: 'default' };
+
+      return h('div', { class: 'flex flex-col gap-1' }, [
+        h('div', { class: 'flex items-center gap-2' }, [
+          h(NTag, { class: 'text-sm', type: config.type, size: 'small' }, () => config.text),
+        ]),
+        row.board_order_no ? h('span', { class: 'text-xs text-gray-500' }, row.board_order_no) : null
+      ]);
+  }},
+
   { title: () => renderHeaderTitle('维修状态'), width: 120, key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',
@@ -574,23 +651,23 @@ const columns: DataTableColumns<Site> = [
 const fetchData = async () => {
   loading.value = true;
   let onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1
-  console.log("selectedSiteStatus.value",selectedSiteStatus.value)
+  // console.log("selectedSiteStatus.value",selectedSiteStatus.value)
   const params: any = {
-    page: pagination.value.page,
-    page_size: pagination.value.pageSize,
+    page: 1,
+    page_size: -1,
     name: searchSerial.value || undefined,
     enable_all: onlyMySite,//1 全部，-1 我的
     saler_id: selectedSalerId.value || undefined,
+    bind_type: bindTypeModel.value || undefined,
+    border_bind_type: borderBindTypeModel.value || undefined,
     site_status: selectedSiteStatus.value===0 ? 0 : selectedSiteStatus.value || undefined
   };
+  console.log("params",params)
 
   try {
     const {data,error} = await fetchSites(params);
     if(error==null){
         tableData.value = data.list;
-        pagination.value.itemCount = data.pagination.total;
-        pagination.value.page =  data.pagination.page;
-        pagination.value.pageSize =  data.pagination.page_size;
     }else{
         message.error(`加载失败: ${error}`);
     }
@@ -605,12 +682,12 @@ onMounted(() => {
   fetchData()
   fetchUsers();
 });
-watch([searchSerial, selectedSalerId, selectedSiteStatus], () => {
+watch([searchSerial, selectedSalerId, selectedSiteStatus,bindTypeModel, borderBindTypeModel], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
   fetchUsers();
-  
+
 });
 const siteStatusOptions = computed(() => {
   return Object.entries(siteStatusRecord).map(([value, label]) => ({ label, value: Number(value) }));
@@ -645,39 +722,54 @@ const onOnlyMySiteChange = (v: boolean) => {
   // 切换“我的场地”后立即刷新数据
   fetchData();
 };
+
+const bindTypeOptions = [
+  { label: '自动', value: 'auto' },
+  { label: '手动', value: 'manual' }
+]
+
+const borderBindTypeOptions = [
+  { label: '自动', value: 'auto' },
+  { label: '手动', value: 'manual' }
+]
 </script>
 
 <template>
   <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <!-- 查询框 -->
-     <div class="flex justify-between items-center" v-if="hasRole"> 
+     <div class="flex justify-between items-center" v-if="hasRole">
       <SearchBar
       v-model:serial="searchSerial"
       v-model:salerId="selectedSalerId"
       v-model:siteStatus="selectedSiteStatus"
+      v-model:bindType="bindTypeModel"
+      v-model:borderBindType="borderBindTypeModel"
       :salerOptions="salerOptions"
       :siteStatusOptions="siteStatusOptions"
+      :bindTypeOptions="bindTypeOptions"
+      :borderBindTypeOptions="borderBindTypeOptions"
       @search="onSearch"
     />
     <div>
       <NSwitch v-model:value="onlyMySite" size="medium" @update:value="onOnlyMySiteChange"  style="margin-left:10px;"/>
     <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
     </div>
-         
+
 
      </div>
      <div class="card-wrapper sm:flex-1-hidden">
 
     <!-- 表格 -->
-    <NDataTable 
+    <NDataTable
     flex-height
     :scroll-x="1400"
-    :columns="columns" 
-    :data="tableData" 
-    :pagination="pagination" 
+    :columns="columns"
+    :data="tableData"
+    :pagination="pagination"
     :row-key="row => row.id"
     class="sm:h-full"
-    :loading="loading" remote />
+    :loading="loading"
+    />
     </div>
 
     <!-- 修改弹框 -->
@@ -703,8 +795,34 @@ const onOnlyMySiteChange = (v: boolean) => {
         <NFormItem label="售后专员">
           <NSelect v-model:value="editForm.saler_id" :options="salerOptions" />
         </NFormItem>
+        <NFormItem label="自动绑定机器工单">
+          <NSwitch v-model:value="editForm.bind_type" :checked-value="'auto'" :unchecked-value="'manual'" />
+        </NFormItem>
+        <NFormItem label="工单编号" :required="editForm.bind_type === 'auto'">
+          <NSelect
+            v-model:value="editForm.order_id"
+            :options="orderOptions"
+            :loading="orderLoading"
+            placeholder="请选择工单（开启自动绑定时必填）"
+            clearable
+            filterable
+          />
+        </NFormItem>
+        <NFormItem label="自动绑算力板工单">
+          <NSwitch v-model:value="editForm.board_bind_type" :checked-value="'auto'" :unchecked-value="'manual'" />
+        </NFormItem>
+        <NFormItem label="算力板工单编号" :required="editForm.board_bind_type === 'auto'">
+          <NSelect
+            v-model:value="editForm.board_order_id"
+            :options="orderOptions"
+            :loading="orderLoading"
+            placeholder="请选择工单（开启自动绑定算力板工单时必填）"
+            clearable
+            filterable
+          />
+        </NFormItem>
 
-       
+
       </NForm>
       <template #footer>
         <NSpace :size="12">

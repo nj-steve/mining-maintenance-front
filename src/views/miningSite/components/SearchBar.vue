@@ -33,6 +33,18 @@
       size="medium"
       @update:value="emit('search')"
     />
+
+    <!-- 绑定工单类型下拉搜索 -->
+    <NSelect
+      v-model:value="bindTypeModel"
+      :options="bindTypeOptions"
+      clearable
+      filterable
+      placeholder="选择绑定工单类型"
+      style="width: 200px"
+      size="medium"
+      @update:value="emit('search')"
+    />
   </div>
 </template>
 
@@ -45,14 +57,19 @@ const props = defineProps<{
   serial: string;
   salerId: number | null;
   siteStatus: number | null;
+  bindType: string | null;
   salerOptions: SelectOption[];
   siteStatusOptions: SelectOption[];
+  bindTypeOptions: SelectOption[];
+  borderBindTypeOptions: SelectOption[];
 }>();
 
 const emit = defineEmits<{
   (e: 'update:serial', v: string): void;
   (e: 'update:salerId', v: number | null): void;
   (e: 'update:siteStatus', v: number | null): void;
+  (e: 'update:bindType', v: string | null): void;
+  (e: 'update:borderBindType', v: string | null): void;
   (e: 'search'): void;
 }>();
 
@@ -69,6 +86,11 @@ const salerIdModel = computed({
 const siteStatusModel = computed({
   get: () => props.siteStatus,
   set: v => emit('update:siteStatus', v as number | null)
+});
+
+const bindTypeModel = computed({
+  get: () => props.bindType,
+  set: v => emit('update:bindType', v as string | null)
 });
 </script>
 
