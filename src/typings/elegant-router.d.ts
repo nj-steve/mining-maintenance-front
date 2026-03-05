@@ -25,6 +25,7 @@ declare module "@elegant-router/types" {
     "iframe-page": "/iframe-page/:url";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "miningsite": "/miningsite";
+    "operationlogs": "/operationlogs";
     "repairrecords": "/repairrecords";
     "repairrecordsdetail": "/repairrecords/:id/detail";
     "repairreport": "/repairreport";
@@ -74,6 +75,7 @@ declare module "@elegant-router/types" {
     | "iframe-page"
     | "login"
     | "miningsite"
+    | "operationlogs"
     | "repairrecords"
     | "repairrecordsdetail"
     | "repairreport"
@@ -108,6 +110,7 @@ declare module "@elegant-router/types" {
     | "faults"
     | "home"
     | "miningsite"
+    | "operationlogs"
     | "repairrecords"
     | "repairrecordsdetail"
     | "repairreport"

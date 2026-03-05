@@ -5,3 +5,4 @@ export * from './faults';
 export * from './site';
 export * from './summary';
 export * from './route';
+export * from './log';

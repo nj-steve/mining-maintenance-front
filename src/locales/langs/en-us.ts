@@ -179,6 +179,8 @@ const local: App.I18n.Schema = {
    'user-center': 'User Center',
     scrapmachine:"Scrap Machines",
     repairreport:"Repair Report",
+    operationlogs:"Operation Log",
+
   },
   page: {
     login: {

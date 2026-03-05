@@ -105,6 +105,18 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'operationlogs',
+    path: '/operationlogs',
+    component: 'layout.base$view.operationlogs',
+    meta: {
+      title: 'operationlogs',
+      i18nKey: 'route.operationlogs',
+      icon: 'mdi:file-document-edit-outline',
+      order: 99,
+      roles: ['1']
+    }
+  },
+  {
     name: 'repairrecords',
     path: '/repairrecords',
     component: 'layout.base$view.repairrecords',

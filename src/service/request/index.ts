@@ -94,7 +94,7 @@ export const request = createFlatRequest<App.Service.Response, RequestInstanceSt
       return null;
     },
     transformBackendResponse(response) {
-      console.log("response.data.data",response.data.data)
+      // console.log("response.data.data",response.data.data)
       return response.data.data;
     },
     onError(error) {

@@ -23,6 +23,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   faults: () => import("@/views/faults/index.vue"),
   home: () => import("@/views/home/index.vue"),
   miningsite: () => import("@/views/miningSite/index.vue"),
+  operationlogs: () => import("@/views/operationLogs/index.vue"),
   repairrecords: () => import("@/views/repairRecords/index.vue"),
   repairrecordsdetail: () => import("@/views/repairRecordsDetail/index.vue"),
   repairreport: () => import("@/views/repairReport/index.vue"),
