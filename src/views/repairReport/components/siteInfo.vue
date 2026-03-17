@@ -144,6 +144,19 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
       <NCard size="large">
         <template #header>
+          <div class="text-14px font-bold text-gray-700 mb-4">损坏部件排行 (TOP 5)</div>
+        </template>
+        <div class="h-240px">
+          <div ref="topComponentChartRef" class="w-full h-full" />
+        </div>
+      </NCard>
+      <div></div>
+    </div>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
+      <NCard size="large">
+        <template #header>
           <div class="text-14px font-bold text-gray-700 mb-4">二返修率 (Top 5)</div>
         </template>
         <div class="h-240px">
@@ -218,7 +231,7 @@ import { ref, onMounted, onUnmounted, h, watch, computed } from 'vue'
 import { NCard, NButton, NSelect, NDataTable, NTag, NInput, NCheckbox, NProgress, NTooltip } from 'naive-ui'
 import * as echarts from 'echarts'
 import { Icon } from '@iconify/vue'
-import { fetchRepairStatistics, fetchMachineModelStatistics } from '@/service/api/summary'
+import { fetchRepairStatistics, fetchMachineModelStatistics, fetchRepairComponentsStatistics } from '@/service/api/summary'
 import dayjs from 'dayjs'
 
 const props = withDefaults(defineProps<{
@@ -237,8 +250,10 @@ const modelChartRef = ref<HTMLDivElement | null>(null)
 let modelChart: echarts.ECharts | null = null
 const topReturnChartRef = ref<HTMLDivElement | null>(null)
 const topScrapChartRef = ref<HTMLDivElement | null>(null)
+const topComponentChartRef = ref<HTMLDivElement | null>(null)
 let topReturnChart: echarts.ECharts | null = null
 let topScrapChart: echarts.ECharts | null = null
+let topComponentChart: echarts.ECharts | null = null
 
 type RowItem = {
   site: string
@@ -254,6 +269,7 @@ const trendChartData = ref<{ date: string; repair_count: number;  scrap_count: n
 const modelChartData = ref<{ name: string; value: number }[]>([])
 const topReturnChartData = ref<{ name: string; return_rate: number }[]>([])
 const topScrapChartData = ref<{ name: string; scrap_rate: number }[]>([])
+const topComponentChartData = ref<{ name: string; count: number }[]>([])
 const recordCount = ref<number>(0)
 
 const selectedDimension = ref<'site' | 'station'>('site')
@@ -369,6 +385,30 @@ const fetchModelTypeData = async () => {
   }
 }
 
+const fetchComponentData = async () => {
+  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
+  const end = props.endDate || dayjs().format('YYYY-MM-DD')
+  try {
+    const { data, error } = await fetchRepairComponentsStatistics(selectedDimension.value, start, end)
+    if (!error && data) {
+       const list = Array.isArray(data) ? data : (data.list || [])
+       topComponentChartData.value = list.map((item: any) => ({
+         name: item.name || item.component_name || 'Unknown',
+         count: item.count || item.value || 0
+       })).reverse()
+
+       if (topComponentChart) {
+          topComponentChart.setOption({
+            yAxis: { data: topComponentChartData.value.map(d => d.name) },
+            series: [{ data: topComponentChartData.value.map(d => d.count) }]
+          })
+       }
+    }
+  } catch (err) {
+    console.error('Failed to fetch repair components statistics', err)
+  }
+}
+
 function updateCharts() {
     // Update top charts based on tableData
     if (topReturnChart) {
@@ -383,6 +423,12 @@ function updateCharts() {
             series: [{ data: topScrapChartData.value.map(i => Number(i.scrap_rate.toFixed(2))).slice(0, 5) }]
         })
     }
+    if (topComponentChart) {
+        topComponentChart.setOption({
+            yAxis: { data: topComponentChartData.value.map(d => d.name) },
+            series: [{ data: topComponentChartData.value.map(d => d.count) }]
+        })
+    }
     buildChart()
     buildModelChart()
     // Update trend chart if data available... (omitted for now as we focus on tableData)
@@ -390,6 +436,7 @@ function updateCharts() {
 
 watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchData)
 watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchModelTypeData)
+watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchComponentData)
 
 const columns = computed(() => [
   {
@@ -627,6 +674,64 @@ function buildChart() {
 }
 
 function buildTopCharts() {
+  if (topComponentChartRef.value) {
+    topComponentChart = echarts.init(topComponentChartRef.value)
+    topComponentChart.setOption({
+      grid: {
+        left: '100px',
+        right: '3%',
+        top: '0%',
+        bottom: '10%'
+      },
+      xAxis: {
+        type: 'value',
+        axisLabel: { show: false },
+        axisLine: { show: false },
+        splitLine: {
+          show: true,
+          lineStyle: {
+            color: '#f3f4f6',
+            type: 'dashed'
+          }
+        }
+      },
+      yAxis: {
+        type: 'category',
+        data: topComponentChartData.value.map(d => d.name),
+        axisLabel: {
+          fontSize: 12,
+          color: '#374151',
+          margin: 16
+        },
+        axisLine: { show: false },
+        axisTick: { show: false }
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderColor: 'transparent',
+        borderRadius: 8,
+        formatter: (params: any) => {
+          const param = params[0]
+          return `${param.name}<br/>${param.marker} 维修次数: ${param.value}`
+        }
+      },
+      series: [
+        {
+          name: '维修次数',
+          type: 'bar',
+          data: topComponentChartData.value.map(d => d.count),
+          itemStyle: {
+            color: '#3b82f6',
+            borderRadius: [0, 4, 4, 0]
+          },
+          barWidth: 20
+        }
+      ]
+    })
+  }
+
   if (topReturnChartRef.value) {
     topReturnChart = echarts.init(topReturnChartRef.value)
     topReturnChart.setOption(
@@ -868,6 +973,10 @@ function disposeChart() {
     modelChart.dispose()
     modelChart = null
   }
+  if (topComponentChart) {
+    topComponentChart.dispose()
+    topComponentChart = null
+  }
 }
 
 function exportCSV() {
@@ -886,6 +995,7 @@ function exportCSV() {
 onMounted(() => {
   fetchData()
   fetchModelTypeData()
+  fetchComponentData()
   buildChart()
   buildModelChart()
   buildTopCharts()
@@ -894,6 +1004,7 @@ onMounted(() => {
     modelChart?.resize()
     topReturnChart?.resize()
     topScrapChart?.resize()
+    topComponentChart?.resize()
   })
 
 })
