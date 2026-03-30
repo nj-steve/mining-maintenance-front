@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>欢迎</title>
+  <style>
+    :root {
+      --bg-1: #0ea5e9;
+      --bg-2: #22c55e;
+      --bg-3: #a78bfa;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text-main: #0f172a;
+      --text-sub: #475569;
+      --btn-primary: #2563eb;
+      --btn-primary-hover: #1d4ed8;
+      --btn-secondary: #0f766e;
+      --btn-secondary-hover: #115e59;
+      --ring: rgba(37, 99, 235, 0.35);
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text-main);
+      background: linear-gradient(120deg, var(--bg-1), var(--bg-2), var(--bg-3));
+      background-size: 200% 200%;
+      animation: gradientMove 12s ease infinite;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .card {
+      width: 100%;
+      max-width: 920px;
+      background: var(--card-bg);
+      backdrop-filter: saturate(160%) blur(8px);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
+      overflow: hidden;
+    }
+    .header {
+      padding: 28px 32px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+    .logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1d4ed8 0%, #22c55e 100%);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+    }
+    .content {
+      padding: 8px 32px 32px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+    }
+    .hero {
+      padding: 24px 0 8px;
+    }
+    .title {
+      font-size: clamp(28px, 4.3vw, 44px);
+      line-height: 1.15;
+      margin: 0 0 12px;
+      letter-spacing: 0.2px;
+    }
+    .subtitle {
+      font-size: clamp(14px, 1.8vw, 16px);
+      color: var(--text-sub);
+      margin: 0 0 28px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+    }
+    .btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 6px var(--ring);
+    }
+    .btn-primary {
+      background: var(--btn-primary);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.25);
+    }
+    .btn-primary:hover {
+      background: var(--btn-primary-hover);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #e8f5f3;
+      color: var(--btn-secondary);
+      border: 1px solid rgba(17, 94, 89, 0.15);
+    }
+    .btn-secondary:hover {
+      background: #dff1ee;
+      transform: translateY(-1px);
+    }
+    .panel {
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 16px;
+      padding: 18px;
+      background: #fff;
+      display: grid;
+      gap: 14px;
+    }
+    .panel-title {
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid rgba(15, 23, 42, 0.05);
+    }
+    .item-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      background: #22c55e;
+    }
+    .footer {
+      padding: 14px 32px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-sub);
+      font-size: 13px;
+    }
+    .links {
+      display: flex;
+      gap: 14px;
+    }
+    .link {
+      color: var(--btn-primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <header class="header">
+      <div class="brand">
+        <div class="logo">W</div>
+        <div>欢迎页面</div>
+      </div>
+      <a class="link" href="#">帮助</a>
+    </header>
+    <section class="content">
+      <div class="hero">
+        <h1 class="title">欢迎使用</h1>
+        <p class="subtitle">简洁优雅的欢迎界面，适配桌面与移动端。</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="/">开始使用</a>
+          <a class="btn btn-secondary" href="#features">了解更多</a>
+        </div>
+      </div>
+      <aside class="panel" id="features">
+        <div class="panel-title">特性速览</div>
+        <div class="list">
+          <div class="item">
+            <div class="item-badge">1</div>
+            <div>简洁设计，清晰的信息层次</div>
+          </div>
+          <div class="item">
+            <div class="item-badge">2</div>
+            <div>自适应布局，兼容多设备</div>
+          </div>
+          <div class="item">
+            <div class="item-badge">3</div>
+            <div>纯静态页面，无任何依赖</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+    <footer class="footer">
+      <div>© 2026 欢迎页面</div>
+      <div class="links">
+        <a class="link" href="#">隐私政策</a>
+        <a class="link" href="#">服务条款</a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

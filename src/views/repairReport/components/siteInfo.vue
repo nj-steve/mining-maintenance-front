@@ -145,7 +145,7 @@
       </NCard>
       <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">损坏部件排行 (TOP 5)</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">损坏部件故障占比</div>
         </template>
         <div class="h-240px">
           <div ref="topComponentChartRef" class="w-full h-full" />
