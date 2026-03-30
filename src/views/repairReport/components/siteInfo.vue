@@ -122,7 +122,7 @@
       </NCard>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
+    <div class="grid grid-cols-1 md:grid-cols-1 gap-16px">
       <NCard size="large">
         <template #header>
           <div class="text-14px font-bold text-gray-700 mb-4">趋势分析 (Trend Analysis)</div>
@@ -131,7 +131,11 @@
           <div ref="chartRef" class="w-full h-full" />
         </div>
       </NCard>
-      <NCard size="large">
+
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
+       <NCard size="large">
         <template #header>
           <div class="text-14px font-bold text-gray-700 mb-4">机型故障占比</div>
         </template>
@@ -139,9 +143,6 @@
           <div ref="modelChartRef" class="w-full h-full" />
         </div>
       </NCard>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
       <NCard size="large">
         <template #header>
           <div class="text-14px font-bold text-gray-700 mb-4">损坏部件排行 (TOP 5)</div>
@@ -152,7 +153,24 @@
       </NCard>
       <div></div>
     </div>
-
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
+       <NCard size="large">
+        <template #header>
+          <div class="text-14px font-bold text-gray-700 mb-4">散热模式故障占比</div>
+        </template>
+        <div class="h-320px">
+          <div ref="heatModeChartRef" class="w-full h-full" />
+        </div>
+       </NCard>
+       <NCard size="large">
+        <template #header>
+          <div class="text-14px font-bold text-gray-700 mb-4">区域故障机占比</div>
+        </template>
+        <div class="h-320px">
+          <div ref="countryChartRef" class="w-full h-full" />
+        </div>
+       </NCard>
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
       <NCard size="large">
@@ -231,7 +249,7 @@ import { ref, onMounted, onUnmounted, h, watch, computed } from 'vue'
 import { NCard, NButton, NSelect, NDataTable, NTag, NInput, NCheckbox, NProgress, NTooltip } from 'naive-ui'
 import * as echarts from 'echarts'
 import { Icon } from '@iconify/vue'
-import { fetchRepairStatistics, fetchMachineModelStatistics, fetchRepairComponentsStatistics } from '@/service/api/summary'
+import { fetchRepairStatistics, fetchMachineModelStatistics, fetchRepairComponentsStatistics, fetchHeatDissModeStatistics, fetchCountryStatistics } from '@/service/api/summary'
 import dayjs from 'dayjs'
 
 const props = withDefaults(defineProps<{
@@ -248,6 +266,10 @@ const chartRef = ref<HTMLDivElement | null>(null)
 let chart: echarts.ECharts | null = null
 const modelChartRef = ref<HTMLDivElement | null>(null)
 let modelChart: echarts.ECharts | null = null
+const heatModeChartRef = ref<HTMLDivElement | null>(null)
+let heatModeChart: echarts.ECharts | null = null
+const countryChartRef = ref<HTMLDivElement | null>(null)
+let countryChart: echarts.ECharts | null = null
 const topReturnChartRef = ref<HTMLDivElement | null>(null)
 const topScrapChartRef = ref<HTMLDivElement | null>(null)
 const topComponentChartRef = ref<HTMLDivElement | null>(null)
@@ -267,6 +289,8 @@ type RowItem = {
 const tableData = ref<RowItem[]>([])
 const trendChartData = ref<{ date: string; repair_count: number;  scrap_count: number }[]>([])
 const modelChartData = ref<{ name: string; value: number }[]>([])
+const heatModeChartData = ref<{ name: string; value: number }[]>([])
+const countryChartData = ref<{ name: string; value: number }[]>([])
 const topReturnChartData = ref<{ name: string; return_rate: number }[]>([])
 const topScrapChartData = ref<{ name: string; scrap_rate: number }[]>([])
 const topComponentChartData = ref<{ name: string; count: number }[]>([])
@@ -385,13 +409,65 @@ const fetchModelTypeData = async () => {
   }
 }
 
+const fetchHeatModeData = async () => {
+  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
+  const end = props.endDate || dayjs().format('YYYY-MM-DD')
+  try {
+    const { data, error } = await fetchHeatDissModeStatistics(selectedDimension.value, start, end)
+    if (!error && data) {
+      const list = Array.isArray(data) ? data : (data.items || data.list || data.data || [])
+      heatModeChartData.value = list
+        .filter((item: any) => {
+          const nm = item.heat_diss_mode_name ?? item.name
+          if (nm === 0 || nm === '0') return false
+          if (nm === null || nm === undefined) return false
+          if (String(nm).trim() === '') return false
+          return true
+        })
+        .map((item: any) => ({
+          name: String(item.heat_diss_mode_name ?? item.name),
+          value: item.fault_count ?? item.value ?? 0
+        }))
+      buildHeatModeChart()
+    }
+  } catch (err) {
+    console.error('Failed to fetch heat dissipation mode statistics', err)
+  }
+}
+
+const fetchCountryData = async () => {
+  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
+  const end = props.endDate || dayjs().format('YYYY-MM-DD')
+  try {
+    const { data, error } = await fetchCountryStatistics(selectedDimension.value, start, end)
+    if (!error && data) {
+      const list = Array.isArray(data) ? data : (data.items || data.list || data.data || [])
+      countryChartData.value = list
+        .filter((item: any) => {
+          const nm = item.country_name ?? item.name
+          if (nm === 0 || nm === '0') return false
+          if (nm === null || nm === undefined) return false
+          if (String(nm).trim() === '') return false
+          return true
+        })
+        .map((item: any) => ({
+          name: String(item.country_name ?? item.name),
+          value: item.fault_count ?? item.value ?? 0
+        }))
+      buildCountryChart()
+    }
+  } catch (err) {
+    console.error('Failed to fetch country statistics', err)
+  }
+}
+
 const fetchComponentData = async () => {
   const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
   const end = props.endDate || dayjs().format('YYYY-MM-DD')
   try {
     const { data, error } = await fetchRepairComponentsStatistics(selectedDimension.value, start, end)
     if (!error && data) {
-       const list = Array.isArray(data) ? data : (data.list || [])
+       const list = Array.isArray(data) ? data : (data.list || data.items || data.data || [])
        topComponentChartData.value = list.map((item: any) => ({
          name: item.name || item.component_name || 'Unknown',
          count: item.count || item.value || 0
@@ -423,20 +499,15 @@ function updateCharts() {
             series: [{ data: topScrapChartData.value.map(i => Number(i.scrap_rate.toFixed(2))).slice(0, 5) }]
         })
     }
-    if (topComponentChart) {
-        topComponentChart.setOption({
-            yAxis: { data: topComponentChartData.value.map(d => d.name) },
-            series: [{ data: topComponentChartData.value.map(d => d.count) }]
-        })
-    }
     buildChart()
-    buildModelChart()
     // Update trend chart if data available... (omitted for now as we focus on tableData)
 }
 
 watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchData)
 watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchModelTypeData)
 watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchComponentData)
+watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchHeatModeData)
+watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchCountryData)
 
 const columns = computed(() => [
   {
@@ -673,88 +744,22 @@ function buildChart() {
 )
 }
 
-function buildTopCharts() {
-  if (topComponentChartRef.value) {
-    topComponentChart = echarts.init(topComponentChartRef.value)
-    topComponentChart.setOption({
-      grid: {
-        left: '100px',
-        right: '3%',
-        top: '0%',
-        bottom: '10%'
-      },
-      xAxis: {
-        type: 'value',
-        axisLabel: { show: false },
-        axisLine: { show: false },
-        splitLine: {
-          show: true,
-          lineStyle: {
-            color: '#f3f4f6',
-            type: 'dashed'
-          }
-        }
-      },
-      yAxis: {
-        type: 'category',
-        data: topComponentChartData.value.map(d => d.name),
-        axisLabel: {
-          fontSize: 12,
-          color: '#374151',
-          margin: 16
-        },
-        axisLine: { show: false },
-        axisTick: { show: false }
-      },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'shadow' },
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        borderColor: 'transparent',
-        borderRadius: 8,
-        formatter: (params: any) => {
-          const param = params[0]
-          return `${param.name}<br/>${param.marker} 维修次数: ${param.value}`
-        }
-      },
-      series: [
-        {
-          name: '维修次数',
-          type: 'bar',
-          data: topComponentChartData.value.map(d => d.count),
-          itemStyle: {
-            color: '#3b82f6',
-            borderRadius: [0, 4, 4, 0]
-          },
-          barWidth: 20
-        }
-      ]
-    })
-  }
+function buildTopComponentChart() {
+  if (!topComponentChartRef.value) return
+  if (topComponentChart) topComponentChart.dispose()
 
-  if (topReturnChartRef.value) {
-    topReturnChart = echarts.init(topReturnChartRef.value)
-    topReturnChart.setOption(
-      {
+  topComponentChart = echarts.init(topComponentChartRef.value)
+  topComponentChart.setOption({
     grid: {
-      left: '120px',
+      left: '100px',
       right: '3%',
       top: '0%',
       bottom: '10%'
     },
     xAxis: {
       type: 'value',
-      axisLabel: {
-        formatter: '{value}%',
-        fontSize: 11,
-        color: '#6b7280'
-      },
-      axisLine: {
-        show: true,
-        lineStyle: {
-          color: '#e5e7eb'
-        }
-      },
+      axisLabel: { show: false },
+      axisLine: { show: false },
       splitLine: {
         show: true,
         lineStyle: {
@@ -765,44 +770,115 @@ function buildTopCharts() {
     },
     yAxis: {
       type: 'category',
-      data: topReturnChartData.value.map(d => d.name.length > 14 ? d.name.substring(0, 14) + '...' : d.name),
+      data: topComponentChartData.value.map(d => d.name),
       axisLabel: {
-        fontSize: 11,
+        fontSize: 12,
         color: '#374151',
-        formatter: (value: string) => {
-          return value.length > 14 ? value.substring(0, 14) + '...' : value
-        }
+        margin: 16
       },
-      axisLine: {
-        show: false
-      },
-      axisTick: {
-        show: false
-      }
+      axisLine: { show: false },
+      axisTick: { show: false }
     },
     tooltip: {
       trigger: 'axis',
+      axisPointer: { type: 'shadow' },
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
       borderColor: 'transparent',
       borderRadius: 8,
       formatter: (params: any) => {
-        const param = params[0];
-        return `${param.name}<br/>${param.marker} ${param.seriesName}: ${param.value}%`;
+        const param = params[0]
+        return `${param.name}<br/>${param.marker} 维修次数: ${param.value}`
       }
     },
     series: [
       {
-        name: '二返率',
+        name: '维修次数',
         type: 'bar',
-        data: topReturnChartData.value.map(d => d.return_rate),
+        data: topComponentChartData.value.map(d => d.count),
         itemStyle: {
-          color: '#2563eb',
+          color: '#3b82f6',
           borderRadius: [0, 4, 4, 0]
         },
         barWidth: 20
       }
     ]
-  }
+  })
+}
+
+function buildTopCharts() {
+  buildTopComponentChart()
+
+  if (topReturnChartRef.value) {
+    topReturnChart = echarts.init(topReturnChartRef.value)
+    topReturnChart.setOption(
+      {
+        grid: {
+          left: '120px',
+          right: '3%',
+          top: '0%',
+          bottom: '10%'
+        },
+        xAxis: {
+          type: 'value',
+          axisLabel: {
+            formatter: '{value}%',
+            fontSize: 11,
+            color: '#6b7280'
+          },
+          axisLine: {
+            show: true,
+            lineStyle: {
+              color: '#e5e7eb'
+            }
+          },
+          splitLine: {
+            show: true,
+            lineStyle: {
+              color: '#f3f4f6',
+              type: 'dashed'
+            }
+          }
+        },
+        yAxis: {
+          type: 'category',
+          data: topReturnChartData.value.map(d => d.name.length > 14 ? d.name.substring(0, 14) + '...' : d.name),
+          axisLabel: {
+            fontSize: 11,
+            color: '#374151',
+            formatter: (value: string) => {
+              return value.length > 14 ? value.substring(0, 14) + '...' : value
+            }
+          },
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          }
+        },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderColor: 'transparent',
+          borderRadius: 8,
+          formatter: (params: any) => {
+            const param = params[0];
+            return `${param.name}<br/>${param.marker} ${param.seriesName}: ${param.value}%`;
+          }
+        },
+        series: [
+          {
+            name: '二返率',
+            type: 'bar',
+            data: topReturnChartData.value.map(d => d.return_rate),
+            itemStyle: {
+              color: '#2563eb',
+              borderRadius: [0, 4, 4, 0]
+            },
+            barWidth: 20
+          }
+        ]
+      }
     //   {
     //   tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     //   grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
@@ -956,6 +1032,100 @@ function buildModelChart() {
   })
 }
 
+function buildHeatModeChart() {
+  if (!heatModeChartRef.value) return
+  if (heatModeChart) heatModeChart.dispose()
+  heatModeChart = echarts.init(heatModeChartRef.value)
+  heatModeChart.setOption({
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: {
+      orient: 'vertical',
+      right: '5%',
+      top: 'center',
+      icon: 'circle'
+    },
+    series: [
+      {
+        name: '散热模式故障占比',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        center: ['35%', '50%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 20,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: heatModeChartData.value
+      }
+    ]
+  })
+}
+
+function buildCountryChart() {
+  if (!countryChartRef.value) return
+  if (countryChart) countryChart.dispose()
+  countryChart = echarts.init(countryChartRef.value)
+  countryChart.setOption({
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: {
+      orient: 'vertical',
+      right: '5%',
+      top: 'center',
+      icon: 'circle'
+    },
+    series: [
+      {
+        name: '国家故障机占比',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        center: ['35%', '50%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 20,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: countryChartData.value
+      }
+    ]
+  })
+}
+
 function disposeChart() {
   if (chart) {
     chart.dispose()
@@ -972,6 +1142,14 @@ function disposeChart() {
   if (modelChart) {
     modelChart.dispose()
     modelChart = null
+  }
+  if (heatModeChart) {
+    heatModeChart.dispose()
+    heatModeChart = null
+  }
+  if (countryChart) {
+    countryChart.dispose()
+    countryChart = null
   }
   if (topComponentChart) {
     topComponentChart.dispose()
@@ -996,12 +1174,18 @@ onMounted(() => {
   fetchData()
   fetchModelTypeData()
   fetchComponentData()
+  fetchHeatModeData()
+  fetchCountryData()
   buildChart()
   buildModelChart()
+  buildHeatModeChart()
+  buildCountryChart()
   buildTopCharts()
   window.addEventListener('resize', () => {
     chart?.resize()
     modelChart?.resize()
+    heatModeChart?.resize()
+    countryChart?.resize()
     topReturnChart?.resize()
     topScrapChart?.resize()
     topComponentChart?.resize()

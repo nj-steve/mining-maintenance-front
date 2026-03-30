@@ -39,7 +39,6 @@
     <div v-else>
       <StationInfo :start-date="queryStartDate" :end-date="queryEndDate"/>
     </div>
-    
   </div>
 </template>
 
@@ -67,7 +66,7 @@ function handleQuery() {
   let end = ''
   loading.value = true
 
-  
+
   if (periodMode.value === 'quick') {
     end = dayjs().format('YYYY-MM-DD')
     start = dayjs().subtract(quickRange.value, 'day').format('YYYY-MM-DD')
@@ -79,10 +78,10 @@ function handleQuery() {
     end = dayjs().format('YYYY-MM-DD')
     start = dayjs().subtract(30, 'day').format('YYYY-MM-DD')
   }
-  
+
   queryStartDate.value = start
   queryEndDate.value = end
-  
+
   // message.success('已按筛选条件查询')
 }
 
