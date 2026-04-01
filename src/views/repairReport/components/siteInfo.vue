@@ -337,8 +337,8 @@ const renderLabel = (option: { label: string, value: string }) => {
 }
 
 const fetchData = async () => {
-  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
-  const end = props.endDate || dayjs().format('YYYY-MM-DD')
+  const start = props.startDate
+  const end = props.endDate
 
   try {
     const { data, error } = await fetchRepairStatistics(selectedDimension.value, start, end)
@@ -395,8 +395,8 @@ const fetchData = async () => {
 }
 
 const fetchModelTypeData = async () => {
-    const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
-  const end = props.endDate || dayjs().format('YYYY-MM-DD')
+    const start = props.startDate
+  const end = props.endDate
   try {
     const { data, error } = await fetchMachineModelStatistics(selectedDimension.value, start, end)
     if (!error && data) {
@@ -410,8 +410,8 @@ const fetchModelTypeData = async () => {
 }
 
 const fetchHeatModeData = async () => {
-  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
-  const end = props.endDate || dayjs().format('YYYY-MM-DD')
+  const start = props.startDate
+  const end = props.endDate
   try {
     const { data, error } = await fetchHeatDissModeStatistics(selectedDimension.value, start, end)
     if (!error && data) {
@@ -436,8 +436,8 @@ const fetchHeatModeData = async () => {
 }
 
 const fetchCountryData = async () => {
-  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
-  const end = props.endDate || dayjs().format('YYYY-MM-DD')
+  const start = props.startDate
+  const end = props.endDate
   try {
     const { data, error } = await fetchCountryStatistics(selectedDimension.value, start, end)
     if (!error && data) {
@@ -462,8 +462,8 @@ const fetchCountryData = async () => {
 }
 
 const fetchComponentData = async () => {
-  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
-  const end = props.endDate || dayjs().format('YYYY-MM-DD')
+  const start = props.startDate
+  const end = props.endDate
   try {
     const { data, error } = await fetchRepairComponentsStatistics(selectedDimension.value, start, end)
     if (!error && data) {

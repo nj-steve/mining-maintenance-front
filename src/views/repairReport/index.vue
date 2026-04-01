@@ -15,6 +15,7 @@
             <NButton size="small" :type="quickRange === 30 ? 'primary' : 'default'" :ghost="quickRange === 30" @click="quickRange = 30;handleQuery()">近 30 天</NButton>
             <NButton size="small" :type="quickRange === 60 ? 'primary' : 'default'" :ghost="quickRange === 60" @click="quickRange = 60;handleQuery()">近 60 天</NButton>
             <NButton size="small" :type="quickRange === 90 ? 'primary' : 'default'" :ghost="quickRange === 90" @click="quickRange = 90;handleQuery()">近 90 天</NButton>
+            <NButton size="small" :type="quickRange === 0 ? 'primary' : 'default'" :ghost="quickRange === 0" @click="quickRange = 0;handleQuery()">全部</NButton>
           </div>
         </div>
         <div class="flex items-center gap-8px">
@@ -58,8 +59,8 @@ const customRange = ref<[number, number] | null>(null)
 const activeTab = ref<'site' | 'station'>('site')
 const loading = ref(false)
 
-const queryStartDate = ref('')
-const queryEndDate = ref('')
+const queryStartDate = ref(dayjs().subtract(60, 'day').format('YYYY-MM-DD'))
+const queryEndDate = ref(dayjs().format('YYYY-MM-DD'))
 
 function handleQuery() {
   let start = ''
@@ -68,8 +69,13 @@ function handleQuery() {
 
 
   if (periodMode.value === 'quick') {
-    end = dayjs().format('YYYY-MM-DD')
-    start = dayjs().subtract(quickRange.value, 'day').format('YYYY-MM-DD')
+    if (quickRange.value === 0) {
+      start = ''
+      end = ''
+    } else {
+      end = dayjs().format('YYYY-MM-DD')
+      start = dayjs().subtract(quickRange.value, 'day').format('YYYY-MM-DD')
+    }
   } else if (customRange.value) {
     start = dayjs(customRange.value[0]).format('YYYY-MM-DD')
     end = dayjs(customRange.value[1]).format('YYYY-MM-DD')

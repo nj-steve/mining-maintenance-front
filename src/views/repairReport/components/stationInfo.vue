@@ -269,8 +269,8 @@ const stationOptions = computed(() => {
 })
 
 const fetchData = async () => {
-  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
-  const end = props.endDate || dayjs().format('YYYY-MM-DD')
+  const start = props.startDate
+  const end = props.endDate
   
   try {
     const { data, error } = await fetchRepairStatistics(selectedDimension.value, start, end)
