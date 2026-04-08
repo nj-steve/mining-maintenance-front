@@ -2,7 +2,7 @@
 import { onMounted, ref, watch, h } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchUser, updateUser, createUser,fetchCompanies } from '@/service/api/auth';
+import { fetchUser, updateUser, createUser, fetchCompanies, fetchExternalUsers, bindExternalUser } from '@/service/api/auth';
 import { roleTagMap, roleRecord, userStatusMap, userStatusRecord } from "@/constants/business"
 import { REG_EMAIL } from '@/constants/reg';
 import { useAuthStore } from '@/store/modules/auth';
@@ -150,7 +150,7 @@ const handleOpenEdit = async(row: User) => {
 
   // editForm.value = { ...row }; // 拷贝一份
   // console.log("editForm.value",editForm.value)
-  
+
   // 根据角色加载对应的公司选项
   if (row.role) {
     // getCompanys(row.role);
@@ -163,7 +163,7 @@ const handleOpenEdit = async(row: User) => {
       editForm.value.assigned_company_id = row.company_info?.map(item => item.id.toString()) || [];
     }
   }
-  
+
   showModal.value = true;
 };
 
@@ -173,7 +173,7 @@ const handleSave = async () => {
     // 验证表单数据
      // 如果没有传入角色，使用当前表单中的角色
   const currentRole = editForm.value.role;
-  
+
   // 管理员(1)和售后管理(2)不需要选择公司
   if (!currentRole || currentRole === 1 || currentRole === 2 || currentRole === 5) {
     console.log("当前角色不需要选择公司:", currentRole);
@@ -210,7 +210,7 @@ const handleSave = async () => {
       return;
     }
 
-    
+
     // if (!editForm.value.start_date) {
     //   message.error('请输入入职时间');
     //   return;
@@ -219,8 +219,8 @@ const handleSave = async () => {
     // 转换 assigned_company_id 为逗号分隔字符串
     const submitData: any = {
       ...editForm.value,
-      assigned_company_id: Array.isArray(editForm.value.assigned_company_id) 
-        ? editForm.value.assigned_company_id.join(',') 
+      assigned_company_id: Array.isArray(editForm.value.assigned_company_id)
+        ? editForm.value.assigned_company_id.join(',')
         : editForm.value.assigned_company_id
     };
 
@@ -236,14 +236,14 @@ const handleSave = async () => {
       //   message.error('添加失败: ' + res.response?.data?.msg);
       // }
     } else {
-      
+
       const res = await updateUser(editForm.value.id!, submitData);
       // console.log("updateUser",res)
       if (res.response?.data?.msg === "Operation successful") {
         message.success('修改成功！');
         showModal.value = false;
         fetchData();
-      } 
+      }
       // else {
       //   message.error('修改失败: ' + res.response?.data?.msg);
       // }
@@ -251,7 +251,7 @@ const handleSave = async () => {
   } catch (err) {
     message.error(dialogMode.value === 'add' ? '添加失败' : '修改失败');
   } finally {
-    
+
   }
 };
 
@@ -339,7 +339,7 @@ const fetchData = async () => {
   };
   if (searchSerial.value) params.username = searchSerial.value
   if (searchRole.value) params.role = searchRole.value
-  
+
 
   try {
     const {data,error} = await fetchUser(params);
@@ -362,7 +362,7 @@ const fetchData = async () => {
 const getCompanys = async (role?: number) => {
   // 如果没有传入角色，使用当前表单中的角色
   const currentRole = role || editForm.value.role;
-  
+
   // 管理员(1)和售后管理(2)不需要选择公司
   if (!currentRole || currentRole === 1 || currentRole === 2 || currentRole === 5) {
     console.log("当前角色不需要选择公司:", currentRole);
@@ -379,7 +379,7 @@ const getCompanys = async (role?: number) => {
   try {
     const { data, error } = await fetchCompanies(params);
     console.log("获取公司数据:", data);
-    
+
     if (error === null && data) {
       // 根据返回的数据结构更新公司选项
       if (Array.isArray(data)) {
@@ -398,7 +398,7 @@ const getCompanys = async (role?: number) => {
         console.warn("未知的数据格式:", data);
         companyOptions.value = [];
       }
-      
+
       // 清空当前选中的公司，因为角色变了
       editForm.value.assigned_company_id = [];
     } else {
@@ -425,7 +425,7 @@ onMounted(() => {
     value: Number(key)    // 角色 id（数字）
   }))
 
-  
+
 });
 watch([searchSerial,searchRole], () => {
   tableData.value = [];
@@ -433,13 +433,133 @@ watch([searchSerial,searchRole], () => {
   fetchData();
 });
 
+// ---------------- 授权外部用户弹框 ----------------
+const showBindModal = ref(false);
+const loadingExternalUsers = ref(false);
+const externalUserOptions = ref<{ label: string; value: string; username: string }[]>([]);
+const bindForm = ref<{ admin_id: string | null; role: number | null; assigned_company_id?: string[]; username?: string }>({
+  admin_id: null,
+  role: null,
+  assigned_company_id: [],
+  username: undefined
+});
+
+const fetchExternalUserList = async () => {
+  loadingExternalUsers.value = true;
+  try {
+    const { data, error } = await fetchExternalUsers();
+    if (!error && data) {
+      const list = Array.isArray(data) ? data : data.list || data.data || [];
+      externalUserOptions.value = list.map((u: any) => ({
+        label: u.username ? `${u.username}${u.real_name ? ` (${u.real_name})` : ''}` : (u.real_name || u.id),
+        value: String(u.id || u.admin_id),
+        username: u.username || ''
+      }));
+    }
+  } catch (e) {
+    message.error('获取外部用户列表失败');
+  } finally {
+    loadingExternalUsers.value = false;
+  }
+};
+
+const handleOpenBind = () => {
+  bindForm.value = {
+    admin_id: null,
+    role: null,
+    assigned_company_id: [],
+    username: undefined
+  };
+  fetchExternalUserList();
+  showBindModal.value = true;
+};
+
+const handleExternalUserChange = (val: string | null, option: any) => {
+  if (option) {
+    bindForm.value.username = option.username;
+  } else {
+    bindForm.value.username = undefined;
+  }
+};
+
+const getBindCompanys = async (val: number) => {
+  bindForm.value.assigned_company_id = [];
+  if (!val || val === 1 || val === 2 || val === 5) {
+    companyOptions.value = [];
+    return;
+  }
+
+  try {
+    const { data, error } = await fetchCompanies({ role: String(val) });
+    if (!error && data) {
+      let list = [];
+      if (Array.isArray(data)) {
+        list = data;
+      } else if (data.list && Array.isArray(data.list)) {
+        list = data.list;
+      }
+      companyOptions.value = list.map((item: any) => ({
+        label: item.name || item.company_name || item.title,
+        value: String(item.id ?? item.company_id)
+      }));
+    } else {
+      companyOptions.value = [];
+    }
+  } catch (err) {
+    companyOptions.value = [];
+  }
+};
+
+const handleBindSave = async () => {
+  if (!bindForm.value.admin_id) {
+    message.error('请选择需要授权的运营用户');
+    return;
+  }
+  if (!bindForm.value.role) {
+    message.error('请选择授权角色');
+    return;
+  }
+
+  const role = bindForm.value.role;
+  if (role !== 1 && role !== 2 && role !== 5) {
+    if (!bindForm.value.assigned_company_id || bindForm.value.assigned_company_id.length === 0) {
+      message.error('请选择所属公司');
+      return;
+    }
+  }
+
+  try {
+    const submitData = {
+      admin_id: bindForm.value.admin_id,
+      username: bindForm.value.username,
+      role: bindForm.value.role,
+      assigned_company_id: bindForm.value.assigned_company_id && bindForm.value.assigned_company_id.length > 0
+        ? bindForm.value.assigned_company_id
+        : undefined
+    };
+
+    const { error } = await bindExternalUser(submitData);
+    if (!error) {
+      message.success('授权成功！');
+      showBindModal.value = false;
+      fetchData();
+    }
+  } catch(e) {
+    message.error('授权失败');
+  }
+};
+
 </script>
 
 <template>
   <div>
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
-      <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenAdd"> + 新增人员</NButton>
+      <div style="display: flex; gap: 8px;">
+        <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenBind"> + 授权用户</NButton>
+        <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenAdd"> + 新增人员</NButton>
+      </div>
+
       <div style="display: flex; align-items: center; gap: 12px;">
         <NSelect v-model:value="searchRole" :options="modelOptions"  placeholder="角色筛选" clearable />
         <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入姓名" clearable style="width: 240px" />
@@ -493,8 +613,8 @@ watch([searchSerial,searchRole], () => {
         <NInput v-model:value="editForm.email" placeholder="请输入邮箱" />
       </NFormItem>
 
-        <NFormItem 
-          v-if="editForm.role !== 1 && editForm.role !== 2" 
+        <NFormItem
+          v-if="editForm.role !== 1 && editForm.role !== 2"
           label="所属公司"
         >
           <NSelect
@@ -525,6 +645,59 @@ watch([searchSerial,searchRole], () => {
     <NSpace>
       <NButton size="medium" type="primary" @click="handleSave">保存</NButton>
       <NButton size="medium" @click="showModal = false">取消</NButton>
+    </NSpace>
+  </template>
+</NModal>
+
+<!-- 授权外部用户弹框 -->
+<NModal
+  v-model:show="showBindModal"
+  style="width: 500px"
+  preset="card"
+  title="授权用户"
+>
+  <NForm :model="bindForm" label-width="100">
+    <NFormItem label="授权用户" required>
+      <NSelect
+        v-model:value="bindForm.admin_id"
+        :options="externalUserOptions"
+        :loading="loadingExternalUsers"
+        placeholder="请选择需要授权的用户"
+        filterable
+        clearable
+        @update:value="handleExternalUserChange"
+      />
+    </NFormItem>
+
+    <NFormItem label="授权角色" required>
+      <NSelect
+        v-model:value="bindForm.role"
+        :options="modelOptions"
+        placeholder="请选择角色类型"
+        @update:value="getBindCompanys"
+        clearable
+      />
+    </NFormItem>
+
+    <NFormItem
+      v-if="bindForm.role && bindForm.role !== 1 && bindForm.role !== 2 && bindForm.role !== 5"
+      label="所属公司"
+      required
+    >
+      <NSelect
+        v-model:value="bindForm.assigned_company_id"
+        :options="companyOptions"
+        placeholder="请选择公司"
+        multiple
+        clearable
+      />
+    </NFormItem>
+  </NForm>
+
+  <template #footer>
+    <NSpace justify="end">
+      <NButton size="medium" type="primary" @click="handleBindSave">确认授权</NButton>
+      <NButton size="medium" @click="showBindModal = false">取消</NButton>
     </NSpace>
   </template>
 </NModal>

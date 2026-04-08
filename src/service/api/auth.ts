@@ -34,7 +34,7 @@ export function fetchCompanies(params: { role?: string;}) {
 // /repair_stations/post_repair_stations_import_repair_details
 
 // 修改用户
-// /api/faults/:id 
+// /api/faults/:id
 export function updateUser(id:number,params: {[key: string]: any }) {
   return request({
     url: '/api/users/'+id,
@@ -44,12 +44,29 @@ export function updateUser(id:number,params: {[key: string]: any }) {
 }
 
 // 创建用户
-// /api/faults/:id 
+// /api/faults/:id
 export function createUser(params: {[key: string]: any }) {
   return request({
     url: '/api/users',
     method: 'post',
     data:params
+  });
+}
+
+// 获取外部用户列表
+export function fetchExternalUsers() {
+  return request({
+    url: '/api/external/users',
+    method: 'get'
+  });
+}
+
+// 绑定外部用户
+export function bindExternalUser(data: { admin_id: string ; role: number; username?: string; assigned_company_id?: string | string[] }) {
+  return request({
+    url: '/api/external/users',
+    method: 'post',
+    data
   });
 }
 
@@ -71,14 +88,14 @@ export function fetchLogin(userName: string, password: string) {
   });
 }
 
-/** Get user info 
- * 获取角色，token 
+/** Get user info
+ * 获取角色，token
  * 验证角色，token
 */
 export function fetchGetUserInfo() {
   return request<Api.Auth.UserInfo>(
-    { 
-      // url: '/auth/getUserInfo' 
+    {
+      // url: '/auth/getUserInfo'
       url: '/api/getUserInfo',
       method: 'get',
     });

@@ -110,14 +110,14 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       resetStore();
       return;
     }
-    
+
     localStg.set('token', data?.token??"");
     localStg.set('refreshToken', data?.token??"");
     localStorage.setItem('userInfo', JSON.stringify(data));
 
     Object.assign(userInfo, data);
-    
-    
+
+
     if (!error) {
       const pass = await loginByToken(data?.token??"");
 
@@ -144,7 +144,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         }else{
           window.location.href="/faults"
         }
-        
+
       }else{
         window.$notification?.error({
           title: "登陆错误",
@@ -186,7 +186,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
       return true;
     }
-  
+
     return false;
   }
 
