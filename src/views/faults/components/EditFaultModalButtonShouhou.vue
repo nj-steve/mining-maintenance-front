@@ -1,40 +1,37 @@
 <template>
   <NButton type="info" ghost style="margin-right: 8px;" @click="open">
-    修改
+    {{ t('page.faults.editFault.edit') }}
   </NButton>
-  <NModal v-model:show="show" style="width: 600px" preset="card" title="修改故障机">
-   
-   
+  <NModal v-model:show="show" style="width: 600px" preset="card" :title="t('page.faults.editFault.editFault')">
+
     <NForm :model="editForm" label-width="100">
-       <NFormItem label="SN">
+       <NFormItem :label="t('page.faults.editFault.sn')">
         <NInput disabled v-model:value="editForm.sn" />
       </NFormItem>
-       <NFormItem label="型号">
+       <NFormItem :label="t('page.faults.editFault.model')">
         <NInput v-model:value="editForm.model" />
       </NFormItem>
-       <!-- <NFormItem label="所属场地">
+       <!-- <NFormItem :label="t('page.faults.editFault.belongSite')">
         <NSelect v-model:value="editForm.site_id" :options="sites" option-label="name" option-value="id" />
       </NFormItem> -->
-     
-      <NFormItem label="状态">
+
+      <NFormItem :label="t('page.faults.editFault.status')">
         <NSelect v-model:value="editForm.status" :options="statusOptions" option-label="name" option-value="value" />
       </NFormItem>
 
-      <NFormItem label="描述">
+      <NFormItem :label="t('page.faults.editFault.description')">
         <NInput v-model:value="editForm.description" />
       </NFormItem>
-    
-     
-        <NFormItem label="位置">
+
+        <NFormItem :label="t('page.faults.editFault.location')">
         <NInput v-model:value="editForm.location" />
       </NFormItem>
-     
-    
+
     </NForm>
     <template #footer>
       <NSpace>
-        <NButton type="primary" @click="save">保存</NButton>
-        <NButton @click="show = false">取消</NButton>
+        <NButton type="primary" @click="save">{{ t('page.faults.editFault.save') }}</NButton>
+        <NButton @click="show = false">{{ t('page.faults.editFault.cancel') }}</NButton>
       </NSpace>
     </template>
   </NModal>
@@ -42,8 +39,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { NButton, NModal, NForm, NFormItem, NSelect, NSpace, useMessage } from 'naive-ui'
+import { NButton, NModal, NForm, NFormItem, NSelect, NSpace, useMessage, NInput } from 'naive-ui'
 import { updateFaults } from '@/service/api/faults'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Faults {
   id: number;
@@ -109,7 +109,7 @@ const save = async () => {
     }
     // const { error } = await updateFaults(props.row.id,params)
     // if (error == null) {
-    //   message.success('修改成功！')
+    //   message.success(t('page.faults.editFault.editSuccess'))
     //   emit('updated')
     // }
 
@@ -119,15 +119,13 @@ const save = async () => {
 
     if (error == null) {
       if (Number(data?.code) == 0) {
-        message.success('修改成功!');
+        message.success(t('page.faults.editFault.editSuccess'));
         emit('updated');
       }
-    } 
-
-
+    }
 
   } catch (err) {
-    message.error('修改失败')
+    message.error(t('page.faults.editFault.editFailed'))
   } finally {
     show.value = false
   }

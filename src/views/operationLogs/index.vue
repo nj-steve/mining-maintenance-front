@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, h, reactive } from 'vue';
+import { ref, onMounted, h, reactive, computed } from 'vue';
 import { NDataTable, useMessage, NCard, NTooltip, NSpace, NSelect, NButton, NTag } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchOperationLogs, fetchUser } from '@/service/api';
 import type { OperationLog } from '@/service/api/log';
 import dayjs from 'dayjs';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const message = useMessage();
 const loading = ref(false);
 const tableData = ref<OperationLog[]>([]);
@@ -19,30 +21,28 @@ const searchParams = reactive({
 
 const userOptions = ref<{ label: string; value: number }[]>([]);
 
-const statusOptions = [
-  { label: '成功', value: 1 },
-  { label: '失败', value: 0 }
-];
+const statusOptions = computed(() => [
+  { label: t('page.operationLogs.status.success'), value: 1 },
+  { label: t('page.operationLogs.status.fail'), value: 0 }
+]);
 
-const moduleOptions = [
-  { label: '场地', value: '场地' },
-  { label: '故障机', value: '故障机' },
-  { label: '工单', value: '工单' },
-  { label: '报废机', value: '报废机' },
-  { label: '维修明细', value: '维修明细' }
-];
+const moduleOptions = computed(() => [
+  { label: t('page.operationLogs.modules.site'), value: '场地' },
+  { label: t('page.operationLogs.modules.faultMachine'), value: '故障机' },
+  { label: t('page.operationLogs.modules.workOrder'), value: '工单' },
+  { label: t('page.operationLogs.modules.scrapMachine'), value: '报废机' },
+  { label: t('page.operationLogs.modules.repairDetail'), value: '维修明细' }
+]);
 
-const operationTypeOptions = [
-  { label: '创建', value: 'create' },
-  { label: '更新', value: 'update' },
-  { label: '删除', value: 'delete' },
-  { label: '派单', value: 'dispatch' },
-  { label: '导入故障机', value: 'import' },
-  { label: '绑定工单', value: 'bind_order' },
-  { label: '解绑工单', value: 'unbind_order' }
-
-
-];
+const operationTypeOptions = computed(() => [
+  { label: t('page.operationLogs.operationTypes.create'), value: 'create' },
+  { label: t('page.operationLogs.operationTypes.update'), value: 'update' },
+  { label: t('page.operationLogs.operationTypes.delete'), value: 'delete' },
+  { label: t('page.operationLogs.operationTypes.dispatch'), value: 'dispatch' },
+  { label: t('page.operationLogs.operationTypes.import'), value: 'import' },
+  { label: t('page.operationLogs.operationTypes.bindOrder'), value: 'bind_order' },
+  { label: t('page.operationLogs.operationTypes.unbindOrder'), value: 'unbind_order' }
+]);
 
 const fetchUserList = async () => {
   try {
@@ -104,23 +104,23 @@ const renderTooltip = (content: string) => {
   );
 };
 
-const columns: DataTableColumns<OperationLog> = [
-  { title: 'ID', key: 'id', width: 80 },
-  // { title: '用户ID', key: 'user_id', width: 80 },
-  { title: '用户名', key: 'user_name', width: 100 },
-  { title: '模块', key: 'module', width: 100 },
-  { title: '操作类型', key: 'operation_type', width: 100 },
-  { title: '目标表', key: 'target_table', width: 120 },
-  { title: '目标ID', key: 'target_id', width: 80, render: (row) => renderTooltip(row.target_id) },
-  { title: '请求方法', key: 'request_method', width: 100 },
-  { title: '请求URL', key: 'request_url', width: 200, render: (row) => renderTooltip(row.request_url) },
-  { title: '请求参数', key: 'request_params', width: 200, render: (row) => renderTooltip(row.request_params) },
-  { title: '修改前数据', key: 'before_data', width: 200, render: (row) => renderTooltip(row.before_data) },
-  { title: '修改后数据', key: 'after_data', width: 200, render: (row) => renderTooltip(row.after_data) },
-  { title: 'IP地址', key: 'ip_address', width: 140 },
-  { title: 'UserAgent', key: 'user_agent', width: 150, render: (row) => renderTooltip(row.user_agent) },
+const columns = computed<DataTableColumns<OperationLog>>(() => [
+  { title: t('page.operationLogs.columns.id'), key: 'id', width: 80 },
+
+  { title: t('page.operationLogs.columns.username'), key: 'user_name', width: 100 },
+  { title: t('page.operationLogs.columns.module'), key: 'module', width: 100 },
+  { title: t('page.operationLogs.columns.operationType'), key: 'operation_type', width: 100 },
+  { title: t('page.operationLogs.columns.targetTable'), key: 'target_table', width: 120 },
+  { title: t('page.operationLogs.columns.targetId'), key: 'target_id', width: 80, render: (row) => renderTooltip(row.target_id) },
+  { title: t('page.operationLogs.columns.requestMethod'), key: 'request_method', width: 100 },
+  { title: t('page.operationLogs.columns.requestUrl'), key: 'request_url', width: 200, render: (row) => renderTooltip(row.request_url) },
+  { title: t('page.operationLogs.columns.requestParams'), key: 'request_params', width: 200, render: (row) => renderTooltip(row.request_params) },
+  { title: t('page.operationLogs.columns.beforeData'), key: 'before_data', width: 200, render: (row) => renderTooltip(row.before_data) },
+  { title: t('page.operationLogs.columns.afterData'), key: 'after_data', width: 200, render: (row) => renderTooltip(row.after_data) },
+  { title: t('page.operationLogs.columns.ipAddress'), key: 'ip_address', width: 140 },
+  { title: t('page.operationLogs.columns.userAgent'), key: 'user_agent', width: 150, render: (row) => renderTooltip(row.user_agent) },
   {
-    title: '状态',
+    title: t('page.operationLogs.columns.status'),
     key: 'status',
     width: 80,
     render: (row) =>
@@ -130,17 +130,17 @@ const columns: DataTableColumns<OperationLog> = [
           type: row.status === 1 ? 'success' : 'error',
           size: 'small'
         },
-        { default: () => (row.status === 1 ? '成功' : '失败') }
+        { default: () => (row.status === 1 ? t('page.operationLogs.status.success') : t('page.operationLogs.status.fail')) }
       )
   },
-  { title: '错误信息', key: 'error_message', width: 150, render: (row) => renderTooltip(row.error_message) },
+  { title: t('page.operationLogs.columns.errorMessage'), key: 'error_message', width: 150, render: (row) => renderTooltip(row.error_message) },
   {
-    title: '创建时间',
+    title: t('page.operationLogs.columns.createTime'),
     key: 'create_time',
     width: 180,
     render: (row) => (row.create_time ? dayjs(row.create_time).format('YYYY-MM-DD HH:mm:ss') : '-')
   }
-];
+]);
 
 const pagination = ref<PaginationProps>({
   page: 1,
@@ -149,7 +149,7 @@ const pagination = ref<PaginationProps>({
   pageSizes: [10, 20, 50, 100],
   itemCount: 0,
   prefix({ itemCount }) {
-    return `共 ${itemCount} 条`
+    return t('page.operationLogs.pagination.total', { count: itemCount })
   },
   onChange: (page: number) => {
     pagination.value.page = page;
@@ -174,10 +174,10 @@ async function fetchData() {
       tableData.value = data.list || [];
       pagination.value.itemCount = data.pagination.total || 0;
     } else {
-      message.error('获取日志失败');
+      message.error(t('page.operationLogs.messages.fetchFail'));
     }
   } catch (err) {
-    message.error('获取日志异常');
+    message.error(t('page.operationLogs.messages.fetchError'));
     console.error(err);
   } finally {
     loading.value = false;
@@ -196,7 +196,7 @@ onMounted(() => {
         <n-select
           :value="searchParams.user_id"
           filterable
-          placeholder="选择用户"
+          :placeholder="t('page.operationLogs.searchBar.selectUser')"
           :options="userOptions"
           clearable
           style="width: 200px"
@@ -204,7 +204,7 @@ onMounted(() => {
         />
         <n-select
           :value="searchParams.status"
-          placeholder="选择状态"
+          :placeholder="t('page.operationLogs.searchBar.selectStatus')"
           :options="statusOptions"
           clearable
           style="width: 120px"
@@ -212,7 +212,7 @@ onMounted(() => {
         />
         <n-select
           :value="searchParams.module"
-          placeholder="选择模块"
+          :placeholder="t('page.operationLogs.searchBar.selectModule')"
           :options="moduleOptions"
           clearable
           style="width: 150px"
@@ -220,17 +220,17 @@ onMounted(() => {
         />
         <n-select
           :value="searchParams.operation_type"
-          placeholder="选择操作类型"
+          :placeholder="t('page.operationLogs.searchBar.selectOperationType')"
           :options="operationTypeOptions"
           clearable
           style="width: 150px"
           @update:value="(val) => { searchParams.operation_type = val; handleSearch(); }"
         />
-        <!-- <n-button type="primary" @click="handleSearch">搜索</n-button> -->
-        <n-button @click="handleReset">重置</n-button>
+
+        <n-button @click="handleReset">{{ t('page.operationLogs.searchBar.reset') }}</n-button>
       </n-space>
     </n-card>
-    <n-card title="操作日志" class="flex-1 overflow-hidden" content-style="padding: 0;">
+    <n-card :title="t('page.operationLogs.title')" class="flex-1 overflow-hidden" content-style="padding: 0;">
       <n-data-table
         flex-height
         remote

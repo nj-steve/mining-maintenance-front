@@ -1,52 +1,52 @@
 <template>
   <!-- 触发按钮 -->
-  <NButton 
-    type="primary" 
+  <NButton
+    type="primary"
     ghost
     size="small"
     :disabled="selectedRows.length === 0"
     @click="handleOpenModal"
   >
-    绑定工单 ({{ selectedRows.length }})
+    {{ t('page.faults.bindWorkOrder.bindWorkOrder') }} ({{ selectedRows.length }})
   </NButton>
 
   <!-- 绑定工单弹框 -->
-  <NModal v-model:show="visible" style="width: 700px" preset="card" title="绑定工单">
+  <NModal v-model:show="visible" style="width: 700px" preset="card" :title="t('page.faults.bindWorkOrder.bindWorkOrder')">
     <NForm :model="form" label-width="120">
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-        <NFormItem label="工单号" required>
-          <NInput 
+        <NFormItem :label="t('page.faults.bindWorkOrder.workOrderNo')" required>
+          <NInput
             size="small"
             v-model:value="form.workOrderNo"
-            placeholder="请输入工单号"
+            :placeholder="t('page.faults.bindWorkOrder.inputWorkOrderNo')"
             style="font-size: 12px;"
           />
         </NFormItem>
 
-        <NFormItem label="工单日期" required>
-          <NInput 
+        <NFormItem :label="t('page.faults.bindWorkOrder.workOrderDate')" required>
+          <NInput
             size="small"
             v-model:value="form.workOrderDate"
-            placeholder="YYYY-MM-DD"
+            :placeholder="t('page.faults.bindWorkOrder.inputWorkOrderDate')"
             style="font-size: 12px;"
           />
         </NFormItem>
 
-        <NFormItem label="场地">
+        <NFormItem :label="t('page.faults.bindWorkOrder.site')">
           <NInput size="small" :value="siteName" readonly />
         </NFormItem>
 
-        <NFormItem label="故障机台数">
+        <NFormItem :label="t('page.faults.bindWorkOrder.faultMachineCount')">
           <NInput size="small" :value="selectedRows.length.toString()" readonly />
         </NFormItem>
       </div>
 
-      <NFormItem label="选中故障机列表">
-        
+      <NFormItem :label="t('page.faults.bindWorkOrder.selectedFaultMachines')">
+
         <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px;width: 100%;">
-          <div 
-            v-for="machine in selectedRows" 
-            :key="machine.id" 
+          <div
+            v-for="machine in selectedRows"
+            :key="machine.id"
             style="display: flex; justify-content:space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0;width: 100%;"
           >
             <!-- <div> -->
@@ -65,8 +65,8 @@
 
     <template #footer>
       <NSpace>
-        <NButton size="medium" type="primary" @click="handleSubmit">提交</NButton>
-        <NButton size="medium" @click="handleCancel">取消</NButton>
+        <NButton size="medium" type="primary" @click="handleSubmit">{{ t('page.faults.bindWorkOrder.submit') }}</NButton>
+        <NButton size="medium" @click="handleCancel">{{ t('page.faults.bindWorkOrder.cancel') }}</NButton>
       </NSpace>
     </template>
   </NModal>
@@ -74,9 +74,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { NButton, NModal, NForm, NFormItem, NInput, NTag, useMessage } from 'naive-ui';
+import { NModal, NForm, NFormItem, NInput, NButton, NSpace, NTag, useMessage } from 'naive-ui';
 import { bindFaultsToOrder } from '@/service/api/faults';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const message = useMessage();
 
 interface Faults {
@@ -133,14 +135,14 @@ const siteId = computed(() => {
 // 打开弹框
 const handleOpenModal = () => {
   if (!props.selectedRows.length) {
-    message.warning('请先选择机器');
+    message.warning(t('page.faults.bindWorkOrder.pleaseSelectMachine'));
     return;
   }
 
   // 校验订单号一致性（如果已有订单号）
   const orderNoSet = new Set(props.selectedRows.map(row => row.order_no ?? null));
   if (orderNoSet.size > 1) {
-    message.warning('请选择相同订单的机器');
+    message.warning(t('page.faults.bindWorkOrder.pleaseSelectSameOrder'));
     return;
   }
 
@@ -155,17 +157,17 @@ const handleOpenModal = () => {
 // 提交绑定
 const handleSubmit = async () => {
   if (!form.value.workOrderNo.trim()) {
-    message.error('请输入工单号');
+    message.error(t('page.faults.bindWorkOrder.inputWorkOrderNo'));
     return;
   }
   if (!form.value.workOrderDate.trim()) {
-    message.error('请输入工单日期');
+    message.error(t('page.faults.bindWorkOrder.inputWorkOrderDate'));
     return;
   }
 
   const faultIds = props.selectedRows.map(row => row.id);
   if (faultIds.length === 0) {
-    message.error('未选择故障机');
+    message.error(t('page.faults.bindWorkOrder.notSelectNewOffShelf'));
     return;
   }
 
@@ -184,22 +186,22 @@ const handleSubmit = async () => {
 
     if (error == null) {
       if (Number(data?.code) == 0) {
-        message.success('绑定工单成功！');
+        message.success(t('page.faults.bindWorkOrder.bindSuccess'));
         visible.value = false;
         emit('refresh');
       }
-    } 
+    }
     // const { error } = await bindFaultsToOrder(submitData);
     // if (error === null) {
-    //   message.success('绑定工单成功！');
+    //   message.success(t('page.faults.bindWorkOrder.bindSuccess'));
     //   visible.value = false;
     //   emit('refresh');
-    // } 
+    // }
     // else {
-    //   message.error(`绑定失败: ${error}`);
+    //   message.error(`${t('page.faults.bindWorkOrder.bindFailed')}: ${error}`);
     // }
   } catch (err) {
-    message.error('绑定失败');
+    message.error(t('page.faults.bindWorkOrder.bindFailed'));
     console.error(err);
   }
 };

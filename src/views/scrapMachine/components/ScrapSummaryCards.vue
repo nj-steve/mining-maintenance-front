@@ -8,7 +8,7 @@
           </div>
         </div>
         <div>
-          <p class="text-gray-500 text-sm">总报废数</p>
+          <p class="text-gray-500 text-sm">{{ t('page.scrapMachine.totalScrapCount') }}</p>
           <p class="text-2xl font-bold text-gray-900">{{ summary.total_scrap_count }}</p>
         </div>
       </div>
@@ -21,7 +21,7 @@
           </div>
         </div>
         <div>
-          <p class="text-gray-500 text-sm">待处理</p>
+          <p class="text-gray-500 text-sm">{{ t('page.scrapMachine.pendingProcess') }}</p>
           <p class="text-2xl font-bold text-gray-900">{{ summary.pending_scrap_count }}</p>
         </div>
       </div>
@@ -34,7 +34,7 @@
           </div>
         </div>
         <div>
-          <p class="text-gray-500 text-sm">已审批</p>
+          <p class="text-gray-500 text-sm">{{ t('page.scrapMachine.approved') }}</p>
           <p class="text-2xl font-bold text-gray-900">{{ summary.approved_scrap_count }}</p>
         </div>
       </div>
@@ -47,7 +47,7 @@
           </div>
         </div>
         <div>
-          <p class="text-gray-500 text-sm">待审核</p>
+          <p class="text-gray-500 text-sm">{{ t('page.scrapMachine.pendingReview') }}</p>
           <p class="text-2xl font-bold text-gray-900">{{ summary.pending_approval_count }}</p>
         </div>
       </div>
@@ -60,7 +60,7 @@
           </div>
         </div>
         <div>
-          <p class="text-gray-500 text-sm">已修复</p>
+          <p class="text-gray-500 text-sm">{{ t('page.scrapMachine.repaired') }}</p>
           <p class="text-2xl font-bold text-gray-900">{{ summary.repaired_count }}</p>
         </div>
       </div>
@@ -71,6 +71,9 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import { fetchScrapSummary } from '@/service/api/repair'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface ScrapSummaryResponse {
   approved_scrap_count: number

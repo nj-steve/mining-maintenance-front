@@ -1,41 +1,41 @@
 <template>
   <!-- 触发按钮 -->
-  <NButton 
-    type="warning" 
+  <NButton
+    type="warning"
     size="small"
     ghost
     :disabled="selectedRows.length === 0"
     @click="handleOpenModal"
   >
-    修改状态 ({{ selectedRows.length }})
+    {{ t('page.faults.batchStatus.modifyStatus') }} ({{ selectedRows.length }})
   </NButton>
 
   <!-- 弹框 -->
-  <NModal v-model:show="visible" style="width: 500px" preset="card" title="批量修改状态">
+  <NModal v-model:show="visible" style="width: 500px" preset="card" :title="t('page.faults.batchStatus.batchModifyStatus')">
     <NForm :model="form" label-width="100">
       <!-- 状态下拉选择 -->
-      <NFormItem label="状态" required>
-        <NSelect 
+      <NFormItem :label="t('page.faults.batchStatus.status')" required>
+        <NSelect
           v-model:value="form.status"
           :options="statusOptions"
-          placeholder="请选择状态"
+          :placeholder="t('page.faults.batchStatus.pleaseSelectStatus')"
         />
       </NFormItem>
     </NForm>
-    
+
     <template #footer>
       <NSpace>
-      <NButton type="primary" @click="handleSubmit">提交</NButton>
-      <NButton @click="handleCancel">取消</NButton>
+      <NButton type="primary" @click="handleSubmit">{{ t('page.faults.batchStatus.submit') }}</NButton>
+      <NButton @click="handleCancel">{{ t('page.faults.batchStatus.cancel') }}</NButton>
       </NSpace>
     </template>
   </NModal>
 
   <!-- 结果弹框 -->
-  <NModal v-model:show="resultVisible" style="width: 600px" preset="card" title="批量修改结果">
-    <div style="font-size: 12px;">成功：{{ resultData.success_count }}，失败：{{ resultData.failure_count }}</div>
+  <NModal v-model:show="resultVisible" style="width: 600px" preset="card" :title="t('page.faults.batchStatus.batchModifyResult')">
+    <div style="font-size: 12px;">{{ t('page.faults.batchStatus.success') }}{{ resultData.success_count }}，{{ t('page.faults.batchStatus.failure') }}{{ resultData.failure_count }}</div>
     <div v-if="resultData.errors && resultData.errors.length" style="margin-top: 12px;">
-      <NAlert type="warning" title="错误信息列表">
+      <NAlert type="warning" :title="t('page.faults.batchStatus.errorList')">
         <div style="max-height: 240px; overflow: auto; font-size: 12px;">
           <ul style="padding-left: 18px; margin: 0;">
             <li v-for="(err, idx) in resultData.errors" :key="idx" style="margin-bottom: 6px; color: #d03050;">
@@ -47,7 +47,7 @@
     </div>
     <template #footer>
       <NSpace>
-        <NButton type="primary" @click="handleResultClose">关闭</NButton>
+        <NButton type="primary" @click="handleResultClose">{{ t('page.faults.batchStatus.close') }}</NButton>
       </NSpace>
     </template>
   </NModal>
@@ -57,6 +57,8 @@
 import { ref, watch } from 'vue';
 import { NModal, NForm, NFormItem, NSelect, NButton, NAlert, useMessage } from 'naive-ui';
 import { updateFaultsStatus } from '@/service/api/faults';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 const message = useMessage();
 
 interface Faults {
@@ -100,21 +102,21 @@ const handleOpenModal = () => {
   // 过滤出状态为"非新下架"的机器
   const validMachines = props.selectedRows.filter(row => {
     const statusText = row.Status?.name || row.status_text || '';
-    return statusText !== '新下架';
+    return statusText !== t('page.faults.newOffShelf') && statusText !== '新下架';
   });
-  
+
   if (validMachines.length === 0) {
-    message.warning('请选择状态为"非新下架"的机器');
+    message.warning(t('page.faults.batchStatus.selectNotNewOffShelf'));
     return;
   }
 
   // 订单号一致性校验
   const orderNoSet = new Set(props.selectedRows.map(row => row.order_no ?? null));
   if (orderNoSet.size > 1) {
-    message.warning('请选择相同订单机器');
+    message.warning(t('page.faults.batchStatus.selectSameOrder'));
     return;
   }
-  
+
   // 重置表单并显示弹框
   form.value = {
     status: null
@@ -126,18 +128,18 @@ const handleOpenModal = () => {
 
 const handleSubmit = async () => {
   if (form.value.status === null) {
-    message.error('请选择状态');
+    message.error(t('page.faults.batchStatus.pleaseSelectStatus'));
     return;
   }
-  
+
   // 获取有效的机器ID列表
   const validMachines = props.selectedRows.filter(row => {
     const statusText = row.Status?.name || row.status_text || '';
-    return statusText !== '新下架';
+    return statusText !== t('page.faults.newOffShelf') && statusText !== '新下架';
   });
-  
+
   const faultIds = validMachines.map(row => row.id);
-  
+
   try {
 
     const { error, response: { data } } = await updateFaultsStatus({
@@ -160,14 +162,14 @@ const handleSubmit = async () => {
         resultVisible.value = true;
         emit('refresh');
       } else {
-        message.error(String(data?.msg || '批量修改状态失败'));
+        message.error(String(data?.msg || t('page.faults.batchStatus.modifyFailed')));
       }
     } else {
-      message.error('批量修改状态失败');
+      message.error(t('page.faults.batchStatus.modifyFailed'));
     }
 
   } catch (error) {
-    message.error('批量修改状态失败');
+    message.error(t('page.faults.batchStatus.modifyFailed'));
   }
 };
 

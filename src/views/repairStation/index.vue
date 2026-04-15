@@ -6,7 +6,9 @@ import { fetchRepairStations,deleteRepairStation } from '@/service/api/repair';
 import AddRepairStationModal from '@/components/custom/AddRepairStationModal.vue';
 import EditRepairStationModal from '@/components/custom/EditRepairStationModal.vue';
 import { useAuthStore } from '@/store/modules/auth';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
 const isAdmin=authStore.userInfo.roles.includes('1') // 超管
@@ -42,7 +44,7 @@ const pagination = ref<PaginationProps>({
   showSizePicker: true,
   pageSizes: [10, 20, 50, 100],
   prefix({ itemCount }) {
-    return `共 ${itemCount} 条`
+    return t('page.repairStation.paginationPrefix', { count: itemCount })
   },
   onChange: page => {
     pagination.value.page = page;
@@ -96,18 +98,18 @@ const handleAddSuccess = () => {
 const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<CompanyInfo> = [
   {
-    title: () => renderHeaderTitle('公司名称'),
+    title: () => renderHeaderTitle(t('page.repairStation.companyName')),
     key: 'Name',
     width: 200,
     render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.Name || '')
   },
   {
-    title: () => renderHeaderTitle('法人代表'),
+    title: () => renderHeaderTitle(t('page.repairStation.legalRepresentative')),
     key: 'LegalRepresentative',
     render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.LegalRepresentative || '')
   },
   {
-    title: () => renderHeaderTitle('白名单认证'),
+    title: () => renderHeaderTitle(t('page.repairStation.kycStatus')),
     key: 'KYCStatus',
     render: (row: CompanyInfo) => {
       return h(
@@ -117,28 +119,28 @@ const columns: DataTableColumns<CompanyInfo> = [
           type: row.KYCStatus === 1 ? 'success' : 'warning'
         },
         {
-          default: () => (row.KYCStatus === 1 ? '已认证' : '未认证')
+          default: () => (row.KYCStatus === 1 ? t('page.repairStation.authenticated') : t('page.repairStation.unauthenticated'))
         }
       );
     }
   },
   {
-    title: () => renderHeaderTitle('详细地址'),
+    title: () => renderHeaderTitle(t('page.repairStation.address')),
     key: 'Address',
     render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.Address || '')
   },
   {
-    title: () => renderHeaderTitle('联系人'),
+    title: () => renderHeaderTitle(t('page.repairStation.contactName')),
     key: 'ContactName',
     render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.ContactName || '')
   },
   {
-    title: () => renderHeaderTitle('联系电话'),
+    title: () => renderHeaderTitle(t('page.repairStation.contactPhone')),
     key: 'ContactPhone',
     render: (row: CompanyInfo) => h('span', { class: 'text-sm text-gray-500' }, row.ContactPhone || '')
   },
   {
-    title: () => renderHeaderTitle('操作'),
+    title: () => renderHeaderTitle(t('page.repairStation.actions')),
     key: 'actions',
     align:'center',
     render: (row: CompanyInfo) => {
@@ -154,7 +156,7 @@ const columns: DataTableColumns<CompanyInfo> = [
             style: "margin-right: 8px;",
             onClick: () => handleOpenEdit(row)
           },
-          { default: () => '修改' }
+          { default: () => t('page.repairStation.edit') }
         ),
         h(
           NButton,
@@ -163,27 +165,27 @@ const columns: DataTableColumns<CompanyInfo> = [
             ghost: true,
             onClick: () => {
               dialog.warning({
-                title: '确认删除',
-                content: `你确定要删除「${row.Name}」吗？`,
-                positiveText: '确定',
-                negativeText: '取消',
+                title: t('page.repairStation.confirmDeleteTitle'),
+                content: t('page.repairStation.confirmDeleteContent', { name: row.Name }),
+                positiveText: t('page.repairStation.confirm'),
+                negativeText: t('page.repairStation.cancel'),
                 onPositiveClick: async () => {
                   try {
                     const { error } = await deleteRepairStation(row.ID);
                     if (error === null) {
-                      message.success('删除成功！');
+                      message.success(t('page.repairStation.deleteSuccess'));
                       fetchData(); // 刷新数据
                     } else {
-                      message.error('删除失败');
+                      message.error(t('page.repairStation.deleteFailed'));
                     }
                   } catch (err) {
-                    message.error('删除失败');
+                    message.error(t('page.repairStation.deleteFailed'));
                   }
                 }
               })
             }
           },
-          { default: () => '删除' }
+          { default: () => t('page.repairStation.delete') }
         )
       ]
     }
@@ -207,10 +209,10 @@ const fetchData = async () => {
         pagination.value.page =  data.pagination.page;
         pagination.value.pageSize =  data.pagination.page_size;
     }else{
-        message.error(`加载失败: ${error}`);
+        message.error(t('page.repairStation.loadFailed', { error }));
     }
   } catch (err) {
-    message.error(`加载失败${err}`);
+    message.error(t('page.repairStation.loadFailed', { error: err }));
   } finally {
     loading.value = false;
   }
@@ -229,7 +231,7 @@ const fetchData = async () => {
 //         label:  item.name+" _ "+item.hash_rate+" T",
 //         value: item.id,
 //       }))
-      
+
 //     } else {
 //       // names.value = []
 //       modelOptions.value = []
@@ -250,7 +252,7 @@ watch([searchSerial], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
-  
+
 });
 </script>
 
@@ -258,25 +260,25 @@ watch([searchSerial], () => {
   <div>
     <!-- 查询框和添加按钮 -->
     <div v-if="!isRead" class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
-      <NButton type="primary" @click="handleOpenAdd">添加维修站</NButton>
+      <NButton type="primary" @click="handleOpenAdd">{{ t('page.repairStation.addStation') }}</NButton>
         <!-- 添加维修站组件 -->
-    <AddRepairStationModal 
-      v-model:show="showAddModal" 
-      @success="handleAddSuccess" 
+    <AddRepairStationModal
+      v-model:show="showAddModal"
+      @success="handleAddSuccess"
     />
-      <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入维修站名称" clearable style="width: 240px" />
+      <NInput v-model:value="searchSerial" @change="fetchData" :placeholder="t('page.repairStation.searchPlaceholder')" clearable style="width: 240px" />
     </div>
 
     <!-- 表格 -->
     <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" remote />
 
     <!-- 修改维修站组件 -->
-    <EditRepairStationModal 
-      v-model:show="showEditModal" 
+    <EditRepairStationModal
+      v-model:show="showEditModal"
       :edit-data="currentEditData"
-      @success="handleEditSuccess" 
+      @success="handleEditSuccess"
     />
 
-  
+
   </div>
 </template>

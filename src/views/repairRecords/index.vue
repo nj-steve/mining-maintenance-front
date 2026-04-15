@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h } from 'vue';
-import { NDataTable, useMessage, NButton, NTooltip,NTag, NModal, NForm, NFormItem, NInput, NSelect, NDropdown, NIcon } from 'naive-ui';
+import { NDataTable, useMessage, NButton, NTooltip, NTag, NDropdown, NIcon } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
 import { fetchOrdersSite } from '@/service/api/site';
@@ -11,13 +11,14 @@ import RepairSearchBar from './components/RepairSearchBar.vue'
 import UploadRepairDetailsExcel from "@/components/upload/UploadRepairDetailsExcel.vue"
 import ScrapFlagsModal from './components/ScrapFlagsModal.vue'
 import { repairResultMap } from  '@/constants/business'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter();
 import { useAuthStore } from '@/store/modules/auth';
 
 const authStore = useAuthStore();
 const hasRole=!authStore.userInfo.roles.includes('3')
-const isAdmin=authStore.userInfo.roles.includes('1') // 超管
 const isRead=authStore.userInfo.roles.includes('5') // 只读用户
 
 
@@ -65,8 +66,8 @@ const currentDetailRow = ref<any | null>(null)
 // 导入相关
 const uploadRef = ref<any>(null);
 const importOptions = [
-  { label: '矿机维修', key: 'machine' },
-  { label: '板子维修', key: 'board' }
+  { label: t('page.repairRecords.importMachine'), key: 'machine' },
+  { label: t('page.repairRecords.importBoard'), key: 'board' }
 ]
 
 const handleImportSelect = (key: string) => {
@@ -75,14 +76,14 @@ const handleImportSelect = (key: string) => {
       uploadUrl: '/api/repair_stations/import_repair_details',
       templateUrl: '/template/repair-detail-V3.xlsm',
       templateName: '矿机维修明细导入模板.xlsm',
-      title: '矿机维修明细导入'
+      title: t('page.repairRecords.importMachineTitle')
     })
   } else if (key === 'board') {
     uploadRef.value?.open({
       uploadUrl: '/api/repair_stations/import_board_repair_details',
       templateUrl: '/template/board-repair-detail.xlsm', // 假设的模板路径，如果没有提供则需要确认
       templateName: '板子维修明细导入模板.xlsm',
-      title: '板子维修明细导入'
+      title: t('page.repairRecords.importBoardTitle')
     })
   }
 }
@@ -104,7 +105,7 @@ const pagination = ref<PaginationProps>({
   showSizePicker: true,
   pageSizes: [10, 20, 50, 100],
   prefix({ itemCount }) {
-    return `共 ${itemCount} 条`
+    return t('page.repairRecords.totalItems', { count: itemCount })
   },
   onChange: page => {
     pagination.value.page = page;
@@ -170,7 +171,7 @@ const formatDateTime = (value: any) => {
 const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 
 const columns: DataTableColumns<any> = [
-   { title: () => renderHeaderTitle('SN码'), key: 'DeviceSN',
+   { title: () => renderHeaderTitle(t('page.repairRecords.snCode')), key: 'DeviceSN',
    width: 150, render: (row) => {
       const full = (row as any).DeviceSN || '';
       const prefix = full.slice(0, 5);
@@ -179,9 +180,9 @@ const columns: DataTableColumns<any> = [
       const onCopy = async () => {
         try {
           await navigator.clipboard.writeText(full);
-          message.success('SN 已复制');
+          message.success(t('page.repairRecords.snCopied'));
         } catch (e) {
-          message.error('复制失败');
+          message.error(t('page.repairRecords.copyFailed'));
         }
       };
       return h(
@@ -213,28 +214,28 @@ const columns: DataTableColumns<any> = [
         }
       );
     } },
-    { title: () => renderHeaderTitle('类型'), key: 'repair_type', width: 100,
+    { title: () => renderHeaderTitle(t('page.repairRecords.type')), key: 'repair_type', width: 100,
     render: (row) => {
       const type = row.repair_type;
       let tagType: 'primary' | 'info' | 'success' | 'warning' | 'error' | 'default' = 'default';
-      let label = type || '未知';
+      let label = type || t('page.repairRecords.unknown');
 
       // 兼容可能返回的数字或文本
-      if (type === '整机' ) {
+      if (type === '整机' || type === t('page.repairRecords.machine') ) {
         tagType = 'info';
-        label = '整机';
-      } else if (type === '算力板') {
+        label = t('page.repairRecords.machine');
+      } else if (type === '算力板' || type === t('page.repairRecords.hashBoard')) {
         tagType = 'warning';
-        label = '算力板';
+        label = t('page.repairRecords.hashBoard');
       }
 
       return h(NTag, { class: 'text-sm', type: tagType, size: 'small', round: true, bordered: false }, () => label);
     }
    },
-   { title: () => renderHeaderTitle('场地'), key: 'site_name', width: 180,
+   { title: () => renderHeaderTitle(t('page.repairRecords.site')), key: 'site_name', width: 180,
     render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.site_name || '-')
    },
-  { title: () => renderHeaderTitle('工单号'), key: 'WorkOrderNo', width: 150,  render: (row: Faults) => {
+  { title: () => renderHeaderTitle(t('page.repairRecords.orderNo')), key: 'WorkOrderNo', width: 150,  render: (row: Faults) => {
       // const full = row.order_no || '';
       const full = (row as any).WorkOrderNo || '';
       const prefix = full.slice(0, 5);
@@ -243,9 +244,9 @@ const columns: DataTableColumns<any> = [
       const onCopy = async () => {
         try {
           await navigator.clipboard.writeText(full);
-          message.success('工单编号已复制');
+          message.success(t('page.repairRecords.orderNoCopied'));
         } catch (e) {
-          message.error('复制失败');
+          message.error(t('page.repairRecords.copyFailed'));
         }
       };
       return h(
@@ -278,15 +279,15 @@ const columns: DataTableColumns<any> = [
         }
       ) ;
     }},
-  { title: () => renderHeaderTitle('维修站点'), key: 'RepairStationName', width: 180,
+  { title: () => renderHeaderTitle(t('page.repairRecords.repairStation')), key: 'RepairStationName', width: 180,
     render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.RepairStationName || '-')
     // ⚠️ 如果需要显示名称，就在 fetchData 里转换
   },
-  { title: () => renderHeaderTitle('机型'), key: 'MachineModel', width: 200, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.MachineModel || '-') },
-  { title: () => renderHeaderTitle('损坏部件'), key: 'RepairComponent', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.RepairComponent || '-') },
+  { title: () => renderHeaderTitle(t('page.repairRecords.machineModel')), key: 'MachineModel', width: 200, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.MachineModel || '-') },
+  { title: () => renderHeaderTitle(t('page.repairRecords.repairComponent')), key: 'RepairComponent', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.RepairComponent || '-') },
   // { title: '额外操作', key: 'extra_operations', width: 120 },
   {
-      title: () => renderHeaderTitle('初测不良原因'),
+      title: () => renderHeaderTitle(t('page.repairRecords.defectReason')),
       key: 'DefectReason',
       width: 120,
       render: (row) => {
@@ -309,10 +310,10 @@ const columns: DataTableColumns<any> = [
         )
       }
     },
-  { title: () => renderHeaderTitle('查证缺陷'), key: 'VerifyDefect', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.VerifyDefect || '-') },
-  { title: () => renderHeaderTitle('维修状态'), key: 'RepairResult',
+  { title: () => renderHeaderTitle(t('page.repairRecords.verifyDefect')), key: 'VerifyDefect', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.VerifyDefect || '-') },
+  { title: () => renderHeaderTitle(t('page.repairRecords.repairStatus')), key: 'RepairResult',
     render: (row) => {
-      const label = repairResultMap[row.RepairResult] || '未知'
+      const label = repairResultMap[row.RepairResult] || t('page.repairRecords.unknown')
        const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         '已修复': 'success',
         '报废': 'error',
@@ -324,14 +325,14 @@ const columns: DataTableColumns<any> = [
     }
   },
   {
-    title: () => renderHeaderTitle('日期'),
+    title: () => renderHeaderTitle(t('page.repairRecords.date')),
     key: 'Date',
     width: 160,
     align: 'center',
     render: (row: any) => h('span', { class: 'cell-date text-sm text-gray-500' }, formatDateTime(row?.Date))
   },
   {
-    title: () => renderHeaderTitle('操作'),
+    title: () => renderHeaderTitle(t('page.repairRecords.action')),
     key: 'actions',
     align: 'center',
     fixed: 'right',
@@ -351,7 +352,7 @@ const columns: DataTableColumns<any> = [
             class:'text-xs',
             onClick: () => goDetail(rowId)
           },
-          { default: () => '详情' }
+          { default: () => t('page.repairRecords.detail') }
         ),]
       }
       return [
@@ -365,7 +366,7 @@ const columns: DataTableColumns<any> = [
             class:'text-xs',
             onClick: () => goDetail(rowId)
           },
-          { default: () => '详情' }
+          { default: () => t('page.repairRecords.detail') }
         ),
         row.RepairResult === 4
           ? h(
@@ -378,7 +379,7 @@ const columns: DataTableColumns<any> = [
                 class: 'text-xs',
                 onClick: () => openScrapModal(row)
               },
-              { default: () => '部件标记' }
+              { default: () => t('page.repairRecords.componentMark') }
             )
           : null,
         // h(
@@ -424,10 +425,10 @@ const fetchData = async () => {
         pagination.value.page =  data.pagination.page;
         pagination.value.pageSize =  data.pagination.page_size;
     }else{
-        message.error(`加载失败: ${error}`);
+        message.error(t('page.repairRecords.loadFailed', { error }));
     }
   } catch (err) {
-    message.error(`加载失败${err}`);
+    message.error(t('page.repairRecords.loadFailed', { error: String(err) }));
   } finally {
     loading.value = false;
   }
@@ -487,10 +488,10 @@ const exportCsv = async () => {
         // URL.revokeObjectURL(url);
         // message.success('导出成功，下载已开始');
     }else{
-        message.error(`导出失败: ${error}`);
+        message.error(t('page.repairRecords.exportFailed', { error }));
     }
   } catch (err) {
-    message.error(`导出失败: ${err}`);
+    message.error(t('page.repairRecords.exportFailed', { error: String(err) }));
   } finally {
     loading.value = false;
   }
@@ -502,31 +503,31 @@ const exportExcel=async () => {
 
 // 处理导出成功逻辑
  const headers = [
-   '日期',
-   '工单编号',
-   '机型',
-   '整机 SN',
-   '电源 SN',
-   '板1 SN',
-   '板2 SN',
-   '板3 SN',
-   '控制板 SN',
-   '维修部件',
-   '额外操作',
-   '初测不良原因',
-   '不良代码L2',
-   '不良代码L3',
-   '位号信息',
-   '查证缺陷',
-   '开始维修时间',
-   '结束维修时间',
-   '维修结果',
-   '下架时间',
-   '上架时间',
-   '创建时间',
-   '更新时间',
-   '维修员',
-   '维修站点'
+   t('page.repairRecords.exportHeaders.date'),
+   t('page.repairRecords.exportHeaders.orderNo'),
+   t('page.repairRecords.exportHeaders.machineModel'),
+   t('page.repairRecords.exportHeaders.machineSn'),
+   t('page.repairRecords.exportHeaders.powerSn'),
+   t('page.repairRecords.exportHeaders.board1Sn'),
+   t('page.repairRecords.exportHeaders.board2Sn'),
+   t('page.repairRecords.exportHeaders.board3Sn'),
+   t('page.repairRecords.exportHeaders.controlSn'),
+   t('page.repairRecords.exportHeaders.repairComponent'),
+   t('page.repairRecords.exportHeaders.extraOperations'),
+   t('page.repairRecords.exportHeaders.defectReason'),
+   t('page.repairRecords.exportHeaders.defectCode2'),
+   t('page.repairRecords.exportHeaders.defectCode3'),
+   t('page.repairRecords.exportHeaders.position'),
+   t('page.repairRecords.exportHeaders.verifyDefect'),
+   t('page.repairRecords.exportHeaders.startTime'),
+   t('page.repairRecords.exportHeaders.endTime'),
+   t('page.repairRecords.exportHeaders.repairResult'),
+   t('page.repairRecords.exportHeaders.downTime'),
+   t('page.repairRecords.exportHeaders.onShelfTime'),
+   t('page.repairRecords.exportHeaders.createdAt'),
+   t('page.repairRecords.exportHeaders.updatedAt'),
+   t('page.repairRecords.exportHeaders.repairer'),
+   t('page.repairRecords.exportHeaders.repairStation')
  ];
   const formatCell = (val: any) => {
     const s = val === undefined || val === null ? '' : String(val);
@@ -575,10 +576,10 @@ const exportExcel=async () => {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
-  message.success('导出成功，下载已开始');
+  message.success(t('page.repairRecords.exportSuccess'));
 }
 const handleFail = () => {
-  message.error('导入失败，请检查文件格式');
+  message.error(t('page.repairRecords.importFailed'));
 }
 
 </script>
@@ -612,7 +613,7 @@ const handleFail = () => {
                 <Icon icon="material-symbols:upload" />
               </NIcon>
             </template>
-            导入
+            {{ t('page.repairRecords.import') }}
           </NButton>
         </NDropdown>
         <UploadRepairDetailsExcel
@@ -623,7 +624,7 @@ const handleFail = () => {
         />
       </div>
       <div v-if="!isRead" style="display: flex; gap: 8px; align-items: center;">
-        <NButton circle size="medium" ghost @click="exportCsv" title="导出 CSV"  style="margin-right: 80px;">
+        <NButton circle size="medium" ghost @click="exportCsv" :title="t('page.repairRecords.exportCsvTitle')"  style="margin-right: 80px;">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>

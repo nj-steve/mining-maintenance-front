@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/store/modules/auth';
 import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace, NTooltip, NSwitch, NCheckbox, NCheckboxGroup } from 'naive-ui';
 import { Icon } from '@iconify/vue';
@@ -48,6 +49,7 @@ interface Site {
 
 const message = useMessage();
 const router = useRouter();
+const { t } = useI18n();
 
 const tableData = ref<Site[]>([]);
 const loading = ref(false);
@@ -64,7 +66,7 @@ const pagination = ref<PaginationProps>({
   showSizePicker: true,
   pageSizes: [10, 20, 50, 100],
   prefix({ itemCount }) {
-    return `共 ${itemCount} 条`
+    return t('page.miningSite.totalItems', { count: itemCount })
   },
   onChange: page => {
     pagination.value.page = page;
@@ -110,7 +112,7 @@ const getOrders = async (siteId: number) => {
       }));
     }
   } catch (err) {
-    console.error('获取工单失败', err);
+    console.error(t('page.miningSite.getOrdersFailed'), err);
   } finally {
     orderLoading.value = false;
   }
@@ -150,24 +152,24 @@ const handleOpenEditHistory = (row: Site) => {
 const handleSaveEdit = async () => {
   // console.log("editForm.value>>",editForm.value)
   if (editForm.value.bind_type === "auto" && !editForm.value.order_id) {
-    message.error('开启自动绑定时，工单编号必填');
+    message.error(t('page.miningSite.autoBindOrderRequired'));
     return;
   }
   if (editForm.value.board_bind_type === "auto" && !editForm.value.board_order_id) {
-    message.error('开启自动绑定算力板工单时，工单编号必填');
+    message.error(t('page.miningSite.autoBindBoardOrderRequired'));
     return;
   }
   try {
     // TODO: 调用后端接口 updateSites(editForm.value)
     const {error} = await updateSites(editForm.value.id, editForm.value);
     if(error==null){
-        message.success('修改成功！');
+        message.success(t('page.miningSite.modifySuccess'));
         fetchData(); // 刷新表格
       }else{
-        message.error('修改失败:' +error);
+        message.error(t('page.miningSite.modifyFailed') +error);
       }
   } catch (err) {
-    message.error('修改失败');
+    message.error(t('page.miningSite.modifyFailed'));
   }finally{
     showEditModal.value = false;
   }
@@ -181,13 +183,13 @@ const handleSaveEditHistory = async () => {
       on_shelf_wait_repair_count: siteHistoryForm.value.on_shelf_wait_repair_count,
     });
     if (error == null) {
-      message.success('修改成功！');
+      message.success(t('page.miningSite.modifySuccess'));
       fetchData();
     } else {
-      message.error('修改失败:' + error);
+      message.error(t('page.miningSite.modifyFailed') + error);
     }
   } catch (err) {
-    message.error('修改失败');
+    message.error(t('page.miningSite.modifyFailed'));
   } finally {
     showEditHistoryModal.value = false;
   }
@@ -214,14 +216,14 @@ const fetchUsers = async () => {
 
     // editForm.value.saler_id = data[0].id;
   }else{
-    message.error('获取用户失败:' +error);
+    message.error(t('page.miningSite.getUsersFailed') +error);
   }
 }
 // ---------------- 表格列 ----------------
 const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<Site> = [
   {
-    title: () => renderHeaderTitle('场地名称'),
+    title: () => renderHeaderTitle(t('page.miningSite.siteName')),
     key: 'name',
     width: 200,
     fixed: 'left',
@@ -260,12 +262,12 @@ const columns: DataTableColumns<Site> = [
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:100px;' },
         [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '资产数'),
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.assetCount')),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '总托管机器数',
+              default: () => t('page.miningSite.totalHostedMachines'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -277,22 +279,23 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120,
+      ), width: 130,
     key: 'asset_count',
     sorter: (row1: Site, row2: Site) => (row1.asset_count || 0) - (row2.asset_count || 0),
     render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.asset_count.toLocaleString() || 0)
   },
-  { title: () =>
+  {
+    title: () =>
       h(
         'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:100px;' },
+        { style: 'display:flex; align-items:center; gap:6px;width:130px;' },
         [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '24H故障数'),
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.fault24hCount')),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '近24小时导入故障机数',
+              default: () => t('page.miningSite.fault24hCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -304,41 +307,19 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ),width: 120, key: 'fault_count', sorter: (row1: Site, row2: Site) => (row1.fault_count || 0) - (row2.fault_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.fault_count)},
-  { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '物流中'),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => '状态：“物流进+物流出” 机器数',
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 120, key: 'in_logistics_count', sorter: (row1: Site, row2: Site) => (row1.in_logistics_count || 0) - (row2.in_logistics_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.in_logistics_count.toLocaleString() || 0) },
+      ),
+    width: 155, key: 'fault_count', sorter: (row1: Site, row2: Site) => (row1.fault_count || 0) - (row2.fault_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.fault_count)},
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
         [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '待上架'),
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.inLogistics')),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '状态：“待上架” 的机器数',
+              default: () => t('page.miningSite.inLogisticsTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -350,19 +331,42 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'wait_on_shelf_count', sorter: (row1: Site, row2: Site) => (row1.wait_on_shelf_count || 0) - (row2.wait_on_shelf_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.wait_on_shelf_count.toLocaleString() || 0) },
+      ), width: 130, key: 'in_logistics_count', sorter: (row1: Site, row2: Site) => (row1.in_logistics_count || 0) - (row2.in_logistics_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.in_logistics_count.toLocaleString() || 0) },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.pendingShelf')),
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => t('page.miningSite.pendingShelfTooltip'),
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), width: 160, key: 'wait_on_shelf_count', sorter: (row1: Site, row2: Site) => (row1.wait_on_shelf_count || 0) - (row2.wait_on_shelf_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.wait_on_shelf_count.toLocaleString() || 0) },
   // { title: '待上架', width: 120, key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
         [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '在修数'),
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.repairingCount')),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '状态：“维修中” 的机器数',
+              default: () => t('page.miningSite.repairingCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -379,14 +383,14 @@ const columns: DataTableColumns<Site> = [
   { title: () =>
       h(
         'div',
-        { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
+        { style: 'display:flex; align-items:center; gap:4px;width:180px;' },
         [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '在架待修数'),
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.onShelfWaitRepairCount')),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '状态：“在架” 故障机数',
+              default: () => t('page.miningSite.onShelfWaitRepairCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -398,18 +402,18 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'on_shelf_wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.on_shelf_wait_repair_count || 0) - (row2.on_shelf_wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.on_shelf_wait_repair_count.toLocaleString() || 0) },
+      ), width: 215, key: 'on_shelf_wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.on_shelf_wait_repair_count || 0) - (row2.on_shelf_wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.on_shelf_wait_repair_count.toLocaleString() || 0) },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:180px;' },
         [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '待修数'),
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.waitRepairCount')),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '状态：“未下架+已下架+待处理” 故障机器数',
+              default: () => t('page.miningSite.waitRepairCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -421,18 +425,18 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.wait_repair_count || 0) - (row2.wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.wait_repair_count)?.toLocaleString?.() || '0') },
+      ), width: 140, key: 'wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.wait_repair_count || 0) - (row2.wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.wait_repair_count)?.toLocaleString?.() || '0') },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:4px;width:120px;' },
         [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '待修率'),
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.waitRepairRate')),
           // h(
           //   NTooltip,
           //   { placement: 'top' },
           //   {
-          //     default: () => '未下架+已下架+待处理 故障机器数占比',
+          //     default: () => t('page.miningSite.waitRepairRateTooltip'),
           //     trigger: () =>
           //       h(Icon, {
           //         icon: 'ant-design:question-circle-outlined',
@@ -444,19 +448,19 @@ const columns: DataTableColumns<Site> = [
           //   }
           // )
         ]
-      ), width: 120, key: 'wait_repair_rate', sorter: (row1: Site, row2: Site) => (row1.wait_repair_rate || 0) - (row2.wait_repair_rate || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500', title: '未下架+已下架+待处理 故障机器数占比' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
+      ), width: 140, key: 'wait_repair_rate', sorter: (row1: Site, row2: Site) => (row1.wait_repair_rate || 0) - (row2.wait_repair_rate || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500', title: t('page.miningSite.waitRepairRateTooltip') }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
   // { title: '待修率', width: 120, key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
         [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '净故障数'),
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.netFaultCount')),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '待修数+寄修数+驻场',
+              default: () => t('page.miningSite.netFaultCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -468,18 +472,18 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'net_fault_count', sorter: (row1: Site, row2: Site) => ((row1.in_logistics_count||0)+(row1.wait_repair_count||0)+(row1.repairing||0)) - ((row2.in_logistics_count||0)+(row2.wait_repair_count||0)+(row2.repairing||0)), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, ((row.in_logistics_count||0)+(row.wait_repair_count||0)+(row.repairing||0)).toLocaleString?.() || String((row.in_logistics_count||0)+(row.wait_repair_count||0)+(row.repairing||0))) },
+      ), width: 150, key: 'net_fault_count', sorter: (row1: Site, row2: Site) => ((row1.in_logistics_count||0)+(row1.wait_repair_count||0)+(row1.repairing||0)) - ((row2.in_logistics_count||0)+(row2.wait_repair_count||0)+(row2.repairing||0)), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, ((row.in_logistics_count||0)+(row.wait_repair_count||0)+(row.repairing||0)).toLocaleString?.() || String((row.in_logistics_count||0)+(row.wait_repair_count||0)+(row.repairing||0))) },
   { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
         [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, '预报废数'),
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.scrappedCount')),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '维修状态：“报废” 故障机数',
+              default: () => t('page.miningSite.scrappedCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -491,12 +495,12 @@ const columns: DataTableColumns<Site> = [
             }
           )
         ]
-      ), width: 120, key: 'scrapped_count', sorter: (row1: Site, row2: Site) => (row1.scrapped_count || 0) - (row2.scrapped_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.scrapped_count.toLocaleString() || 0) },
+      ), width: 160, key: 'scrapped_count', sorter: (row1: Site, row2: Site) => (row1.scrapped_count || 0) - (row2.scrapped_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.scrapped_count.toLocaleString() || 0) },
   // { title: '预报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
-   { title: () => renderHeaderTitle('整机工单绑定'), width: 220, key: 'bind_type', render: (row: Site) => {
+   { title: () => renderHeaderTitle(t('page.miningSite.machineOrderBind')), width: 220, key: 'bind_type', render: (row: Site) => {
       const typeMap: Record<string, { text: string, type: 'success' | 'warning' | 'default' }> = {
-          'auto': { text: '自动', type: 'success' },
-          'manual': { text: '手动', type: 'warning' }
+          'auto': { text: t('page.miningSite.auto'), type: 'success' },
+          'manual': { text: t('page.miningSite.manual'), type: 'warning' }
       };
       const type = row.bind_type || 'manual';
       const config = typeMap[type] || { text: type, type: 'default' };
@@ -509,10 +513,10 @@ const columns: DataTableColumns<Site> = [
         row.order_no ? h('span', { class: 'text-xs text-gray-500' }, row.order_no) : null
       ]);
   }},
-  { title: () => renderHeaderTitle('板子工单绑定'), width: 220, key: 'board_bind_type', render: (row: Site) => {
+  { title: () => renderHeaderTitle(t('page.miningSite.boardOrderBind')), width: 220, key: 'board_bind_type', render: (row: Site) => {
       const typeMap: Record<string, { text: string, type: 'success' | 'warning' | 'default' }> = {
-          'auto': { text: '自动', type: 'success' },
-          'manual': { text: '手动', type: 'warning' }
+          'auto': { text: t('page.miningSite.auto'), type: 'success' },
+          'manual': { text: t('page.miningSite.manual'), type: 'warning' }
       };
       const type = row.board_bind_type || 'manual';
       const config = typeMap[type] || { text: type, type: 'default' };
@@ -525,7 +529,7 @@ const columns: DataTableColumns<Site> = [
       ]);
   }},
 
-  { title: () => renderHeaderTitle('维修状态'), width: 120, key: 'site_status',render: (row: any ) => {
+  { title: () => renderHeaderTitle(t('page.miningSite.repairStatus')), width: 120, key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',
       1: 'success',
@@ -534,9 +538,9 @@ const columns: DataTableColumns<Site> = [
     };
     return h(NTag, { class: 'text-sm', type: tagMap[row.site_status] }, () => siteStatusRecord[row.site_status])
   } },
-   ...(hasRole ? [{ title: () => renderHeaderTitle('售后专员'), width: 120, key: 'saler_name', render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.saler_name || '') }] : []),
+   ...(hasRole ? [{ title: () => renderHeaderTitle(t('page.miningSite.afterSalesSpecialist')), width: 120, key: 'saler_name', render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.saler_name || '') }] : []),
   {
-    title: () => renderHeaderTitle('操作'),
+    title: () => renderHeaderTitle(t('page.miningSite.operation')),
     key: 'actions',
     width: 180,
     fixed: 'right',
@@ -555,7 +559,7 @@ const columns: DataTableColumns<Site> = [
             // router.push(`/sitereport?site_id=${row.id}`)
           }
         },
-        { default: () => '编辑日报' }
+        { default: () => t('page.miningSite.editDailyReport') }
       );
       }
       if(isAdmin){
@@ -575,7 +579,7 @@ const columns: DataTableColumns<Site> = [
                     handleOpenEditHistory(row)
                   }
                 },
-                { default: () => '日报' }
+                { default: () => t('page.miningSite.dailyReport') }
               ),
               h(
                 NButton,
@@ -587,7 +591,7 @@ const columns: DataTableColumns<Site> = [
                   onClick: () => handleOpenEdit(row)
                 },
                 {
-                  default: () => '编辑',
+                  default: () => t('page.miningSite.edit'),
                 }
               ),
               h(
@@ -602,7 +606,7 @@ const columns: DataTableColumns<Site> = [
                   }
                 },
                 {
-                  default: () => '查看',
+                  default: () => t('page.miningSite.view'),
                 }
               )
             ]
@@ -623,7 +627,7 @@ const columns: DataTableColumns<Site> = [
               onClick: () => handleOpenEdit(row)
             },
             {
-              default: () => '编辑',
+              default: () => t('page.miningSite.edit'),
             }
           ));
         }
@@ -639,7 +643,7 @@ const columns: DataTableColumns<Site> = [
             }
           },
           {
-            default: () => '查看',
+            default: () => t('page.miningSite.view'),
           }
         ));
         return actions;
@@ -670,10 +674,10 @@ const fetchData = async () => {
     if(error==null){
         tableData.value = data.list;
     }else{
-        message.error(`加载失败: ${error}`);
+        message.error(t('page.miningSite.loadFailed') + error);
     }
   } catch (err) {
-    message.error(`加载失败${err}`);
+    message.error(t('page.miningSite.loadFailed') + err);
   } finally {
     loading.value = false;
   }
@@ -725,13 +729,13 @@ const onOnlyMySiteChange = (v: boolean) => {
 };
 
 const bindTypeOptions = [
-  { label: '自动', value: 'auto' },
-  { label: '手动', value: 'manual' }
+  { label: t('page.miningSite.auto'), value: 'auto' },
+  { label: t('page.miningSite.manual'), value: 'manual' }
 ]
 
 const borderBindTypeOptions = [
-  { label: '自动', value: 'auto' },
-  { label: '手动', value: 'manual' }
+  { label: t('page.miningSite.auto'), value: 'auto' },
+  { label: t('page.miningSite.manual'), value: 'manual' }
 ]
 </script>
 
@@ -753,7 +757,7 @@ const borderBindTypeOptions = [
     />
     <div>
       <NSwitch v-model:value="onlyMySite" size="medium" @update:value="onOnlyMySiteChange"  style="margin-left:10px;"/>
-    <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
+    <span style="font-size: 12px; margin-left: 4px;">{{ $t('page.miningSite.mySite') }}</span>
     </div>
 
 
@@ -774,50 +778,50 @@ const borderBindTypeOptions = [
     </div>
 
     <!-- 修改弹框 -->
-    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改场地信息">
+    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" :title="$t('page.miningSite.editSiteInfo')">
       <NForm :model="editForm" label-width="100">
-        <NFormItem label="场地名称">
+        <NFormItem :label="$t('page.miningSite.siteName')">
           <NInput v-model:value="editForm.name" disabled />
         </NFormItem>
-        <NFormItem label="场地地址">
+        <NFormItem :label="$t('page.miningSite.siteAddress')">
           <NInput v-model:value="editForm.address"  />
         </NFormItem>
-        <NFormItem label="资产数">
+        <NFormItem :label="$t('page.miningSite.assetCount')">
           <NInputNumber v-model:value="editForm.asset_count" disabled />
         </NFormItem>
-        <NFormItem label="场地状态">
+        <NFormItem :label="$t('page.miningSite.siteStatus')">
           <n-checkbox-group v-model:value="siteStatusSelected">
             <n-space item-style="display: flex;">
-              <n-checkbox :value="1" label="驻场" />
-              <n-checkbox :value="2" label="寄修" />
+              <n-checkbox :value="1" :label="$t('page.miningSite.resident')" />
+              <n-checkbox :value="2" :label="$t('page.miningSite.mailRepair')" />
             </n-space>
           </n-checkbox-group>
         </NFormItem>
-        <NFormItem label="售后专员">
+        <NFormItem :label="$t('page.miningSite.afterSalesSpecialist')">
           <NSelect v-model:value="editForm.saler_id" :options="salerOptions" />
         </NFormItem>
-        <NFormItem label="自动绑定机器工单">
+        <NFormItem :label="$t('page.miningSite.autoBindMachineOrder')">
           <NSwitch v-model:value="editForm.bind_type" :checked-value="'auto'" :unchecked-value="'manual'" />
         </NFormItem>
-        <NFormItem label="工单编号" :required="editForm.bind_type === 'auto'">
+        <NFormItem :label="$t('page.miningSite.orderNumber')" :required="editForm.bind_type === 'auto'">
           <NSelect
             v-model:value="editForm.order_id"
             :options="orderOptions"
             :loading="orderLoading"
-            placeholder="请选择工单（开启自动绑定时必填）"
+            :placeholder="$t('page.miningSite.selectOrderAutoBindRequired')"
             clearable
             filterable
           />
         </NFormItem>
-        <NFormItem label="自动绑算力板工单">
+        <NFormItem :label="$t('page.miningSite.autoBindBoardOrder')">
           <NSwitch v-model:value="editForm.board_bind_type" :checked-value="'auto'" :unchecked-value="'manual'" />
         </NFormItem>
-        <NFormItem label="算力板工单编号" :required="editForm.board_bind_type === 'auto'">
+        <NFormItem :label="$t('page.miningSite.boardOrderNumber')" :required="editForm.board_bind_type === 'auto'">
           <NSelect
             v-model:value="editForm.board_order_id"
             :options="orderOptions"
             :loading="orderLoading"
-            placeholder="请选择工单（开启自动绑定算力板工单时必填）"
+            :placeholder="$t('page.miningSite.selectBoardOrderAutoBindRequired')"
             clearable
             filterable
           />
@@ -827,23 +831,23 @@ const borderBindTypeOptions = [
       </NForm>
       <template #footer>
         <NSpace :size="12">
-          <NButton class="min-w-96px" type="primary" size="medium" @click="handleSaveEdit">保存</NButton>
-          <NButton class="min-w-96px" size="medium" @click="showEditModal = false">取消</NButton>
+          <NButton class="min-w-96px" type="primary" size="medium" @click="handleSaveEdit">{{ $t('page.miningSite.save') }}</NButton>
+          <NButton class="min-w-96px" size="medium" @click="showEditModal = false">{{ $t('page.miningSite.cancel') }}</NButton>
         </NSpace>
       </template>
     </NModal>
 
     <!-- 新增：在架待修数编辑弹框 -->
-    <NModal v-model:show="showEditHistoryModal" style="width: 500px" preset="card" title="修改在架待修数">
+    <NModal v-model:show="showEditHistoryModal" style="width: 500px" preset="card" :title="$t('page.miningSite.modifyOnShelfWaitRepairCount')">
       <NForm :model="siteHistoryForm" label-width="180">
-        <NFormItem label="在架待修数">
+        <NFormItem :label="$t('page.miningSite.onShelfWaitRepairCount')">
           <NInputNumber v-model:value="siteHistoryForm.on_shelf_wait_repair_count" :min="0" />
         </NFormItem>
       </NForm>
       <template #footer>
         <NSpace :size="12">
-          <NButton class="min-w-96px" type="primary" size="medium" @click="handleSaveEditHistory">保存</NButton>
-          <NButton class="min-w-96px" size="medium" @click="showEditHistoryModal = false">取消</NButton>
+          <NButton class="min-w-96px" type="primary" size="medium" @click="handleSaveEditHistory">{{ $t('page.miningSite.save') }}</NButton>
+          <NButton class="min-w-96px" size="medium" @click="showEditHistoryModal = false">{{ $t('page.miningSite.cancel') }}</NButton>
         </NSpace>
       </template>
     </NModal>

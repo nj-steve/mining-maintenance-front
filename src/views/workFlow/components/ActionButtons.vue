@@ -1,16 +1,19 @@
 <template>
   <div class="action-buttons">
-    <NButton v-if="!shouldShowDispatch && hasRole" type="info" ghost size="small" @click="emit('edit')" >编辑</NButton>
-    <NButton type="success" ghost size="small" @click="emit('add-log')" v-if="hasRole">日志</NButton>
-    <NButton type="info" ghost size="small" @click="emit('detail')">历史日志</NButton>
-    <!-- <NButton v-if="shouldShowDispatch" type="info" ghost size="small" @click="emit('dispatch')">派单</NButton> -->
-    <NButton v-if="shouldShowDispatch && hasRole" type="error" ghost size="small" @click="emit('return')">撤销</NButton>
+    <NButton v-if="!shouldShowDispatch && hasRole" type="info" ghost size="small" @click="emit('edit')" >{{ t('page.workflow.edit') }}</NButton>
+    <NButton type="success" ghost size="small" @click="emit('add-log')" v-if="hasRole">{{ t('page.workflow.log') }}</NButton>
+    <NButton type="info" ghost size="small" @click="emit('detail')">{{ t('page.workflow.historyLog') }}</NButton>
+    <!-- <NButton v-if="shouldShowDispatch" type="info" ghost size="small" @click="emit('dispatch')">{{ t('page.workflow.dispatch') }}</NButton> -->
+    <NButton v-if="shouldShowDispatch && hasRole" type="error" ghost size="small" @click="emit('return')">{{ t('page.workflow.revoke') }}</NButton>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { NButton } from 'naive-ui';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{ row: any,hasRole:boolean }>();
 const emit = defineEmits<{

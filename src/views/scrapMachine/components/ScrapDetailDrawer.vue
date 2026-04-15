@@ -1,24 +1,24 @@
 <template>
   <NDrawer v-model:show="visible" placement="right" :width="320">
-    <NDrawerContent title="报废机详情">
+    <NDrawerContent :title="t('page.scrapMachine.detailTitle')">
       <div v-if="item" class="grid grid-cols-1 md:grid-cols-1 gap-x-4 gap-y-6">
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">编号</div><div class="flex-1 text-base text-gray-900">{{ item.id }}</div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">场地</div><div class="flex-1 text-base text-gray-900">{{ item.site_name }}</div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">机型</div><div class="flex-1 text-base text-gray-900">{{ item.model }}</div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">整机 SN</div><div class="flex-1 text-base text-gray-900">{{ item.sn }}</div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">控制板 SN</div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.scrapNo') }}</div><div class="flex-1 text-base text-gray-900">{{ item.id }}</div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.site') }}</div><div class="flex-1 text-base text-gray-900">{{ item.site_name }}</div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.model') }}</div><div class="flex-1 text-base text-gray-900">{{ item.model }}</div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.machineSn') }}</div><div class="flex-1 text-base text-gray-900">{{ item.sn }}</div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.controlSn') }}</div>
         <div class="flex-1 text-base text-gray-900 flex items-center"><span class="mr-2">{{ item.control_sn }}</span>
           <Icon :icon="flagIcon(item.control_sn_flag)" :class="flagClass(item.control_sn_flag)" width="16" height="16" /></div>
         </div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">板1 SN</div><div class="flex-1 text-base text-gray-900 flex items-center"><span class="mr-2">{{ item.board_sn1 }}</span><Icon :icon="flagIcon(item.board_sn1_flag)" :class="flagClass(item.board_sn1_flag)" width="16" height="16" /></div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">板2 SN</div><div class="flex-1 text-base text-gray-900 flex items-center"><span class="mr-2">{{ item.board_sn2 }}</span><Icon :icon="flagIcon(item.board_sn2_flag)" :class="flagClass(item.board_sn2_flag)" width="16" height="16" /></div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">板3 SN</div><div class="flex-1 text-base text-gray-900 flex items-center"><span class="mr-2">{{ item.board_sn3 }}</span><Icon :icon="flagIcon(item.board_sn3_flag)" :class="flagClass(item.board_sn3_flag)" width="16" height="16" /></div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">电源 SN</div><div class="flex-1 text-base text-gray-900 flex items-center"><span class="mr-2">{{ item.power_sn }}</span><Icon :icon="flagIcon(item.power_sn_flag)" :class="flagClass(item.power_sn_flag)" width="16" height="16" /></div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">状态</div><div class="flex-1 text-base text-gray-900">{{ statusLabel(item.status) }}</div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">报废日期</div><div class="flex-1 text-base text-gray-900">{{ item.scrap_time }}</div></div>
-        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">报废次数</div><div class="flex-1 text-base text-gray-900">{{ item.scrap_count }} 次</div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.board1Sn') }}</div><div class="flex-1 text-base text-gray-900 flex items-center"><span class="mr-2">{{ item.board_sn1 }}</span><Icon :icon="flagIcon(item.board_sn1_flag)" :class="flagClass(item.board_sn1_flag)" width="16" height="16" /></div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.board2Sn') }}</div><div class="flex-1 text-base text-gray-900 flex items-center"><span class="mr-2">{{ item.board_sn2 }}</span><Icon :icon="flagIcon(item.board_sn2_flag)" :class="flagClass(item.board_sn2_flag)" width="16" height="16" /></div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.board3Sn') }}</div><div class="flex-1 text-base text-gray-900 flex items-center"><span class="mr-2">{{ item.board_sn3 }}</span><Icon :icon="flagIcon(item.board_sn3_flag)" :class="flagClass(item.board_sn3_flag)" width="16" height="16" /></div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.powerSn') }}</div><div class="flex-1 text-base text-gray-900 flex items-center"><span class="mr-2">{{ item.power_sn }}</span><Icon :icon="flagIcon(item.power_sn_flag)" :class="flagClass(item.power_sn_flag)" width="16" height="16" /></div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.status') }}</div><div class="flex-1 text-base text-gray-900">{{ statusLabel(item.status) }}</div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.scrapDate') }}</div><div class="flex-1 text-base text-gray-900">{{ item.scrap_time }}</div></div>
+        <div class="flex items-center"><div class="w-24 text-sm text-gray-500">{{ t('page.scrapMachine.scrapCount') }}</div><div class="flex-1 text-base text-gray-900">{{ item.scrap_count }} {{ t('page.scrapMachine.times') }}</div></div>
       </div>
-      <div v-else class="text-gray-500">暂无数据</div>
+      <div v-else class="text-gray-500">{{ t('page.scrapMachine.noData') }}</div>
     </NDrawerContent>
   </NDrawer>
 </template>
@@ -27,6 +27,9 @@
 import { computed } from 'vue'
 import { NDrawer, NDrawerContent } from 'naive-ui'
 import { Icon } from '@iconify/vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface ScrapItemApi {
   id: number
@@ -58,11 +61,11 @@ const visible = computed({
 })
 
 function statusLabel(status: number) {
-  if (status === 1) return '待处理'
-  if (status === 2) return '待审核'
-  if (status === 3) return '已审批'
-  if (status === 4) return '已修复'
-  return '未知'
+  if (status === 1) return t('page.scrapMachine.pendingProcess')
+  if (status === 2) return t('page.scrapMachine.pendingReview')
+  if (status === 3) return t('page.scrapMachine.approved')
+  if (status === 4) return t('page.scrapMachine.repaired')
+  return t('page.scrapMachine.unknown')
 }
 
 // 标记图标与颜色（0: 未标注 -> 橙；2: 正常 -> 绿；1: 损坏 -> 红）

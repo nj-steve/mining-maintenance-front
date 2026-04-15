@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
-import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip, NPopconfirm, NDropdown, NIcon } from 'naive-ui';
+import { useI18n } from 'vue-i18n';
+import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NTooltip, NPopconfirm, NDropdown, NIcon } from 'naive-ui';
 import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import UploadWorkOrderExcel from './components/UploadWorkOrderExcel.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { fetchFaults,updateFaultsStatus,updateFaults, exportFaults } from '@/service/api/faults';
+import { fetchFaults, exportFaults } from '@/service/api/faults';
 import {fetchSites} from '@/service/api/site';
 
 import {fetchOrdersStatus} from '@/service/api/workflow';
@@ -21,20 +22,17 @@ import { useAuthStore } from '@/store/modules/auth';
 import EditFaultModalButton from './components/EditFaultModalButtonShouhou.vue'
 import EditFaultModalButtonYunwei from './components/EditFaultModalButtonYunwei.vue'
 import EditFaultModalButtonAdmin from './components/EditFaultModalButtonAdmin.vue'
-import { repairMethodRecord } from '@/constants/business';
 import UploadBindWorkOrderExcel from './components/UploadBindWorkOrderExcel.vue'
-
-
 
 import { Icon } from '@iconify/vue';
 
 const authStore = useAuthStore();
+const { t } = useI18n();
 const hasRole=!authStore.userInfo.roles.includes('3')
 const isAdmin=authStore.userInfo.roles.includes('1') // 超管
 const isRead=authStore.userInfo.roles.includes('5') // 只读用户
 
 // console.log("Outer >> hasRole>>",hasRole)
-
 interface Faults {
   id: number;
   sn: string;
@@ -92,12 +90,20 @@ const searchSalerId = ref<number | null>(null);
 const searchRepairType = ref<number | null>(null);
 
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
-const statusOptions = ref<{ label: string; value: number }[]>([]);
-const statusUpdateOptions = ref<{ label: string; value: number }[]>([]);
-const repairTypeOptions = [
-  { label: '整机', value: '整机' },
-  { label: '算力板', value: '算力板' }
-]
+const statusOptionsData = ref<any[]>([]);
+const statusOptions = computed(() => statusOptionsData.value.map(item => ({
+  label: getTranslatedStatus(String(item.id)),
+  value: item.id,
+})));
+const statusUpdateOptionsData = ref<any[]>([]);
+const statusUpdateOptions = computed(() => statusUpdateOptionsData.value.map(item => ({
+  label: getTranslatedStatus(item.name),
+  value: item.id,
+})));
+const repairTypeOptions = computed(() => [
+  { label: t('business.repairType.wholeMachine'), value: '整机' },// 1整机
+  { label: t('business.repairType.hashBoard'), value: '算力板' },// 2算力板
+])
 
 // 批量选择相关
 const selectedRowKeys = ref<number[]>([]);
@@ -118,18 +124,18 @@ const workOrderForm = ref({
 
 const bindWorkOrderRef = ref();
 
-const bindWorkOrderOptions = [
+const bindWorkOrderOptions = computed(() => [
   {
-    label: '批量绑定',
+    label: t('page.faults.batchBind'),
     key: 'batch',
     icon: () => h(Icon, { icon: 'ant-design:plus-outlined' })
   },
   {
-    label: '导入绑定',
+    label: t('page.faults.importBind'),
     key: 'import',
     icon: () => h(Icon, { icon: 'ant-design:upload-outlined' })
   }
-];
+]);
 
 const handleBindWorkOrderSelect = (key: string) => {
   if (key === 'batch') {
@@ -141,25 +147,26 @@ const handleBindWorkOrderSelect = (key: string) => {
 
 const uploadRef = ref<any>(null)
 
-const importOptions = [
-  { label: '矿机导入', key: 'machine' },
-  { label: '算力板导入', key: 'hash_board' }
-]
+const importOptions = computed(() => [
+  { label: t('page.faults.machineImport'), key: 'machine' },
+  { label: t('page.faults.hashBoardImport'), key: 'hash_board' }
+]);
 
 const handleImportSelect = (key: string) => {
+  // console.log(key)
   if (key === 'machine') {
     uploadRef.value?.open({
        uploadUrl: '/api/faults/import',
        templateUrl: '/template/site_machine_template.xlsx',
-       templateName: '场地故障机导入模板.xlsx',
-       title: '导入 Excel'
+       templateName: t('page.faults.machineImportTemplate'),
+       title: t('page.faults.import') + ' Excel'
     })
   } else if (key === 'hash_board') {
     uploadRef.value?.open({
        uploadUrl: '/api/faults/hash_board/import',
        templateUrl: '/template/site_board_template.xlsx',
-       templateName: '算力板导入模板.xlsx',
-       title: '算力板导入'
+       templateName: t('page.faults.hashBoardImportTemplate'),
+       title: t('page.faults.hashBoardImport')
     })
   }
 }
@@ -198,10 +205,10 @@ const fetchData = async () => {
         pagination.value.page =  data.pagination.page;
         pagination.value.pageSize =  data.pagination.page_size;
     }else{
-        message.error(`加载失败: ${error}`);
+        message.error(`${t('page.faults.loadFailed')}: ${error}`);
     }
   } catch (error) {
-    message.error('加载失败');
+    message.error(t('page.faults.loadFailed'));
     console.error('加载失败:', error);
   } finally {
     loading.value = false
@@ -216,7 +223,7 @@ const pagination = ref<PaginationProps>({
   showSizePicker: true,
   pageSizes: [10, 20, 50, 100],
   prefix({ itemCount }) {
-    return `共 ${itemCount} 条`
+    return t('page.faults.totalItems', { count: itemCount })
   },
   onChange: page => {
     pagination.value.page = page;
@@ -245,22 +252,16 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
     const {data,error} = await fetchOrdersStatus(params);
     if(error==null && data){
       if(operate_type==='list'){
-        statusOptions.value = data.map((item: any) => ({
-          label: item.name,
-          value: item.id,
-        }));
+        statusOptionsData.value = data;
       }
       if(operate_type==='update'){
-        statusUpdateOptions.value = data.map((item: any) => ({
-          label: item.name,
-          value: item.id,
-        }));
+        statusUpdateOptionsData.value = data;
       }
     }else{
-        message.error(`加载失败: ${error}`);
+        message.error(`${t('page.faults.loadFailed')}: ${error}`);
     }
   } catch (err) {
-    message.error(`加载失败${err}`);
+    message.error(`${t('page.faults.loadFailed')}${err}`);
   } finally {
     loading.value = false;
   }
@@ -299,8 +300,50 @@ const fetchSiteData = async () => {
 
 
   } catch (err) {
-    message.error('获取场地数据失败');
+    message.error(t('page.faults.loadFailed'));
   }
+};
+
+const getTranslatedStatus = (name: string) => {
+  const map: Record<string, string> = {
+    // Flow Status (Numeric IDs and Text)
+    '8': t('page.faults.onShelf'),
+    '已上架': t('page.faults.onShelf'),
+    '10': t('page.faults.inStock'),
+    '已入库': t('page.faults.inStock'),
+    '9': t('page.faults.waitStock'),
+    '待入库': t('page.faults.waitStock'),
+    '3': t('page.faults.logisticsOut'),
+    '物流发': t('page.faults.logisticsOut'),
+    '6': t('page.faults.logisticsIn'),
+    '物流进': t('page.faults.logisticsIn'),
+    '物流收': t('page.faults.logisticsIn'),
+    '4': t('page.faults.repairing'),
+    '维修中': t('page.faults.repairing'),
+    '5': t('page.faults.repairCompleted'),
+    '维修完成': t('page.faults.repairCompleted'),
+    '7': t('page.faults.waitShelf'),
+    '待上架': t('page.faults.waitShelf'),
+    '2': t('page.faults.pending'),
+    '待处理': t('page.faults.pending'),
+    '1': t('page.faults.newOffShelf'),
+    '新下架': t('page.faults.newOffShelf'),
+
+    // Repair Status
+    '已修复': t('page.faults.repaired'),
+    '报废': t('page.faults.scrapped'),
+    '未修好': t('page.faults.unrepaired'),
+    '待修复': t('business.repairResult.pending'),
+    '待维修': t('page.faults.waitRepair'),
+
+    // Warranty Status
+    '短保中': t('business.warrantyStatus.inWarranty'),
+    '过保': t('business.warrantyStatus.outOfWarranty'),
+    '无': t('business.warrantyStatus.noWarranty'),
+    '已过期': t('business.warrantyStatus.expired'),
+
+  };
+  return map[name] || name;
 };
 
 // ---------------- 表格列 ----------------
@@ -312,47 +355,38 @@ const columns: DataTableColumns<Faults> = [
     width: 60
   },
   // { title: '序号', key: 'id', width: 80 },
-  { title: () => renderHeaderTitle('SN码'), key: 'sn', width: 180,
+  { title: () => renderHeaderTitle(t('page.faults.snCode')), key: 'sn', width: 180,
     render: (row: Faults) => {
-      const sn = row.sn || '未知';
-      const onCopy = async () => {
-        try {
-          await navigator.clipboard.writeText(sn);
-          message.success('SN码已复制');
-        } catch (e) {
-          message.error('复制失败');
-        }
-      };
+      const sn = row.sn || t('page.faults.unknown');
       return h(NTooltip, null, {
         trigger: () => h('div', { style: 'display:flex; align-items:center; gap:8px; max-width:180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, [
           h('span', { class: 'text-sm text-gray-500', style: 'flex:1; min-width:0;' }, sn),
-          // h(NButton, { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy }, { default: () => '复制' })
         ]),
         default: () => sn
       });
     }
   },
-  { title: () => renderHeaderTitle('类型'), key: 'repair_type', width: 100,
+  { title: () => renderHeaderTitle(t('page.faults.type')), key: 'repair_type', width: 100,
     render: (row: Faults) => {
       const type = row.repair_type;
       let tagType: 'primary' | 'info' | 'success' | 'warning' | 'error' | 'default' = 'default';
-      let label = type || '未知';
+      let label = type || t('page.faults.unknown');
 
       // 兼容可能返回的数字或文本
-      if (type === '整机' ) {
+      if (type === '整机' || type === "1") {
         tagType = 'info';
-        label = '整机';
-      } else if (type === '算力板') {
+        label = t('page.faults.machine');
+      } else if (type === '算力板' || type === "2") {
         tagType = 'warning';
-        label = '算力板';
+        label = t('page.faults.hashBoard');
       }
 
       return h(NTag, { class: 'text-sm', type: tagType, size: 'small', round: true, bordered: false }, () => label);
     }
   },
-  { title: () => renderHeaderTitle('场地'), key: 'site_name', width: 150,
+  { title: () => renderHeaderTitle(t('page.faults.site')), key: 'site_name', width: 150,
     render: (row: Faults) => {
-       const siteName = row.site_name || '未知';
+       const siteName = row.site_name || t('page.faults.unknown');
        const siteId = row.site_id || 0;
 
        if (siteId) {
@@ -392,9 +426,9 @@ const columns: DataTableColumns<Faults> = [
        );
      }
   },
-  { title: () => renderHeaderTitle('型号'), key: 'model', width: 120, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.model || '未知') },
+  { title: () => renderHeaderTitle(t('page.faults.model')), key: 'model', width: 120, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.model || t('page.faults.unknown')) },
   {
-    title: () => renderHeaderTitle('工单编号'),
+    title: () => renderHeaderTitle(t('page.faults.orderNo')),
     key: 'order_no',
     width: 170,
      render: (row: Faults) => {
@@ -406,9 +440,9 @@ const columns: DataTableColumns<Faults> = [
       const onCopy = async () => {
         try {
           await navigator.clipboard.writeText(full);
-          message.success('工单编号已复制');
+          message.success(t('page.faults.orderNoCopied'));
         } catch (e) {
-          message.error('复制失败');
+          message.error(t('page.faults.copyFailed'));
         }
       };
       return  hasRole? h(
@@ -486,63 +520,71 @@ const columns: DataTableColumns<Faults> = [
     //   : text;
     // }
   },
-  { title: () => renderHeaderTitle('维修方式'), key: 'repair_method_text', width: 100,
+  { title: () => renderHeaderTitle(t('page.faults.repairMethod')), key: 'repair_method_text', width: 100,
      render: (row: any ) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         1: 'success',
         2: 'primary',
         3: 'primary',
       };
-      // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, { class: 'text-sm', type: tagMap[row.repair_method || '无'],size:'small', round:true }, () => repairMethodRecord[row.repair_method || '未知'] || '未知')
+
+      const getRepairMethodLabel = (method: number | string) => {
+        const map: Record<string, string> = {
+          '1': t('business.repairMethod.onsite'),
+          '2': t('business.repairMethod.sendRepair'),
+          '3': t('business.repairMethod.exchange'),
+        };
+        return map[String(method)] || t('page.faults.unknown');
+      };
+
+      const methodVal = row.repair_method;
+      return h(NTag, { class: 'text-sm', type: tagMap[String(methodVal)] || 'default', size:'small', round:true }, () => methodVal ? getRepairMethodLabel(methodVal) : t('page.faults.unknown'))
     }
   },
-  { title: () => renderHeaderTitle('流转状态'), key: 'status_text', width: 100,
+  { title: () => renderHeaderTitle(t('page.faults.flowStatus')), key: 'status_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '已上架': 'success',
-        '已入库': 'success',
-        '待入库': 'warning',
-        '物流出': 'primary',
-        '物流进': 'primary',
-        '维修中': 'info',
-        '维修完成': 'success',
-        '待上架': 'warning',
-        '报废': 'error',
-        '未修复': 'error',
-        '待处理': 'warning',
-        // '新下架':'warning',
+        [t('page.faults.onShelf')]: 'success',
+        [t('page.faults.inStock')]: 'success',
+        [t('page.faults.waitStock')]: 'warning',
+        [t('page.faults.logisticsOut')]: 'primary',
+        [t('page.faults.pending')]: 'primary',
+        [t('page.faults.logisticsIn')]: 'primary',
+        [t('page.faults.repairing')]: 'info',
+        [t('page.faults.repairCompleted')]: 'success',
+        [t('page.faults.waitShelf')]: 'warning',
+        [t('page.faults.newOffShelf')]: 'warning',
       };
-      const label = row.status_text || '未知';
-      return h(NTag, { class: 'text-sm', type: tagMap[row.status_text || '未知'],size:'small', round:true }, () => label)
+      const label = row.status_value != null ? getTranslatedStatus(String(row.status_value)) : (row.status_text ? getTranslatedStatus(row.status_text) : t('page.faults.unknown'));
+      return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true }, () => label)
     }
   },
-  { title: () => renderHeaderTitle('维修状态'), key: 'repair_result_text', width: 100,
+  { title: () => renderHeaderTitle(t('page.faults.repairStatus')), key: 'repair_result_text', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '已修复': 'success',
-        '报废': 'error',
-        '未修复': 'error',
-        '待修复': 'warning',
+        [t('page.faults.repaired')]: 'success',
+        [t('page.faults.scrapped')]: 'error',
+        [t('page.faults.unrepaired')]: 'error',
+        [t('page.faults.waitRepair')]: 'warning',
       };
-      const label = row.repair_result_text || '未知';
-      return h(NTag, { class: 'text-sm', type: tagMap[row.repair_result_text || '未知'],size:'small', round:true }, () => label)
+      const label = row.repair_result_text ? getTranslatedStatus(row.repair_result_text) : t('page.faults.unknown');
+      return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true }, () => label)
     }
   },
-  { title: () => renderHeaderTitle('维修次数'), key: 'repair_count', width: 100, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, String(row.repair_count ?? '0')) },
-  { title: () => renderHeaderTitle('短保'), key: 'warranty_status', width: 100,
+  { title: () => renderHeaderTitle(t('page.faults.repairCount')), key: 'repair_count', width: 100, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, String(row.repair_count ?? '0')) },
+  { title: () => renderHeaderTitle(t('page.faults.warranty')), key: 'warranty_status', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '短保中': 'success',
-        '已过保': 'error',
+        [t('page.faults.inWarranty')]: 'success',
+        [t('page.faults.outOfWarranty')]: 'error',
       };
-      const label = row.warranty_status_text || '无';
-      return h(NTag, { class: 'text-sm', type: tagMap[row.warranty_status_text || '无'],size:'small', round:true}, () => label)
+      const label = row.warranty_status_text ? getTranslatedStatus(row.warranty_status_text) : t('page.faults.none');
+      return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true}, () => label)
     }
   },
-  { title: () => renderHeaderTitle('问题描述'), key: 'description', width: 200, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.description || '-') },
-  { title: () => renderHeaderTitle('下架日期'), key: 'date', width: 120, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.date || '-') },
-  { title: () => renderHeaderTitle('导入时间'), key: 'created_time', width: 160,
+  { title: () => renderHeaderTitle(t('page.faults.problemDescription')), key: 'description', width: 200, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.description || '-') },
+  { title: () => renderHeaderTitle(t('page.faults.offShelfDate')), key: 'date', width: 120, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.date || '-') },
+  { title: () => renderHeaderTitle(t('page.faults.importTime')), key: 'created_time', width: 160,
     render: (row: Faults) => {
       const s = row.created_time;
       if (!s) return '';
@@ -557,7 +599,7 @@ const columns: DataTableColumns<Faults> = [
       return h('span', { class: 'text-sm text-gray-500' }, `${y}-${m}-${da} ${hh}:${mm}:${ss}`)
     }
    },
-  { title: () => renderHeaderTitle('上架/入库时间'), key: 'on_shelf_time', width: 160,
+  { title: () => renderHeaderTitle(t('page.faults.onShelfOrInStockTime')), key: 'on_shelf_time', width: 160,
     render: (row: Faults) => {
       const s = row.on_shelf_time;
       if (!s) return '';
@@ -573,7 +615,7 @@ const columns: DataTableColumns<Faults> = [
     }
    },
   {
-    title: () => renderHeaderTitle('操作'),
+    title: () => renderHeaderTitle(t('page.faults.operation')),
     key: 'actions',
     align:'center',
     width: 120,
@@ -598,15 +640,15 @@ const columns: DataTableColumns<Faults> = [
                 {
                   onPositiveClick: async () => {
                     try {
-                      const { data, error } = await deleteFaultsStatusById(row.id);
+                      const { error } = await deleteFaultsStatusById(row.id);
                       if (error == null) {
-                        message.success('删除成功');
+                        message.success(t('page.faults.deleteSuccess'));
                         await fetchData();
                       } else {
-                        message.error('删除失败');
+                        message.error(t('page.faults.deleteFailed'));
                       }
                     } catch (e) {
-                      message.error('删除失败');
+                      message.error(t('page.faults.deleteFailed'));
                     }
                   }
                 },
@@ -616,7 +658,7 @@ const columns: DataTableColumns<Faults> = [
                     { size: 'tiny', quaternary: true, type: 'error' },
                     { default: () => h(Icon, { icon: 'ant-design:delete-outlined', width: 16, height: 16 }) }
                   ),
-                  default: () => '确认删除该故障机？'
+                  default: () => t('page.faults.confirmDelete')
                 }
               )
           ]
@@ -655,6 +697,7 @@ onMounted(() => {
 
   // fetchSiteData();
 });
+
 watch([searchSerial,searchWorkOrderNo, searchSalerId, searchResultStatus, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel, searchRepairType], () => {
   tableData.value = [];
   selectedRowKeys.value = [];
@@ -681,12 +724,12 @@ const handleCreateWorkOrderSelect = (key: string) => {
 
 const createWorkOrderOptions = computed(() => [
   {
-    label: `批量创建 (${selectedRows.value.length})`,
+    label: t('page.faults.batchCreate', { count: selectedRows.value.length }),
     key: 'batch',
     disabled: selectedRows.value.length === 0
   },
   {
-    label: '导入创建',
+    label: t('page.faults.importCreate'),
     key: 'import'
   }
 ]);
@@ -694,7 +737,7 @@ const createWorkOrderOptions = computed(() => [
 // 创建工单
 const handleCreateWorkOrder = () => {
   if (selectedRows.value.length === 0) {
-    message.warning('请选择要创建工单的设备');
+    message.warning(t('page.faults.pleaseSelectDeviceToCreateOrder'));
     return;
   }
   // 统计选中机器所属的唯一场地名数量（去重）
@@ -706,21 +749,21 @@ const handleCreateWorkOrder = () => {
     )
   );
   if (uniqueSiteNames.length > 1) {
-    message.warning('仅可选择一个场地的机器');
+    message.warning(t('page.faults.onlySelectOneSite'));
     return;
   }
   // console.log('选中的场地:', uniqueSiteNames[0]);
 
   // 只选择状态为"新下架"的机器
   const downCheckMachines = selectedRows.value.filter(row =>
-     row.status_text === '新下架'
+     row.status_text === t('page.faults.newOffShelf') || row.status_text === '新下架' || String(row.status_value) === '1'
   );
   // 只选择状态为"新下架"的机器
   const failureCheckMachines = selectedRows.value.filter(row =>
-    row.status_text !== '新下架'
+    row.status_text !== t('page.faults.newOffShelf') && row.status_text !== '新下架' && String(row.status_value) !== '1'
   );
    if (failureCheckMachines.length > 0 || downCheckMachines.length === 0) {
-    message.warning('仅可选择“新下架”设备');
+    message.warning(t('page.faults.onlySelectNewOffShelf'));
     return;
   }
 
@@ -762,7 +805,7 @@ const handleConfirmWorkOrder = async () => {
 
     if (error == null) {
       if (Number(data?.code) == 0) {
-        message.success('工单创建成功！');
+        message.success(t('page.faults.createOrderSuccess'));
         showWorkOrderModal.value = false;
         // 清空选择
         selectedRowKeys.value = [];
@@ -773,7 +816,7 @@ const handleConfirmWorkOrder = async () => {
       }
     }
   } catch (error) {
-    console.error('创建工单失败:', error);
+    console.error(t('page.faults.createOrderFailed') + ':', error);
   }
 };
 
@@ -804,86 +847,6 @@ const onOnlyMySiteChange = (v: boolean) => {
   fetchData();
 };
 
-// 导出故障列表（CSV，可用 Excel 打开）
-const exportFaultsCsv = async () => {
-  loading.value = true;
-  try {
-    const onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1;
-    const params: any = {
-      sn: searchSerial.value || undefined,
-      order_no: searchWorkOrderNo.value || undefined,
-      site_id: searchSiteId.value || undefined,
-      status: searchStatus.value || undefined,
-      saler_id: searchSalerId.value || undefined,
-      enable_all: onlyMySite, // 1 全部，-1 我的
-      repair_result: searchResultStatus.value || undefined,
-      start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
-      end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
-      model: searchModel.value || undefined
-    };
-
-    const { data, error } = await exportFaults(params);
-    if (error == null) {
-      const headers = [
-        'SN码',
-        '场地',
-        '型号',
-        '工单编号',
-        '维修方式',
-        '流转状态',
-        '维修状态',
-        '维修次数',
-        '短保',
-        '问题描述',
-        '下架日期',
-        '导入时间',
-        '上架/入库时间'
-      ];
-      const formatCell = (val: any) => {
-        const s = val === undefined || val === null ? '' : String(val);
-        const needsQuote = /[",\n]/.test(s);
-        const escaped = s.replace(/"/g, '""');
-        return needsQuote ? `"${escaped}"` : escaped;
-      };
-      const rows = (data || []).map((row: any) => [
-        row.sn,
-        row.Site?.name || row.site_name,
-        row.model,
-        row.order_no,
-        repairMethodRecord[row.repair_method || '未知'] || row.repair_method_text,
-        row.status_text,
-        row.repair_result_text,
-        row.repair_count,
-        row.warranty_status_text,
-        row.description,
-        row.date,
-        row.created_time,
-        row.on_shelf_time
-      ]);
-      const csv = [headers, ...rows]
-        .map(r => r.map(formatCell).join(','))
-        .join('\n');
-      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const date = new Date().toISOString().slice(0, 10);
-      link.href = url;
-      link.download = `故障机_导出_${date}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      message.success('导出成功，下载已开始');
-    } else {
-      message.error(`导出失败: ${error}`);
-    }
-  } catch (err) {
-    message.error(`导出失败: ${err}`);
-  } finally {
-    loading.value = false;
-  }
-};
-
 // 通过 /api/faults/export 获取数据，按指定字段生成 CSV（Excel 可打开）
 const exportFaultsFile = async () => {
   loading.value = true;
@@ -904,27 +867,27 @@ const exportFaultsFile = async () => {
 
     const { data, error } = await exportFaults(params);
     if (error != null) {
-      message.error(`导出失败: ${error}`);
+      message.error(`${t('page.faults.exportFailed')}${error}`);
       return;
     }
 
     const headers = [
-      'SN',
-      '场地名',
-      '机型',
-      '位置',
-      '故障原因',
-      '下架时间',
-      '上架时间',
-      '短保状态',
-      '工单号',
-      '创建人',
-      '备注',
-      '导入时间',
-      '更新时间',
-      '流转状态',
-      '维修结果',
-      '维修次数'
+      t('page.faults.snCode'),
+      t('page.faults.siteName'),
+      t('page.faults.machineModel'),
+      t('page.faults.location'),
+      t('page.faults.faultReason'),
+      t('page.faults.offShelfTime'),
+      t('page.faults.onShelfTime'),
+      t('page.faults.warrantyStatus'),
+      t('page.faults.orderNo'),
+      t('page.faults.creator'),
+      t('page.faults.remark'),
+      t('page.faults.importTime'),
+      t('page.faults.updateTime'),
+      t('page.faults.flowStatus'),
+      t('page.faults.repairResult'),
+      t('page.faults.repairCount')
     ];
 
     const formatCell = (val: any) => {
@@ -975,14 +938,14 @@ const exportFaultsFile = async () => {
     const link = document.createElement('a');
     const date = new Date().toISOString().slice(0, 10);
     link.href = url;
-    link.download = `故障机_导出_${date}.csv`;
+    link.download = `${t('page.faults.title')}_export_${date}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    message.success('导出成功，下载已开始');
+    message.success(t('page.faults.exportSuccess'));
   } catch (err) {
-    message.error(`导出失败: ${err}`);
+    message.error(`${t('page.faults.exportFailed')}${err}`);
   } finally {
     loading.value = false;
   }
@@ -1018,7 +981,7 @@ const exportFaultsFile = async () => {
                 <Icon icon="material-symbols:upload" />
               </n-icon>
             </template>
-            导入
+            {{ t('page.faults.import') }}
             <n-icon style="margin-left: 4px">
               <Icon icon="ant-design:down-outlined" />
             </n-icon>
@@ -1027,7 +990,7 @@ const exportFaultsFile = async () => {
         <UploadSiteMachineExcel
         ref="uploadRef"
         :show-trigger="false"
-        buttonText="导入"
+        :buttonText="t('page.faults.import')"
         :site-options="siteOptions"
         @success="fetchData"/>
 
@@ -1039,7 +1002,7 @@ const exportFaultsFile = async () => {
               size="small"
               class="text-sm"
             >
-              创建工单
+              {{ t('page.faults.createOrder') }}
               <template #icon>
                  <Icon icon="ant-design:down-outlined" />
               </template>
@@ -1055,7 +1018,7 @@ const exportFaultsFile = async () => {
               size="small"
               class="text-sm"
             >
-              绑定工单
+              {{ t('page.faults.bindOrder') }}
               <template #icon>
                  <Icon icon="ant-design:down-outlined" />
               </template>
@@ -1081,7 +1044,7 @@ const exportFaultsFile = async () => {
           <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
 
        <NSwitch v-model:value="onlyMySite" size="small" class="text-sm" @update:value="onOnlyMySiteChange" />
-    <span class="text-sm text-gray-600" style="margin-left: 4px;">我的场地</span>
+    <span class="text-sm text-gray-600" style="margin-left: 4px;">{{ t('page.faults.mySite') }}</span>
         </template>
         <template v-if="!hasRole">
   <!-- 批量修改状态组件 -->
@@ -1096,7 +1059,7 @@ const exportFaultsFile = async () => {
             @refresh="handleRefresh"
           />
         </template>
-         <NButton circle size="small" ghost class="text-sm" @click="exportFaultsFile" title="导出 Excel">
+         <NButton circle size="small" ghost class="text-sm" @click="exportFaultsFile" :title="t('page.faults.exportExcel')">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>
@@ -1123,33 +1086,33 @@ const exportFaultsFile = async () => {
   </n-card>
 
     <!-- 创建工单弹框 -->
-    <NModal v-model:show="showWorkOrderModal" style="width: 800px" preset="card" title="创建工单" class="text-sm">
+    <NModal v-model:show="showWorkOrderModal" style="width: 800px" preset="card" :title="t('page.faults.createOrder')" class="text-sm">
       <NForm :model="workOrderForm" label-width="120" size="small" class="text-sm">
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
           <NFormItem>
-            <template #label><span class="text-sm text-gray-500">工单编号</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ t('page.faults.orderNo') }}</span></template>
             <NInput v-model:value="workOrderForm.workOrderNo" readonly size="small" class="text-sm" />
           </NFormItem>
 
           <NFormItem>
-            <template #label><span class="text-sm text-gray-500">工单日期</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ t('page.faults.orderDate') }}</span></template>
             <NInput v-model:value="workOrderForm.workOrderDate" readonly size="small" class="text-sm" />
           </NFormItem>
 
           <NFormItem>
-            <template #label><span class="text-sm text-gray-500">场地</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ t('page.faults.site') }}</span></template>
             <NInput v-model:value="workOrderForm.site" readonly size="small" class="text-sm" />
           </NFormItem>
 
           <NFormItem>
-            <template #label><span class="text-sm text-gray-500">故障机台数</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ t('page.faults.faultMachineCount') }}</span></template>
             <NInput :value="workOrderForm.faultMachineCount.toString()" readonly size="small" class="text-sm" />
           </NFormItem>
         </div>
 
-        <NFormItem label="选中故障机列表">
+        <NFormItem :label="t('page.faults.selectedMachineList')">
           <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px; width: 100%;" class="text-sm">
-            <div v-for="(machine, index) in workOrderForm.selectedMachines" :key="machine.id"
+            <div v-for="machine in workOrderForm.selectedMachines" :key="machine.id"
                  style="display: flex; justify-content: space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 100%;">
               <!-- <div> -->
                 <div class="text-sm text-gray-600" style="font-weight: 500; width:30%;" >{{ machine.sn }}</div>
@@ -1167,8 +1130,8 @@ const exportFaultsFile = async () => {
 
       <template #footer>
         <NSpace>
-          <NButton type="primary" size="small" class="text-sm" @click="handleConfirmWorkOrder">创建</NButton>
-          <NButton size="small" class="text-sm" @click="handleCancelWorkOrder">取消</NButton>
+          <NButton type="primary" size="small" class="text-sm" @click="handleConfirmWorkOrder">{{ t('page.faults.create') }}</NButton>
+          <NButton size="small" class="text-sm" @click="handleCancelWorkOrder">{{ t('page.faults.cancel') }}</NButton>
         </NSpace>
       </template>
     </NModal>

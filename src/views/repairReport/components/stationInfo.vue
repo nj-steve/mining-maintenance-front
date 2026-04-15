@@ -3,33 +3,33 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-16px">
       <NCard size="medium">
         <div class="flex items-center justify-between mb-12px">
-          <div class="text-14px text-gray-600">总维修数</div>
+          <div class="text-14px text-gray-600">{{ t('page.repairReport.totalRepairs') }}</div>
            <n-tag size="large" :bordered="false" type="success" style="margin-right: -10px;">
             <Icon icon="ant-design:copy-outlined" width="20" height="20" />
            </n-tag>
         </div>
         <div class="text-28px font-semibold">
           <n-statistic label="" tabular-nums>
-            <n-number-animation 
-              ref="numberAnimationInstRef" 
-              :from="0" 
-              :to="summary?.total_repairs" 
-              :show-separator="true" 
-              class="text-3xl font-bold text-gray-800" 
+            <n-number-animation
+              ref="numberAnimationInstRef"
+              :from="0"
+              :to="summary?.total_repairs"
+              :show-separator="true"
+              class="text-3xl font-bold text-gray-800"
             />
             <!-- <span class="mt-6px text-12px text-gray-500">Total Repairs</span> -->
             <n-tag  class="mytag mt-6px  text-10px text-gray-500"   size="small" :bordered="false" round>
       Total Repairs
     </n-tag>
           </n-statistic>
-          
+
           <!-- {{ summary?.total_repairs }} -->
         </div>
-        
+
       </NCard>
       <NCard size="medium">
         <div class="flex items-center justify-between mb-12px">
-          <div class="text-14px text-gray-600">总二返率</div>
+          <div class="text-14px text-gray-600">{{ t('page.repairReport.totalReturnRate') }}</div>
            <n-tag size="large" :bordered="false" type="info" style="margin-right: -10px;">
             <Icon icon="ant-design:reload-outlined" width="20" height="20" />
            </n-tag>
@@ -45,23 +45,23 @@
                 :precision="2"
               />%
                     <n-tag  class=" mytag  mt-6px text-10px text-gray-500" size="small" :bordered="false" round>
-      {{ summary?.total_return_count }} 台
+      {{ summary?.total_return_count }} {{ t('page.repairReport.unitMachine') }}
     </n-tag>
               <!-- <span class="mt-6px text-12px text-gray-500"></span> -->
             </n-statistic>
         </div>
-        
+
       </NCard>
       <NCard size="medium">
         <div class="flex items-center justify-between mb-12px">
-          <div class="text-14px text-gray-600">总报废率</div>
+          <div class="text-14px text-gray-600">{{ t('page.repairReport.totalScrapRate') }}</div>
             <n-tag size="large" :bordered="false" type="error" style="margin-right: -10px;">
             <Icon icon="ant-design:delete-outlined" width="20" height="20" />
            </n-tag>
           <!-- <Icon icon="ant-design:delete-outlined" class="text-gray-400" /> -->
         </div>
         <div class="text-28px font-semibold">
-          
+
           <!-- {{ summary?.total_scrap_rate?.toFixed(2) }} -->
           <n-statistic label="" tabular-nums>
               <n-number-animation
@@ -72,19 +72,19 @@
                 :precision="2"
               />%
                <n-tag  class="mt-6px mytag  text-10px text-gray-500" size="small" :bordered="false" round>
-      {{ summary?.total_scrap_count }} 台
+      {{ summary?.total_scrap_count }} {{ t('page.repairReport.unitMachine') }}
     </n-tag>
               <!-- <span class="mt-6px text-12px text-gray-500">{{ summary?.total_scrap_count }} 台</span> -->
             </n-statistic>
         </div>
-        
+
       </NCard>
-      
+
     </div>
 
     <NCard size="large">
       <template #header>
-        <div class="text-14px font-bold text-gray-700 mb-4">趋势分析 (Trend Analysis)</div>
+        <div class="text-14px font-bold text-gray-700 mb-4">{{ t('page.repairReport.trendAnalysis') }}</div>
       </template>
       <div class="h-320px">
         <div ref="chartRef" class="w-full h-full" />
@@ -94,7 +94,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
       <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">二返修率 (Top 5)</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">{{ t('page.repairReport.secondRepairRateTop5') }}</div>
         </template>
         <div class="h-240px">
           <div ref="topReturnChartRef" class="w-full h-full" />
@@ -102,7 +102,7 @@
       </NCard>
       <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">报废率 (Top 5)</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">{{ t('page.repairReport.scrapRateTop5') }}</div>
         </template>
         <div class="h-240px">
           <div ref="topScrapChartRef" class="w-full h-full" />
@@ -114,7 +114,7 @@
       <template #header>
         <div class="flex items-center justify-between w-full">
           <div>
-            <span class="text-18px font-bold text-gray-700">详细数据统计</span>
+            <span class="text-18px font-bold text-gray-700">{{ t('page.repairReport.detailedDataStatistics') }}</span>
             <span class="ml-8px text-12px text-gray-500">
               <n-tag  class="mt-6px text-10px text-gray-500" size="small" :bordered="false" round>
                 &nbsp;{{ recordCount }}&nbsp;
@@ -122,32 +122,32 @@
             </span>
           </div>
           <div class="flex items-center gap-12px">
-             
+
             <!-- <div class="flex items-center gap-8px">
               <Icon icon="ant-design:filter-outlined" class="text-gray-500 text-16px" />
-              <NSelect 
-                v-model:value="selectedStations" 
-                multiple 
-                filterable 
-                placeholder="搜索网点..." 
-                :options="stationOptions" 
+              <NSelect
+                v-model:value="selectedStations"
+                multiple
+                filterable
+                :placeholder="t('page.repairReport.searchStation')"
+                :options="stationOptions"
                 size="small"
-                style="width: 240px" 
+                style="width: 240px"
                 clearable
                 max-tag-count="responsive"
               />
             </div> -->
                  <div class="flex items-center gap-8px">
               <!-- <span class="text-13px text-gray-600">选择场地</span> -->
-              <NSelect 
-                v-model:value="selectedStations" 
-                multiple 
-                filterable 
-                placeholder="搜索场地..." 
-                :options="stationOptions" 
+              <NSelect
+                v-model:value="selectedStations"
+                multiple
+                filterable
+                :placeholder="t('page.repairReport.searchSite')"
+                :options="stationOptions"
                 :render-label="renderLabel"
                 size="small"
-                style="width: 240px" 
+                style="width: 240px"
                 clearable
                 max-tag-count="responsive"
               >
@@ -158,22 +158,22 @@
             </div>
 
             <!-- <div class="flex items-center gap-8px">
-              <span class="text-13px text-gray-600">筛选</span>
-              <NInput v-model:value="searchText" placeholder="搜索名称" clearable size="small" style="width: 160px">
+              <span class="text-13px text-gray-600">{{ t('page.repairReport.filter') }}</span>
+              <NInput v-model:value="searchText" :placeholder="t('page.repairReport.searchName')" clearable size="small" style="width: 160px">
                 <template #prefix>
                   <Icon icon="ant-design:search-outlined" class="text-gray-400" />
                 </template>
               </NInput>
             </div> -->
             <!-- <div class="flex items-center gap-8px">
-              <span class="text-13px text-gray-600">选择维度</span>
+              <span class="text-13px text-gray-600">{{ t('page.repairReport.selectDimension') }}</span>
               <NSelect v-model:value="selectedDimension" :options="dimensionOptions" style="width: 160px" />
             </div> -->
             <NButton @click="exportCSV" tertiary>
               <template #icon>
                 <Icon icon="ant-design:download-outlined" />
               </template>
-              导出
+              {{ t('page.repairReport.export') }}
             </NButton>
           </div>
         </div>
@@ -190,6 +190,9 @@ import * as echarts from 'echarts'
 import { Icon } from '@iconify/vue'
 import { fetchRepairStatistics } from '@/service/api/summary'
 import dayjs from 'dayjs'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
   startDate?: string
@@ -236,24 +239,24 @@ const trendChartData = ref<{ date: string; repair_count: number;  scrap_count: n
 const topReturnChartData = ref<{ name: string; return_rate: number }[]>([])
 const topScrapChartData = ref<{ name: string; scrap_rate: number }[]>([])
 const recordCount = ref<number>(0)
-  
+
 
 const dimensionOptions = [
-  { label: '场地维度', value: 'site' },
-  { label: '网点维度', value: 'station' }
+  { label: t('page.repairReport.siteDimension'), value: 'site' },
+  { label: t('page.repairReport.stationDimension'), value: 'station' }
 ]
 const selectedDimension = ref<'site' | 'station'>('station')
 const searchText = ref('')
 const selectedStations = ref<string[]>([])
 const pagination = ref({
   pageSize: 10,
-  prefix: ({ itemCount }: { itemCount: number | undefined }) => `共 ${itemCount ?? 0} 条`
+  prefix: ({ itemCount }: { itemCount: number | undefined }) => t('page.repairReport.totalItems', { count: itemCount ?? 0 })
 })
 
 const filteredData = computed(() => {
   let result = tableData.value
   if (searchText.value) {
-    result = result.filter(row => 
+    result = result.filter(row =>
       row.site.toLowerCase().includes(searchText.value.toLowerCase())
     )
   }
@@ -271,7 +274,7 @@ const stationOptions = computed(() => {
 const fetchData = async () => {
   const start = props.startDate
   const end = props.endDate
-  
+
   try {
     const { data, error } = await fetchRepairStatistics(selectedDimension.value, start, end)
     if (!error && data) {
@@ -280,12 +283,12 @@ const fetchData = async () => {
       topReturnChartData.value = data.return_rate_top5.reverse() || []
       topScrapChartData.value = data.scrap_rate_top5.reverse() || []
 
-      // Assuming data structure based on typical API patterns. 
+      // Assuming data structure based on typical API patterns.
       // If the API returns the list directly or wrapped.
       // Adjusting based on common patterns in this project (e.g., data.list or data directly)
       // Since I can't verify the exact response, I'll assume data is the list or data.list
       const list = Array.isArray(data) ? data : (data.station_stats || [])
-      
+
       // Map API response to RowItem if necessary
       // Assuming API returns fields matching RowItem or similar
       tableData.value = list.map((item: any) => ({
@@ -296,7 +299,7 @@ const fetchData = async () => {
         scrapCount: item.scrapCount || item.scrap_count || 0,
         scrapRate: item.scrapRate || item.scrap_rate || 0
       }))
-      
+
       recordCount.value = tableData.value.length
       // Update charts
       updateCharts()
@@ -328,8 +331,8 @@ function updateCharts() {
 watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchData)
 
 const columns = computed(() => [
-  { 
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, selectedDimension.value === 'site' ? '场地名称' : '网点名称'), 
+  {
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, selectedDimension.value === 'site' ? t('page.repairReport.siteName') : t('page.repairReport.stationName')),
     key: 'site',
     sorter: 'default' as const,
     render(row: RowItem) {
@@ -338,7 +341,7 @@ const columns = computed(() => [
         NTooltip,
         { placement: 'top', trigger: 'hover' },
         {
-          trigger: () => h('div', { 
+          trigger: () => h('div', {
             class: 'text-sm font-medium text-gray-900',
             style: {
               width: '200px',
@@ -352,16 +355,16 @@ const columns = computed(() => [
       )
     }
   },
-  { 
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '维修总数'), 
+  {
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.totalRepairs')),
     key: 'repairs',
     sorter: (row1: RowItem, row2: RowItem) => row1.repairs - row2.repairs,
     render(row: RowItem) {
       return h('div', { class: 'text-sm text-gray-500 text-right' }, row.repairs)
     }
   },
-  { 
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '二返数量'), 
+  {
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.secondRepairCount')),
     key: 'returnCount',
     sorter: (row1: RowItem, row2: RowItem) => row1.returnCount - row2.returnCount,
     render(row: RowItem) {
@@ -369,7 +372,7 @@ const columns = computed(() => [
     }
   },
   {
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '二返率'), 
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.secondRepairRate')),
     key: 'returnRate',
     sorter: (row1: RowItem, row2: RowItem) => row1.returnRate - row2.returnRate,
     render(row: RowItem) {
@@ -387,8 +390,8 @@ const columns = computed(() => [
       ])
     }
   },
-  { 
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '报废数量'), 
+  {
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.scrappedCount')),
     key: 'scrapCount',
     sorter: (row1: RowItem, row2: RowItem) => row1.scrapCount - row2.scrapCount,
     render(row: RowItem) {
@@ -396,7 +399,7 @@ const columns = computed(() => [
     }
   },
   {
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '报废率'), 
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.scrapRate')),
     key: 'scrapRate',
     sorter: (row1: RowItem, row2: RowItem) => row1.scrapRate - row2.scrapRate,
     render(row: RowItem) {
@@ -431,7 +434,7 @@ function buildChart() {
       bottom: dates.length > 20 ? '30%' : '25%' // 增加底部空间，确保旋转标签完全可见
     },
     legend: {
-      data: ['维修数', '二返数', '报废数'],
+      data: [t('page.repairReport.repairCount'), t('page.repairReport.secondRepairCountTrend'), t('page.repairReport.scrapCountTrend')],
       icon: 'circle',
       right: 10,
       top: -5,
@@ -443,13 +446,13 @@ function buildChart() {
       type: 'category',
       data: dates,
       boundaryGap: false,
-      axisLine: { 
+      axisLine: {
         show: true,
         lineStyle: {
           color: '#e5e7eb'
         }
       },
-      axisTick: { 
+      axisTick: {
         show: true,
         lineStyle: {
           color: '#e5e7eb'
@@ -504,7 +507,7 @@ function buildChart() {
   },
   series: [
     {
-      name: '维修数',
+      name: t('page.repairReport.repairCount'),
       type: 'line',
       data: trendChartData.value.map(d => d.repair_count),
       smooth: true,
@@ -526,7 +529,7 @@ function buildChart() {
       }
     },
     {
-      name: '报废数',
+      name: t('page.repairReport.scrapCountTrend'),
       type: 'line',
       data: trendChartData.value.map(d => d.scrap_count),
       smooth: true,
@@ -624,7 +627,7 @@ function buildTopCharts() {
     },
     series: [
       {
-        name: '二返率',
+        name: t('page.repairReport.secondRepairRate'),
         type: 'bar',
         data: topReturnChartData.value.map(d => d.return_rate),
         itemStyle: {
@@ -641,9 +644,9 @@ function buildTopCharts() {
     //   xAxis: { type: 'value' },
     //   yAxis: { type: 'category', data: tableData.value.map(i => i.site).slice(0, 5), axisLabel: { interval: 0 } },
     //   series: [
-    //     { 
-    //       type: 'bar', 
-    //       data: tableData.value.map(i => i.returnRate).slice(0, 5), 
+    //     {
+    //       type: 'bar',
+    //       data: tableData.value.map(i => i.returnRate).slice(0, 5),
     //       itemStyle: { color: '#3b82f6' },
     //       label: { show: true, position: 'right', formatter: '{c}%' }
     //     }
@@ -711,7 +714,7 @@ function buildTopCharts() {
     },
     series: [
       {
-        name: '报废率',
+        name: t('page.repairReport.scrapRate'),
         type: 'bar',
         data: topScrapChartData.value.map(d => d.scrap_rate),
         itemStyle: {
@@ -728,9 +731,9 @@ function buildTopCharts() {
     //   xAxis: { type: 'value' },
     //   yAxis: { type: 'category', data: tableData.value.map(i => i.site).slice(0, 5), axisLabel: { interval: 0 } },
     //   series: [
-    //     { 
-    //       type: 'bar', 
-    //       data: tableData.value.map(i => i.scrapRate).slice(0, 5), 
+    //     {
+    //       type: 'bar',
+    //       data: tableData.value.map(i => i.scrapRate).slice(0, 5),
     //       itemStyle: { color: '#ef4444' },
     //       label: { show: true, position: 'right', formatter: '{c}%' }
     //     }
@@ -756,7 +759,7 @@ function disposeChart() {
 }
 
 function exportCSV() {
-  const headers = ['网点名称','维修总数','二返数量','二返率(%)','报废数量','报废率(%)']
+  const headers = [t('page.repairReport.stationName'), t('page.repairReport.totalRepairs'), t('page.repairReport.secondRepairCount'), t('page.repairReport.secondRepairRatePercent'), t('page.repairReport.scrappedCount'), t('page.repairReport.scrapRatePercent')]
   const rows = tableData.value.map(r => [r.site, r.repairs, r.returnCount, r.returnRate.toFixed(2), r.scrapCount, r.scrapRate.toFixed(2)])
   const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
@@ -777,7 +780,7 @@ onMounted(() => {
     topReturnChart?.resize()
     topScrapChart?.resize()
   })
-  
+
 })
 
 onUnmounted(() => {

@@ -6,6 +6,9 @@ import { fetchUser, updateUser, createUser, fetchCompanies, fetchExternalUsers, 
 import { roleTagMap, roleRecord, userStatusMap, userStatusRecord } from "@/constants/business"
 import { REG_EMAIL } from '@/constants/reg';
 import { useAuthStore } from '@/store/modules/auth';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 const authStore = useAuthStore();
 const isAdmin = authStore.userInfo?.roles?.includes('1') ?? false;
 
@@ -70,7 +73,7 @@ const pagination = ref<PaginationProps>({
   showSizePicker: true,
   pageSizes: [10, 20, 50, 100],
   prefix({ itemCount }) {
-    return `共 ${itemCount} 条`
+    return t('page.users.paginationPrefix', { count: itemCount })
   },
   onChange: page => {
     pagination.value.page = page;
@@ -178,35 +181,35 @@ const handleSave = async () => {
   if (!currentRole || currentRole === 1 || currentRole === 2 || currentRole === 5) {
     console.log("当前角色不需要选择公司:", currentRole);
   }else if (!editForm.value.assigned_company_id || editForm.value.assigned_company_id.length === 0) {
-      message.error('请选择所属公司');
+      message.error(t('page.users.validation.requireCompany'));
       return;
     }
      if (!editForm.value.username) {
-      message.error('请输入昵称(登陆账号)');
+      message.error(t('page.users.validation.requireUsername'));
       return;
     }
     if (!editForm.value.real_name) {
-      message.error('请输入真实姓名');
+      message.error(t('page.users.validation.requireRealName'));
       return;
     }
     if(!editForm.value.password && dialogMode.value === 'add') {
-      message.error('请输入密码');
+      message.error(t('page.users.validation.requirePassword'));
       return;
     }
     if (!editForm.value.contact_phone) {
-      message.error('请输入联系电话');
+      message.error(t('page.users.validation.requirePhone'));
       return;
     }
     if (!editForm.value.email) {
-      message.error('请输入邮箱');
+      message.error(t('page.users.validation.requireEmail'));
       return false;
     }
     if (!REG_EMAIL.test(editForm.value.email.trim())) {
-      message.error('邮箱格式不正确');
+      message.error(t('page.users.validation.invalidEmail'));
       return false;
     }
     if (dialogMode.value === 'add' && !editForm.value.password) {
-      message.error('请输入密码');
+      message.error(t('page.users.validation.requirePassword'));
       return;
     }
 
@@ -228,28 +231,28 @@ const handleSave = async () => {
       const res = await createUser(submitData);
       console.log("addUser",res)
       if (res.response?.data?.msg === "Operation successful") {
-        message.success('添加成功！');
+        message.success(t('page.users.addSuccess'));
         showModal.value = false;
         fetchData();
       }
       //  else {
-      //   message.error('添加失败: ' + res.response?.data?.msg);
+      //   message.error(t('page.users.addFailed') + ': ' + res.response?.data?.msg);
       // }
     } else {
 
       const res = await updateUser(editForm.value.id!, submitData);
       // console.log("updateUser",res)
       if (res.response?.data?.msg === "Operation successful") {
-        message.success('修改成功！');
+        message.success(t('page.users.editSuccess'));
         showModal.value = false;
         fetchData();
       }
       // else {
-      //   message.error('修改失败: ' + res.response?.data?.msg);
+      //   message.error(t('page.users.editFailed') + ': ' + res.response?.data?.msg);
       // }
     }
   } catch (err) {
-    message.error(dialogMode.value === 'add' ? '添加失败' : '修改失败');
+    message.error(dialogMode.value === 'add' ? t('page.users.addFailed') : t('page.users.editFailed'));
   } finally {
 
   }
@@ -259,55 +262,55 @@ const handleSave = async () => {
 const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<User> = [
   {
-    title: () => renderHeaderTitle('昵称'),
+    title: () => renderHeaderTitle(t('page.users.columns.username')),
     key: 'username',
     width: 200,
     render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.username || '')
   },
   {
-    title: () => renderHeaderTitle('真实姓名'),
+    title: () => renderHeaderTitle(t('page.users.columns.realName')),
     key: 'real_name',
     width: 200,
     render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.real_name || '')
   },
   {
-    title: () => renderHeaderTitle('角色类型'),
+    title: () => renderHeaderTitle(t('page.users.columns.roleType')),
     key: 'role',
     render: (row: any) => {
-      const label = roleRecord[row.role] || '未知';
+      const label = roleRecord[row.role] || t('page.users.unknown');
       return h(NTag, { class: 'text-sm', size:'small', type: roleTagMap[row.role] }, () => label)
     }
   },
   {
-    title: () => renderHeaderTitle('联系电话'),
+    title: () => renderHeaderTitle(t('page.users.columns.phone')),
     key: 'contact_phone',
     render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.contact_phone || '')
   },
   {
-    title: () => renderHeaderTitle('邮箱'),
+    title: () => renderHeaderTitle(t('page.users.columns.email')),
     key: 'email',
     render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.email || '')
   },
   {
-    title: () => renderHeaderTitle('所属公司'),
+    title: () => renderHeaderTitle(t('page.users.columns.company')),
     key: 'company_info',
-    render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.company_info?.[0]?.name || '未知')
+    render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.company_info?.[0]?.name || t('page.users.unknown'))
   },
   {
-    title: () => renderHeaderTitle('入职时间'),
+    title: () => renderHeaderTitle(t('page.users.columns.startDate')),
     key: 'start_date',
     render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.start_date || '')
   },
   {
-    title: () => renderHeaderTitle('状态'),
+    title: () => renderHeaderTitle(t('page.users.columns.status')),
     key: 'status',
     render: (row: any) => {
-      const label = userStatusRecord[row.status] || '未知';
+      const label = userStatusRecord[row.status] || t('page.users.unknown');
       return h(NTag, { class: 'text-sm', size:'small', type: userStatusMap[row.status] }, () => label)
     }
   },
   {
-    title: () => renderHeaderTitle('操作'),
+    title: () => renderHeaderTitle(t('page.users.columns.actions')),
     key: 'actions',
     align: 'center',
     render: (row: User) => {
@@ -321,7 +324,7 @@ const columns: DataTableColumns<User> = [
               size:'small',
               onClick: () => handleOpenEdit(row)
             },
-            { default: () => '编辑' }
+            { default: () => t('page.users.actions.edit') }
           )
         : null
     }
@@ -349,10 +352,10 @@ const fetchData = async () => {
       pagination.value.page =  data.pagination.page;
       pagination.value.pageSize =  data.pagination.page_size;
     }else{
-      message.error(`加载失败: ${error}`);
+      message.error(t('page.users.loadFailed', { error }));
     }
   } catch (err) {
-    message.error(`加载失败${err}`);
+    message.error(t('page.users.loadFailed', { error: err }));
   } finally {
     loading.value = false;
   }
@@ -402,12 +405,12 @@ const getCompanys = async (role?: number) => {
       // 清空当前选中的公司，因为角色变了
       editForm.value.assigned_company_id = [];
     } else {
-      message.error(`加载公司数据失败: ${error}`);
+      message.error(t('page.users.fetchCompanyFailed', { error }));
       companyOptions.value = [];
     }
   } catch (err) {
     console.error("获取公司数据异常:", err);
-    message.error(`加载公司数据失败: ${err}`);
+    message.error(t('page.users.fetchCompanyFailed', { error: err }));
     companyOptions.value = [];
   }
 };
@@ -457,7 +460,7 @@ const fetchExternalUserList = async () => {
       }));
     }
   } catch (e) {
-    message.error('获取外部用户列表失败');
+    message.error(t('page.users.fetchExternalFailed'));
   } finally {
     loadingExternalUsers.value = false;
   }
@@ -512,18 +515,18 @@ const getBindCompanys = async (val: number) => {
 
 const handleBindSave = async () => {
   if (!bindForm.value.admin_id) {
-    message.error('请选择需要授权的运营用户');
+    message.error(t('page.users.validation.requireExternalUser'));
     return;
   }
   if (!bindForm.value.role) {
-    message.error('请选择授权角色');
+    message.error(t('page.users.validation.requireRole'));
     return;
   }
 
   const role = bindForm.value.role;
   if (role !== 1 && role !== 2 && role !== 5) {
     if (!bindForm.value.assigned_company_id || bindForm.value.assigned_company_id.length === 0) {
-      message.error('请选择所属公司');
+      message.error(t('page.users.validation.requireCompany'));
       return;
     }
   }
@@ -540,12 +543,12 @@ const handleBindSave = async () => {
 
     const { error } = await bindExternalUser(submitData);
     if (!error) {
-      message.success('授权成功！');
+      message.success(t('page.users.bindSuccess'));
       showBindModal.value = false;
       fetchData();
     }
   } catch(e) {
-    message.error('授权失败');
+    message.error(t('page.users.bindFailed'));
   }
 };
 
@@ -556,13 +559,13 @@ const handleBindSave = async () => {
     <!-- 查询框 -->
     <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
       <div style="display: flex; gap: 8px;">
-        <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenBind"> + 授权用户</NButton>
-        <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenAdd"> + 新增人员</NButton>
+        <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenBind">{{ t('page.users.actions.bindUser') }}</NButton>
+        <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenAdd">{{ t('page.users.actions.addUser') }}</NButton>
       </div>
 
       <div style="display: flex; align-items: center; gap: 12px;">
-        <NSelect v-model:value="searchRole" :options="modelOptions"  placeholder="角色筛选" clearable />
-        <NInput v-model:value="searchSerial" @change="fetchData" placeholder="请输入姓名" clearable style="width: 240px" />
+        <NSelect v-model:value="searchRole" :options="modelOptions"  :placeholder="t('page.users.search.rolePlaceholder')" clearable />
+        <NInput v-model:value="searchSerial" @change="fetchData" :placeholder="t('page.users.search.namePlaceholder')" clearable style="width: 240px" />
       </div>
     </div>
 
@@ -575,76 +578,72 @@ const handleBindSave = async () => {
   v-model:show="showModal"
   style="width: 700px"
   preset="card"
-  :title="dialogMode==='add' ? '添加用户' : '编辑用户'"
+  :title="dialogMode==='add' ? t('page.users.modal.addTitle') : t('page.users.modal.editTitle')"
 >
   <NForm :model="editForm" label-width="100">
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-      <NFormItem label="昵称( 登陆账号)" required  v-if="dialogMode==='add'">
-        <NInput v-model:value="editForm.username" placeholder="请输入昵称" />
+      <NFormItem :label="t('page.users.modal.usernameLabel')" required  v-if="dialogMode==='add'">
+        <NInput v-model:value="editForm.username" :placeholder="t('page.users.modal.usernamePlaceholder')" />
       </NFormItem>
-       <NFormItem label="昵称( 登陆账号)"   v-if="dialogMode==='edit'">
-        <NInput v-model:value="editForm.username" disabled placeholder="请输入昵称" />
+       <NFormItem :label="t('page.users.modal.usernameLabel')"   v-if="dialogMode==='edit'">
+        <NInput v-model:value="editForm.username" disabled :placeholder="t('page.users.modal.usernamePlaceholder')" />
       </NFormItem>
-      <NFormItem label="真实姓名" required>
-        <NInput v-model:value="editForm.real_name" placeholder="请输入真实姓名" />
+      <NFormItem :label="t('page.users.modal.realNameLabel')" required>
+        <NInput v-model:value="editForm.real_name" :placeholder="t('page.users.modal.realNamePlaceholder')" />
       </NFormItem>
-      <NFormItem label="密码" required v-if="dialogMode==='add'">
-        <NInput v-model:value="editForm.password" type="password" placeholder="请输入密码" />
+      <NFormItem :label="t('page.users.modal.passwordLabel')" required v-if="dialogMode==='add'">
+        <NInput v-model:value="editForm.password" type="password" :placeholder="t('page.users.modal.passwordPlaceholder')" />
       </NFormItem>
-      <NFormItem label="密码（留空～密码保持不变）" v-else>
-        <NInput v-model:value="editForm.password" type="password" placeholder="请输入密码" />
+      <NFormItem :label="t('page.users.modal.passwordEditLabel')" v-else>
+        <NInput v-model:value="editForm.password" type="password" :placeholder="t('page.users.modal.passwordPlaceholder')" />
       </NFormItem>
 
-      <NFormItem label="角色类型" required>
+      <NFormItem :label="t('page.users.modal.roleLabel')" required>
         <NSelect
           v-model:value="editForm.role"
           :options="modelOptions"
-          placeholder="请选择角色类型"
+          :placeholder="t('page.users.modal.rolePlaceholder')"
           @update:value="getCompanys"
           clearable
         />
       </NFormItem>
 
-      <NFormItem label="联系电话" required>
-        <NInput v-model:value="editForm.contact_phone" placeholder="请输入联系电话" />
+      <NFormItem :label="t('page.users.modal.phoneLabel')" required>
+        <NInput v-model:value="editForm.contact_phone" :placeholder="t('page.users.modal.phonePlaceholder')" />
       </NFormItem>
 
-      <NFormItem label="邮箱" required>
-        <NInput v-model:value="editForm.email" placeholder="请输入邮箱" />
+      <NFormItem :label="t('page.users.modal.emailLabel')" required>
+        <NInput v-model:value="editForm.email" :placeholder="t('page.users.modal.emailPlaceholder')" />
       </NFormItem>
 
         <NFormItem
           v-if="editForm.role !== 1 && editForm.role !== 2"
-          label="所属公司"
+          :label="t('page.users.modal.companyLabel')"
         >
           <NSelect
             v-model:value="editForm.assigned_company_id"
             :options="companyOptions"
-            placeholder="请选择公司"
+            :placeholder="t('page.users.modal.companyPlaceholder')"
             multiple
             clearable
           />
-          <!-- <NInput v-model:value="editForm.Company" placeholder="请输入所属公司" /> -->
         </NFormItem>
 
-      <NFormItem label="用户状态" required>
+      <NFormItem :label="t('page.users.modal.statusLabel')" required>
         <NSelect
           v-model:value="editForm.status"
           :options="statusOptions"
-          placeholder="请选择状态"
+          :placeholder="t('page.users.modal.statusPlaceholder')"
         />
       </NFormItem>
 
-      <!-- <NFormItem label="权限分配"> -->
-        <!-- <NSelect v-model:value="editForm.role" placeholder="请输入权限分配" /> -->
-      <!-- </NFormItem> -->
     </div>
   </NForm>
 
   <template #footer>
     <NSpace>
-      <NButton size="medium" type="primary" @click="handleSave">保存</NButton>
-      <NButton size="medium" @click="showModal = false">取消</NButton>
+      <NButton size="medium" type="primary" @click="handleSave">{{ t('page.users.modal.save') }}</NButton>
+      <NButton size="medium" @click="showModal = false">{{ t('page.users.modal.cancel') }}</NButton>
     </NSpace>
   </template>
 </NModal>
@@ -654,26 +653,26 @@ const handleBindSave = async () => {
   v-model:show="showBindModal"
   style="width: 500px"
   preset="card"
-  title="授权用户"
+  :title="t('page.users.modal.bindTitle')"
 >
   <NForm :model="bindForm" label-width="100">
-    <NFormItem label="授权用户" required>
+    <NFormItem :label="t('page.users.modal.externalUserLabel')" required>
       <NSelect
         v-model:value="bindForm.admin_id"
         :options="externalUserOptions"
         :loading="loadingExternalUsers"
-        placeholder="请选择需要授权的用户"
+        :placeholder="t('page.users.modal.externalUserPlaceholder')"
         filterable
         clearable
         @update:value="handleExternalUserChange"
       />
     </NFormItem>
 
-    <NFormItem label="授权角色" required>
+    <NFormItem :label="t('page.users.modal.roleLabel')" required>
       <NSelect
         v-model:value="bindForm.role"
         :options="modelOptions"
-        placeholder="请选择角色类型"
+        :placeholder="t('page.users.modal.rolePlaceholder')"
         @update:value="getBindCompanys"
         clearable
       />
@@ -681,13 +680,13 @@ const handleBindSave = async () => {
 
     <NFormItem
       v-if="bindForm.role && bindForm.role !== 1 && bindForm.role !== 2 && bindForm.role !== 5"
-      label="所属公司"
+      :label="t('page.users.modal.companyLabel')"
       required
     >
       <NSelect
         v-model:value="bindForm.assigned_company_id"
         :options="companyOptions"
-        placeholder="请选择公司"
+        :placeholder="t('page.users.modal.companyPlaceholder')"
         multiple
         clearable
       />
@@ -696,8 +695,8 @@ const handleBindSave = async () => {
 
   <template #footer>
     <NSpace justify="end">
-      <NButton size="medium" type="primary" @click="handleBindSave">确认授权</NButton>
-      <NButton size="medium" @click="showBindModal = false">取消</NButton>
+      <NButton size="medium" type="primary" @click="handleBindSave">{{ t('page.users.modal.confirmBind') }}</NButton>
+      <NButton size="medium" @click="showBindModal = false">{{ t('page.users.modal.cancel') }}</NButton>
     </NSpace>
   </template>
 </NModal>

@@ -3,7 +3,7 @@
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-16px">
       <NCard size="medium">
         <div class="flex items-center justify-between mb-12px">
-          <div class="text-14px text-gray-600">总维修数</div>
+          <div class="text-14px text-gray-600">{{ $t('page.repairReport.totalRepairs') }}</div>
            <n-tag size="large" :bordered="false" type="primary" style="margin-right: -10px;">
             <Icon icon="ant-design:file-text-outlined" width="20" height="20" />
            </n-tag>
@@ -23,7 +23,7 @@
 
       <NCard size="medium">
         <div class="flex items-center justify-between mb-12px">
-          <div class="text-14px text-gray-600">已修复</div>
+          <div class="text-14px text-gray-600">{{ $t('page.repairReport.repaired') }}</div>
            <n-tag size="large" :bordered="false" type="success" style="margin-right: -10px;">
             <Icon icon="ant-design:check-circle-outlined" width="20" height="20" />
            </n-tag>
@@ -43,7 +43,7 @@
 
       <NCard size="medium">
         <div class="flex items-center justify-between mb-12px">
-          <div class="text-14px text-gray-600">待修复</div>
+          <div class="text-14px text-gray-600">{{ $t('page.repairReport.pendingRepair') }}</div>
            <n-tag size="large" :bordered="false" type="warning" style="margin-right: -10px;">
             <Icon icon="ant-design:clock-circle-outlined" width="20" height="20" />
            </n-tag>
@@ -63,7 +63,7 @@
 
       <NCard size="medium">
         <div class="flex items-center justify-between mb-12px">
-          <div class="text-14px text-gray-600">报废数量</div>
+          <div class="text-14px text-gray-600">{{ $t('page.repairReport.scrappedCount') }}</div>
            <n-tag size="large" :bordered="false" type="error" style="margin-right: -10px;">
             <Icon icon="ant-design:close-circle-outlined" width="20" height="20" />
            </n-tag>
@@ -83,7 +83,7 @@
 
       <NCard size="medium">
         <div class="flex items-center justify-between mb-12px">
-          <div class="text-14px text-gray-600">修复率</div>
+          <div class="text-14px text-gray-600">{{ $t('page.repairReport.repairRate') }}</div>
            <n-tag size="large" :bordered="false" type="success" style="margin-right: -10px;">
             <Icon icon="ant-design:rise-outlined" width="20" height="20" />
            </n-tag>
@@ -103,8 +103,8 @@
 
       <NCard size="medium">
         <div class="flex items-center justify-between mb-12px">
-          <div class="text-14px text-gray-600">报废率</div>
-            <n-tag size="large" :bordered="false" type="error" style="margin-right: -10px;">
+          <div class="text-14px text-gray-600">{{ $t('page.repairReport.scrapRate') }}</div>
+           <n-tag size="large" :bordered="false" type="error" style="margin-right: -10px;">
             <Icon icon="ant-design:delete-outlined" width="20" height="20" />
            </n-tag>
         </div>
@@ -125,7 +125,7 @@
     <div class="grid grid-cols-1 md:grid-cols-1 gap-16px">
       <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">趋势分析 (Trend Analysis)</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">{{ $t('page.repairReport.trendAnalysis') }}</div>
         </template>
         <div class="h-320px">
           <div ref="chartRef" class="w-full h-full" />
@@ -137,7 +137,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
        <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">机型故障占比</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">{{ $t('page.repairReport.machineFaultRate') }}</div>
         </template>
         <div class="h-320px">
           <div ref="modelChartRef" class="w-full h-full" />
@@ -145,7 +145,7 @@
       </NCard>
       <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">损坏部件故障占比</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">{{ $t('page.repairReport.componentFaultRate') }}</div>
         </template>
         <div class="h-240px">
           <div ref="topComponentChartRef" class="w-full h-full" />
@@ -156,7 +156,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
        <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">散热模式故障占比</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">{{ $t('page.repairReport.coolingModeFaultRate') }}</div>
         </template>
         <div class="h-320px">
           <div ref="heatModeChartRef" class="w-full h-full" />
@@ -164,7 +164,7 @@
        </NCard>
        <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">区域故障机占比</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">{{ $t('page.repairReport.regionFaultMachineRate') }}</div>
         </template>
         <div class="h-320px">
           <div ref="countryChartRef" class="w-full h-full" />
@@ -175,7 +175,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-16px">
       <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">二返修率 (Top 5)</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">{{ $t('page.repairReport.secondRepairRateTop5') }}</div>
         </template>
         <div class="h-240px">
           <div ref="topReturnChartRef" class="w-full h-full" />
@@ -183,7 +183,7 @@
       </NCard>
       <NCard size="large">
         <template #header>
-          <div class="text-14px font-bold text-gray-700 mb-4">报废率 (Top 5)</div>
+          <div class="text-14px font-bold text-gray-700 mb-4">{{ $t('page.repairReport.scrapRateTop5') }}</div>
         </template>
         <div class="h-240px">
           <div ref="topScrapChartRef" class="w-full h-full" />
@@ -195,13 +195,13 @@
       <!-- <template #header> -->
         <div class="flex items-center justify-between w-full p-6">
           <div>
-            <span class="text-18px font-bold text-gray-700">详细数据统计</span>
+            <span class="text-18px font-bold text-gray-700">{{ $t('page.repairReport.detailedDataStatistics') }}</span>
             <span class="ml-8px text-12px text-gray-500"><n-tag class="text-10px text-gray-500" size="small" :bordered="false" round>{{ recordCount }}</n-tag></span>
           </div>
           <div class="flex items-center gap-12px">
             <!-- <div class="flex items-center gap-8px">
-              <span class="text-13px text-gray-600">筛选</span>
-              <NInput v-model:value="searchText" placeholder="搜索名称" clearable size="small" style="width: 160px">
+              <span class="text-13px text-gray-600">{{ $t('page.repairReport.filter') }}</span>
+              <NInput v-model:value="searchText" :placeholder="$t('page.repairReport.searchName')" clearable size="small" style="width: 160px">
                 <template #prefix>
                   <Icon icon="ant-design:search-outlined" class="text-gray-400" />
                 </template>
@@ -213,7 +213,7 @@
                 v-model:value="selectedSites"
                 multiple
                 filterable
-                placeholder="搜索场地..."
+                :placeholder="$t('page.repairReport.searchSite')"
                 :options="siteOptions"
                 :render-label="renderLabel"
                 size="small"
@@ -227,14 +227,14 @@
               </NSelect>
             </div>
             <!-- <div class="flex items-center gap-8px">
-              <span class="text-13px text-gray-600">选择维度</span>
+              <span class="text-13px text-gray-600">{{ $t('page.repairReport.selectDimension') }}</span>
               <NSelect v-model:value="selectedDimension" :options="dimensionOptions" style="width: 160px" />
             </div> -->
             <NButton @click="exportCSV" tertiary>
               <template #icon>
                 <Icon icon="ant-design:download-outlined" />
               </template>
-              导出
+              {{ $t('page.repairReport.export') }}
             </NButton>
           </div>
         </div>
@@ -249,8 +249,12 @@ import { ref, onMounted, onUnmounted, h, watch, computed } from 'vue'
 import { NCard, NButton, NSelect, NDataTable, NTag, NInput, NCheckbox, NProgress, NTooltip } from 'naive-ui'
 import * as echarts from 'echarts'
 import { Icon } from '@iconify/vue'
+
 import { fetchRepairStatistics, fetchMachineModelStatistics, fetchRepairComponentsStatistics, fetchHeatDissModeStatistics, fetchCountryStatistics } from '@/service/api/summary'
 import dayjs from 'dayjs'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
   startDate?: string
@@ -301,7 +305,7 @@ const searchText = ref('')
 const selectedSites = ref<string[]>([])
 const pagination = ref({
   pageSize: 10,
-  prefix: ({ itemCount }: { itemCount: number | undefined }) => `共 ${itemCount ?? 0} 条`
+  prefix: ({ itemCount }: { itemCount: number | undefined }) => t('page.repairReport.totalItems', { count: itemCount ?? 0 })
 })
 
 const filteredData = computed(() => {
@@ -337,8 +341,8 @@ const renderLabel = (option: { label: string, value: string }) => {
 }
 
 const fetchData = async () => {
-  const start = props.startDate
-  const end = props.endDate
+  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
+  const end = props.endDate || dayjs().format('YYYY-MM-DD')
 
   try {
     const { data, error } = await fetchRepairStatistics(selectedDimension.value, start, end)
@@ -395,8 +399,8 @@ const fetchData = async () => {
 }
 
 const fetchModelTypeData = async () => {
-    const start = props.startDate
-  const end = props.endDate
+    const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
+  const end = props.endDate || dayjs().format('YYYY-MM-DD')
   try {
     const { data, error } = await fetchMachineModelStatistics(selectedDimension.value, start, end)
     if (!error && data) {
@@ -410,8 +414,8 @@ const fetchModelTypeData = async () => {
 }
 
 const fetchHeatModeData = async () => {
-  const start = props.startDate
-  const end = props.endDate
+  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
+  const end = props.endDate || dayjs().format('YYYY-MM-DD')
   try {
     const { data, error } = await fetchHeatDissModeStatistics(selectedDimension.value, start, end)
     if (!error && data) {
@@ -436,8 +440,8 @@ const fetchHeatModeData = async () => {
 }
 
 const fetchCountryData = async () => {
-  const start = props.startDate
-  const end = props.endDate
+  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
+  const end = props.endDate || dayjs().format('YYYY-MM-DD')
   try {
     const { data, error } = await fetchCountryStatistics(selectedDimension.value, start, end)
     if (!error && data) {
@@ -462,8 +466,8 @@ const fetchCountryData = async () => {
 }
 
 const fetchComponentData = async () => {
-  const start = props.startDate
-  const end = props.endDate
+  const start = props.startDate || dayjs().subtract(60, 'day').format('YYYY-MM-DD')
+  const end = props.endDate || dayjs().format('YYYY-MM-DD')
   try {
     const { data, error } = await fetchRepairComponentsStatistics(selectedDimension.value, start, end)
     if (!error && data) {
@@ -511,7 +515,7 @@ watch(() => [props.startDate, props.endDate, selectedDimension.value], fetchCoun
 
 const columns = computed(() => [
   {
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, selectedDimension.value === 'site' ? '场地名称' : '网点名称'),
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, selectedDimension.value === 'site' ? t('page.repairReport.siteName') : t('page.repairReport.stationName')),
     key: 'site',
     sorter: 'default' as const,
     render(row: RowItem) {
@@ -535,7 +539,7 @@ const columns = computed(() => [
     }
   },
   {
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '维修总数'),
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.totalRepairs')),
     key: 'repairs',
     sorter: (row1: RowItem, row2: RowItem) => row1.repairs - row2.repairs,
     render(row: RowItem) {
@@ -543,7 +547,7 @@ const columns = computed(() => [
     }
   },
   {
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '二返数量'),
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.secondRepairCount')),
     key: 'returnCount',
     sorter: (row1: RowItem, row2: RowItem) => row1.returnCount - row2.returnCount,
     render(row: RowItem) {
@@ -551,7 +555,7 @@ const columns = computed(() => [
     }
   },
   {
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '二返率'),
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.secondRepairRate')),
     key: 'returnRate',
     sorter: (row1: RowItem, row2: RowItem) => row1.returnRate - row2.returnRate,
     render(row: RowItem) {
@@ -570,7 +574,7 @@ const columns = computed(() => [
     }
   },
   {
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '报废数量'),
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.scrappedCount')),
     key: 'scrapCount',
     sorter: (row1: RowItem, row2: RowItem) => row1.scrapCount - row2.scrapCount,
     render(row: RowItem) {
@@ -578,7 +582,7 @@ const columns = computed(() => [
     }
   },
   {
-    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, '报废率'),
+    title: () => h('div', { class: 'px-6  text-xs font-medium text-gray-500' }, t('page.repairReport.scrapRate')),
     key: 'scrapRate',
     sorter: (row1: RowItem, row2: RowItem) => row1.scrapRate - row2.scrapRate,
     render(row: RowItem) {
@@ -612,7 +616,7 @@ function buildChart() {
       bottom: dates.length > 20 ? '30%' : '25%' // 增加底部空间，确保旋转标签完全可见
     },
     legend: {
-      data: ['维修数', '二返数', '报废数'],
+      data: [t('page.repairReport.repairCount'), t('page.repairReport.secondRepairCountTrend'), t('page.repairReport.scrapCountTrend')],
       icon: 'circle',
       right: 10,
       top: -5,
@@ -685,7 +689,7 @@ function buildChart() {
   },
   series: [
     {
-      name: '维修数',
+      name: t('page.repairReport.repairCount'),
       type: 'line',
       data: trendChartData.value.map(d => d.repair_count),
       smooth: true,
@@ -707,7 +711,7 @@ function buildChart() {
       }
     },
     {
-      name: '报废数',
+      name: t('page.repairReport.scrapCountTrend'),
       type: 'line',
       data: trendChartData.value.map(d => d.scrap_count),
       smooth: true,
@@ -787,12 +791,14 @@ function buildTopComponentChart() {
       borderRadius: 8,
       formatter: (params: any) => {
         const param = params[0]
-        return `${param.name}<br/>${param.marker} 维修次数: ${param.value}`
+        const seriesName = param.seriesName === t('page.repairReport.repairCountLabel') ? t('page.repairReport.repairCountLabel') : param.seriesName
+        return `${param.name}<br/>${param.marker} ${seriesName}: ${param.value}`
       }
     },
     series: [
       {
-        name: '维修次数',
+        // name: $t('page.repairReport.repairCount'),
+         name: t('page.repairReport.repairCountLabel'),
         type: 'bar',
         data: topComponentChartData.value.map(d => d.count),
         itemStyle: {
@@ -868,7 +874,7 @@ function buildTopCharts() {
         },
         series: [
           {
-            name: '二返率',
+            name: t('page.repairReport.secondRepairRate'),
             type: 'bar',
             data: topReturnChartData.value.map(d => d.return_rate),
             itemStyle: {
@@ -955,9 +961,9 @@ function buildTopCharts() {
       }
     },
     series: [
-      {
-        name: '报废率',
-        type: 'bar',
+          {
+            name: t('page.repairReport.scrapRate'),
+            type: 'bar',
         data: topScrapChartData.value.map(d => d.scrap_rate),
         itemStyle: {
           color: '#dc2626',
@@ -1002,7 +1008,7 @@ function buildModelChart() {
     },
     series: [
       {
-        name: '机型故障占比',
+        name: t('page.repairReport.machineFaultRate'),
         type: 'pie',
         radius: ['40%', '70%'],
         center: ['35%', '50%'],
@@ -1049,7 +1055,7 @@ function buildHeatModeChart() {
     },
     series: [
       {
-        name: '散热模式故障占比',
+        name: t('page.repairReport.coolingModeFaultRate'),
         type: 'pie',
         radius: ['40%', '70%'],
         center: ['35%', '50%'],
@@ -1096,7 +1102,7 @@ function buildCountryChart() {
     },
     series: [
       {
-        name: '国家故障机占比',
+        name: t('page.repairReport.regionFaultMachineRate'),
         type: 'pie',
         radius: ['40%', '70%'],
         center: ['35%', '50%'],
@@ -1158,7 +1164,7 @@ function disposeChart() {
 }
 
 function exportCSV() {
-  const headers = ['场地名称','维修总数','二返数量','二返率(%)','报废数量','报废率(%)']
+  const headers = [t('page.repairReport.siteName'), t('page.repairReport.totalRepairs'), t('page.repairReport.secondRepairCount'), t('page.repairReport.secondRepairRatePercent'), t('page.repairReport.scrappedCount'), t('page.repairReport.scrapRatePercent')]
   const rows = tableData.value.map(r => [r.site, r.repairs, r.returnCount, r.returnRate.toFixed(2), r.scrapCount, r.scrapRate.toFixed(2)])
   const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })

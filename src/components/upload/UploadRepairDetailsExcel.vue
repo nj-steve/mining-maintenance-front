@@ -7,7 +7,7 @@
           <SvgIcon icon="material-symbols:upload" />
         </NIcon>
       </template>
-      {{ buttonText }}
+      {{ buttonText || $t('page.faults.uploadBindWorkOrder.import') }}
     </n-button>
 
     <!-- 导入弹窗 -->
@@ -21,53 +21,53 @@
           :on-change="handleFileChange"
           accept=".xls,.xlsx,.xlsm"
         >
-          <n-button size="small">选择文件</n-button>
+          <n-button size="small">{{ $t('page.faults.uploadBindWorkOrder.selectFile') }}</n-button>
         </n-upload>
 
         <!-- 下载模板链接 -->
         <div style="text-align: left; margin-top: 8px;">
           <n-button text type="primary" @click="downloadTemplate">
-            📥 下载模板
+            {{ $t('page.faults.uploadBindWorkOrder.downloadTemplate') }}
           </n-button>
         </div>
       </div>
 
       <template #action>
-        <n-button size="small" style="font-size: 12px;" @click="showModal = false">取消</n-button>
+        <n-button size="small" style="font-size: 12px;" @click="showModal = false">{{ $t('page.faults.uploadBindWorkOrder.cancel') }}</n-button>
         <n-button size="small" style="font-size: 12px;" type="primary" :loading="uploading" @click="handleSubmit">
-          确定导入
+          {{ $t('page.faults.uploadBindWorkOrder.confirmImport') }}
         </n-button>
       </template>
     </n-modal>
 
     <!-- 导入结果弹窗 -->
-    <n-modal v-model:show="showResult" preset="dialog" title="导入结果" style="width: 600px;">
+    <n-modal v-model:show="showResult" preset="dialog" :title="$t('page.faults.uploadBindWorkOrder.importResult')" style="width: 600px;">
       <div v-if="importResult" style="display: flex; flex-direction: column; gap: 16px;">
         <!-- 导入统计 -->
         <div style="display: flex; gap: 24px; padding: 16px; background-color: #f5f5f5; border-radius: 6px;">
           <div style="text-align: center;">
             <div style="font-size: 24px; font-weight: bold; color: #52c41a;">{{ importResult.success_count }}</div>
-            <div style="color: #666;">成功导入</div>
+            <div style="color: #666;">{{ $t('page.faults.uploadBindWorkOrder.successImport') }}</div>
           </div>
           <div style="text-align: center;">
             <div style="font-size: 24px; font-weight: bold; color: #ff4d4f;">{{ importResult.failure_count }}</div>
-            <div style="color: #666;">导入失败</div>
+            <div style="color: #666;">{{ $t('page.faults.uploadBindWorkOrder.failImport') }}</div>
           </div>
         </div>
 
         <!-- 错误详情 -->
         <div v-if="importResult.errors && importResult.errors.length > 0">
-          <h4 style="margin: 0 0 12px 0; color: #ff4d4f;">错误详情：</h4>
+          <h4 style="margin: 0 0 12px 0; color: #ff4d4f;">{{ $t('page.faults.uploadBindWorkOrder.errorDetail') }}</h4>
           <!-- 错误操作：复制与导出 -->
           <div style="display: flex; gap: 8px;margin-top: -40px;  margin-bottom: 8px;justify-content:right">
-            <n-button size="small" secondary @click="copyErrors" title="复制错误信息" icon-placement="right">
+            <n-button size="small" secondary @click="copyErrors" :title="$t('page.faults.uploadBindWorkOrder.copyError')" icon-placement="right">
               <template #icon>
                 <NIcon>
                   <SvgIcon icon="material-symbols:content-copy" />
                 </NIcon>
               </template>
             </n-button>
-            <n-button size="small" secondary @click="exportErrors" title="导出错误" icon-placement="right">
+            <n-button size="small" secondary @click="exportErrors" :title="$t('page.faults.uploadBindWorkOrder.exportError')" icon-placement="right">
               <template #icon>
                 <NIcon>
                   <SvgIcon icon="material-symbols:download" />
@@ -84,12 +84,12 @@
 
         <!-- 全部成功提示 -->
         <div v-if="importResult.failure_count === 0" style="padding: 12px; background-color: #f6ffed; border: 1px solid #b7eb8f; border-radius: 4px; color: #52c41a;">
-          ✅ 所有数据导入成功！
+          {{ $t('page.faults.uploadBindWorkOrder.allSuccess') }}
         </div>
       </div>
 
       <template #action>
-        <n-button size="small" style="font-size: 12px;" type="primary" @click="handleCloseResult">关闭</n-button>
+        <n-button size="small" style="font-size: 12px;" type="primary" @click="handleCloseResult">{{ $t('page.faults.uploadBindWorkOrder.close') }}</n-button>
       </template>
     </n-modal>
   </div>
@@ -102,6 +102,9 @@ import type { UploadFileInfo } from 'naive-ui'
 import axios from 'axios'
 import { getServiceBaseURL } from '@/utils/service'
 import { localStg } from '@/utils/storage'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 // ---------------- Props ----------------
 interface Props {
@@ -117,10 +120,10 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   uploadUrl: '/api/repair_stations/import_repair_details',
   params: () => ({}),
-  buttonText: '导入',
+  buttonText: '',
   templateUrl: '/template/repair-detail-V002.xlsx',
-  templateName: '维修明细导入模板.xlsx',
-  title: '导入维修明细 Excel',
+  templateName: '',
+  title: '',
   showTrigger: true
 })
 
@@ -149,8 +152,8 @@ const selectedFile = ref<File | null>(null)
 const currentConfig = ref({
   uploadUrl: props.uploadUrl,
   templateUrl: props.templateUrl,
-  templateName: props.templateName,
-  title: props.title
+  templateName: props.templateName || t('page.faults.uploadBindWorkOrder.repairDetailTemplateName'),
+  title: props.title || t('page.faults.uploadBindWorkOrder.importRepairDetailExcel')
 })
 
 // 暴露 open 方法供父组件调用
@@ -159,16 +162,16 @@ const open = (config?: { uploadUrl?: string, templateUrl?: string, templateName?
     currentConfig.value = {
       uploadUrl: config.uploadUrl || props.uploadUrl,
       templateUrl: config.templateUrl || props.templateUrl,
-      templateName: config.templateName || props.templateName,
-      title: config.title || props.title
+      templateName: config.templateName || props.templateName || t('page.faults.uploadBindWorkOrder.repairDetailTemplateName'),
+      title: config.title || props.title || t('page.faults.uploadBindWorkOrder.importRepairDetailExcel')
     }
   } else {
     // 重置为 props 默认值
     currentConfig.value = {
       uploadUrl: props.uploadUrl,
       templateUrl: props.templateUrl,
-      templateName: props.templateName,
-      title: props.title
+      templateName: props.templateName || t('page.faults.uploadBindWorkOrder.repairDetailTemplateName'),
+      title: props.title || t('page.faults.uploadBindWorkOrder.importRepairDetailExcel')
     }
   }
   showModal.value = true
@@ -183,7 +186,7 @@ const handleFileChange = ({ file }: { file: UploadFileInfo }) => {
 
 const handleSubmit = async () => {
   if (!selectedFile.value) {
-    message.warning('请先选择文件')
+    message.warning(t('page.faults.uploadBindWorkOrder.pleaseSelectFile'))
     return
   }
 
@@ -217,7 +220,7 @@ const handleSubmit = async () => {
       emit('success')
     } else {
       // message.error(`文件 ${selectedFile.value.name} 上传失败！`)
-      message.error(`文件 ${selectedFile.value.name} 导入失败！`+response.data.msg)
+      message.error(t('page.faults.uploadBindWorkOrder.importFailedFile', { name: selectedFile.value.name }) + response.data.msg)
       showModal.value = false
       // emit('fail')
     }
@@ -225,7 +228,7 @@ const handleSubmit = async () => {
     selectedFile.value = null
   } catch (e) {
     console.error(e)
-    message.error('文件上传失败')
+    message.error(t('page.faults.uploadBindWorkOrder.fileUploadFailed'))
   } finally {
     uploading.value = false
   }
@@ -239,24 +242,24 @@ const handleCloseResult = () => {
 const downloadTemplate = () => {
   const link = document.createElement('a')
   link.href = currentConfig.value.templateUrl || '/template/repair-detail-V002.xlsx'
-  link.download = currentConfig.value.templateName || '维修明细导入模板.xlsx'
+  link.download = currentConfig.value.templateName || t('page.faults.uploadBindWorkOrder.repairDetailTemplateName')
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  message.success('模板下载已开始')
+  message.success(t('page.faults.uploadBindWorkOrder.templateDownloaded'))
 }
 
 // 复制错误信息到剪贴板
 const copyErrors = async () => {
   const errors = importResult.value?.errors || []
   if (!errors.length) {
-    message.warning('暂无错误信息可复制')
+    message.warning(t('page.faults.uploadBindWorkOrder.noErrorToCopy'))
     return
   }
   const text = errors.join('\n')
   try {
     await navigator.clipboard.writeText(text)
-    message.success('错误信息已复制到剪贴板')
+    message.success(t('page.faults.uploadBindWorkOrder.copySuccess'))
   } catch (err) {
     const textarea = document.createElement('textarea')
     textarea.value = text
@@ -264,9 +267,9 @@ const copyErrors = async () => {
     textarea.select()
     try {
       document.execCommand('copy')
-      message.success('错误信息已复制到剪贴板')
+      message.success(t('page.faults.uploadBindWorkOrder.copySuccess'))
     } catch (e) {
-      message.error('复制失败，请手动复制')
+      message.error(t('page.faults.uploadBindWorkOrder.copyFailed'))
     } finally {
       document.body.removeChild(textarea)
     }
@@ -277,11 +280,11 @@ const copyErrors = async () => {
 const exportErrors = () => {
   const errors = importResult.value?.errors || []
   if (!errors.length) {
-    message.warning('暂无错误信息可导出')
+    message.warning(t('page.faults.uploadBindWorkOrder.noErrorToExport'))
     return
   }
 
-  const headers = ['序号', '错误信息']
+  const headers = [t('page.faults.uploadBindWorkOrder.index'), t('page.faults.uploadBindWorkOrder.errorMessage')]
   const escapeCsv = (s: string) => {
     if (s == null) return ''
     const str = String(s)
@@ -298,12 +301,12 @@ const exportErrors = () => {
   a.href = url
   const now = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
-  const filename = `维修明细_导入错误_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.csv`
+  const filename = `${t('page.faults.uploadBindWorkOrder.repairDetailImportErrorPrefix')}${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.csv`
   a.download = filename
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
-  message.success('错误信息已导出')
+  message.success(t('page.faults.uploadBindWorkOrder.exportSuccess'))
 }
 </script>

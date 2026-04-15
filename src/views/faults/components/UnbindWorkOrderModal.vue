@@ -1,44 +1,44 @@
 <template>
   <!-- 触发按钮 -->
-  <NButton 
-    type="error" 
+  <NButton
+    type="error"
     ghost
     size="small"
     :disabled="withOrderRows.length === 0"
     @click="handleOpenModal"
   >
-    解绑工单 ({{ withOrderRows.length }})
+    {{ t('page.faults.unbindWorkOrder.unbindWorkOrder') }} ({{ withOrderRows.length }})
   </NButton>
 
   <!-- 解绑工单弹框 -->
-  <NModal v-model:show="visible" style="width: 700px" preset="card" title="解绑工单">
+  <NModal v-model:show="visible" style="width: 700px" preset="card" :title="t('page.faults.unbindWorkOrder.unbindWorkOrderModalTitle')">
     <NForm label-width="120">
-      <NAlert type="warning" title="提示" style="margin-bottom: 12px;">
-        仅对已绑定工单的故障机进行解绑，其它未绑定工单的机器不会受影响。
+      <NAlert type="warning" :title="t('page.faults.unbindWorkOrder.tip')" style="margin-bottom: 12px;">
+        {{ t('page.faults.unbindWorkOrder.unbindTipContent') }}
       </NAlert>
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-        <NFormItem label="待解绑台数">
+        <NFormItem :label="t('page.faults.unbindWorkOrder.waitUnbindCount')">
           <NInput size="small" :value="withOrderRows.length.toString()" readonly />
         </NFormItem>
-        <NFormItem label="总选择台数">
+        <NFormItem :label="t('page.faults.unbindWorkOrder.totalSelectCount')">
           <NInput size="small" :value="props.selectedRows.length.toString()" readonly />
         </NFormItem>
       </div>
 
-      <NFormItem label="待解绑列表">
+      <NFormItem :label="t('page.faults.unbindWorkOrder.waitUnbindList')">
         <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e6; border-radius: 6px; padding: 12px; width: 100%;">
-          <div 
-            v-for="machine in withOrderRows" 
-            :key="machine.id" 
+          <div
+            v-for="machine in withOrderRows"
+            :key="machine.id"
             style="display: flex; justify-content: space-evenly; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; width: 100%;"
           >
             <!-- <div> -->
               <div style="font-weight: 500;font-size: 12px; color: #666;">{{ machine.sn }}</div>
               <div style="font-size: 12px; color: #666;">
-                工单：{{ machine.order_no }} | 场地：{{ machine.Site?.name || machine.site_name }}
+                {{ t('page.faults.unbindWorkOrder.workOrder') }}{{ machine.order_no }} | {{ t('page.faults.unbindWorkOrder.site') }}{{ machine.Site?.name || machine.site_name }}
               </div>
             <!-- </div> -->
-            <NTag type="error" size="small">待解绑</NTag>
+            <NTag type="error" size="small">{{ t('page.faults.unbindWorkOrder.waitUnbind') }}</NTag>
           </div>
         </div>
       </NFormItem>
@@ -47,16 +47,16 @@
     <template #footer>
       <NSpace>
       <NPopconfirm
-        :negative-text="'取消'"
-        :positive-text="'确认解绑'"
+        :negative-text="t('page.faults.unbindWorkOrder.cancel')"
+        :positive-text="t('page.faults.unbindWorkOrder.confirmUnbind')"
         @positive-click="handleSubmit"
       >
         <template #trigger>
-          <NButton type="error">解绑</NButton>
+          <NButton type="error">{{ t('page.faults.unbindWorkOrder.unbind') }}</NButton>
         </template>
-        是否确认解绑这些机器的工单？
+        {{ t('page.faults.unbindWorkOrder.confirmUnbindTip') }}
       </NPopconfirm>
-      <NButton @click="handleCancel">关闭</NButton>
+      <NButton @click="handleCancel">{{ t('page.faults.unbindWorkOrder.close') }}</NButton>
       </NSpace>
     </template>
   </NModal>
@@ -64,8 +64,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { NButton, NModal, NForm, NFormItem, NInput, NTag, NAlert, NPopconfirm, useMessage } from 'naive-ui';
+import { NButton, NModal, NForm, NFormItem, NInput, NTag, NAlert, NPopconfirm, useMessage, NSpace } from 'naive-ui';
 import { unbindFaultsToOrder } from '@/service/api/faults';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const message = useMessage();
 
@@ -103,11 +106,11 @@ const withOrderRows = computed(() => props.selectedRows.filter(row => (row.order
 // 打开弹框
 const handleOpenModal = () => {
   if (props.selectedRows.length === 0) {
-    message.warning('请先选择机器');
+    message.warning(t('page.faults.unbindWorkOrder.pleaseSelectMachine'));
     return;
   }
   if (withOrderRows.value.length === 0) {
-    message.info('所选机器暂无工单，无需解绑');
+    message.info(t('page.faults.unbindWorkOrder.noNeedUnbind'));
     return;
   }
   visible.value = true;
@@ -117,7 +120,7 @@ const handleOpenModal = () => {
 const handleSubmit = async () => {
   const faultIds = withOrderRows.value.map(row => row.id);
   if (faultIds.length === 0) {
-    message.error('未找到需解绑的机器');
+    message.error(t('page.faults.unbindWorkOrder.notFoundUnbindMachine'));
     return;
   }
 
@@ -127,22 +130,14 @@ const handleSubmit = async () => {
 
     if (error == null) {
       if (Number(data?.code) == 0) {
-        message.success('解绑工单成功！');
+        message.success(t('page.faults.unbindWorkOrder.unbindSuccess'));
         visible.value = false;
         emit('refresh');
       }
-    } 
-    // const { error } = await unbindFaultsToOrder({ fault_ids: faultIds });
-    // if (error === null) {
-    //   message.success('解绑工单成功！');
-    //   visible.value = false;
-    //   emit('refresh');
-    // } else {
-    //   message.error(`解绑失败: ${error}`);
-    // }
+    }
 
   } catch (err) {
-    message.error('解绑失败');
+    message.error(t('page.faults.unbindWorkOrder.unbindFailed'));
     console.error(err);
   }
 };

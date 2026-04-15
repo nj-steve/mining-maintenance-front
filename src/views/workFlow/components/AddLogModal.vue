@@ -1,40 +1,40 @@
 <template>
-  <NModal v-model:show="localShow" style="width: 500px" preset="card" title="添加工单操作日志">
+  <NModal v-model:show="localShow" style="width: 500px" preset="card" :title="t('page.workflow.addOrderLogTitle')">
     <NForm :model="form" label-width="100">
       <!-- 工单状态 -->
-      <NFormItem label="工单状态" required>
-        <NSelect 
+      <NFormItem :label="t('page.workflow.orderStatus')" required>
+        <NSelect
           v-model:value="form.order_status"
           :options="statusOptions"
-          placeholder="请选择工单状态"
+          :placeholder="t('page.workflow.pleaseSelectOrderStatus')"
         />
       </NFormItem>
 
       <!-- 操作时间 -->
-      <NFormItem label="操作时间" required>
-        <NDatePicker 
+      <NFormItem :label="t('page.workflow.operationTime')" required>
+        <NDatePicker
           v-model:value="form.occurred_at"
           type="datetime"
-          placeholder="请选择操作时间"
+          :placeholder="t('page.workflow.pleaseSelectOperationTime')"
           style="width: 100%"
         />
       </NFormItem>
 
       <!-- 操作描述 -->
-      <NFormItem label="操作描述" required>
-        <NInput 
+      <NFormItem :label="t('page.workflow.operationDescription')" required>
+        <NInput
           v-model:value="form.description"
           size="small"
           type="textarea"
-          placeholder="请填写操作描述"
+          :placeholder="t('page.workflow.pleaseEnterOperationDescription')"
           :rows="4"
         />
       </NFormItem>
     </NForm>
 
     <template #footer>
-      <NButton type="primary" @click="handleSubmit" style="margin-right: 8px; font-size: 12px;">确认添加</NButton>
-      <NButton @click="close">取消</NButton>
+      <NButton type="primary" @click="handleSubmit" style="margin-right: 8px; font-size: 12px;">{{ t('page.workflow.confirmAdd') }}</NButton>
+      <NButton @click="close">{{ t('page.workflow.cancel') }}</NButton>
     </template>
   </NModal>
 </template>
@@ -45,6 +45,9 @@ import dayjs from 'dayjs';
 import { NModal, NForm, NFormItem, NSelect, NDatePicker, NInput, NButton, useMessage } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 import { createOrdersLog } from '@/service/api/workflow';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   show: boolean;
@@ -90,11 +93,11 @@ const close = () => {
 
 const handleSubmit = async () => {
   if (form.value.order_status === null) {
-    message.error('请选择工单状态');
+    message.error(t('page.workflow.pleaseSelectOrderStatus'));
     return;
   }
   if (!form.value.description.trim()) {
-    message.error('请填写操作描述');
+    message.error(t('page.workflow.pleaseEnterOperationDescription'));
     return;
   }
   try {
@@ -104,14 +107,14 @@ const handleSubmit = async () => {
       remark: form.value.description
     });
     if (error) {
-      message.error(`添加操作日志失败: ${error}`);
+      message.error(`${t('page.workflow.addLogFailed')}: ${error}`);
       return;
     }
-    message.success('操作日志添加成功');
+    message.success(t('page.workflow.addLogSuccess'));
     emit('submitted');
     close();
   } catch (err) {
-    message.error('添加操作日志失败');
+    message.error(t('page.workflow.addLogFailed'));
   }
 };
 </script>

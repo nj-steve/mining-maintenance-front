@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { NInput, NSelect } from 'naive-ui';
 import { repairResultOptions, repairTypeOptions } from '@/constants/business'
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   workOrderNo: string;
@@ -25,7 +28,7 @@ const emit = defineEmits<{
 
     <NInput
       :value="workOrderNo"
-      placeholder="请输入工单号"
+      :placeholder="t('page.repairRecords.pleaseEnterWorkOrderNo')"
       clearable
       size="small"
       class="text-sm"
@@ -34,8 +37,8 @@ const emit = defineEmits<{
     />
     <NInput
       :value="sn"
-      placeholder="请输入机器SN"
-      clearablegaigai
+      :placeholder="t('page.repairRecords.pleaseEnterMachineSn')"
+      clearable
       size="small"
       class="text-sm"
       style="width: 280px"
@@ -45,7 +48,7 @@ const emit = defineEmits<{
       v-if="siteOptions"
       :value="siteId"
       :options="siteOptions"
-      placeholder="请选择场地"
+      :placeholder="t('page.repairRecords.pleaseSelectSite')"
       clearable
       filterable
       size="small"
@@ -56,7 +59,7 @@ const emit = defineEmits<{
     <NSelect
       :value="repairType"
       :options="repairTypeOptions"
-      placeholder="维修类型"
+      :placeholder="t('page.repairRecords.repairType')"
       clearable
       size="small"
       class="text-sm"
@@ -67,7 +70,7 @@ const emit = defineEmits<{
       :value="repairResult"
       :options="repairResultOptions"
       clearable
-       placeholder="维修结果"
+      :placeholder="t('page.repairRecords.repairResult')"
       size="small"
       class="text-sm"
       style="width: 120px;"

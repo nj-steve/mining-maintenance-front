@@ -39,7 +39,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
     }
   },
   legend: {
-    data: ["今日下架", "待处理", "在修设备", "今日维修"]
+    data: [$t('page.home.section1Area.removedToday'), $t('page.home.section1Area.pendingProcessing'), $t('page.home.section1Area.devicesUnderRepair'), $t('page.home.section1Area.repairedToday')]
   },
   grid: {
     left: '3%',
@@ -59,7 +59,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
   series: [
     {
       color: '#8e9dff',
-      name: "今日下架",
+      name: $t('page.home.section1Area.removedToday'),
       type: 'line',
       smooth: true,
       stack: 'Total',
@@ -90,7 +90,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
     },
     {
       color: '#26deca',
-      name: "待处理",
+      name: $t('page.home.section1Area.pendingProcessing'),
       type: 'line',
       smooth: true,
       stack: 'Total',
@@ -121,7 +121,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
     },
     {
       color: '#ff9f7f',
-      name: "在修设备",
+      name: $t('page.home.section1Area.devicesUnderRepair'),
       type: 'line',
       smooth: true,
       stack: 'Total',
@@ -152,7 +152,7 @@ const { domRef, updateOptions } = useEcharts(() => ({
     },
     {
       color: '#ffc658',
-      name: "今日维修",
+      name: $t('page.home.section1Area.repairedToday'),
       type: 'line',
       smooth: true,
       stack: 'Total',

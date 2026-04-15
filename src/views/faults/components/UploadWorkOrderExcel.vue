@@ -1,19 +1,19 @@
 <template>
   <div>
     <!-- 导入对话框 -->
-    <n-modal v-model:show="show" preset="dialog" title="导入创建工单">
+    <n-modal v-model:show="show" preset="dialog" :title="t('page.faults.uploadWorkOrder.importCreateOrder')">
 
       <div style="display: flex; flex-direction: column; gap: 16px;">
         <!-- 工单编号 -->
-        <n-form-item label="工单编号" prop="order_no">
-          <n-input v-model:value="form.order_no" placeholder="请输入工单编号" />
+        <n-form-item :label="t('page.faults.uploadWorkOrder.orderNo')" prop="order_no">
+          <n-input v-model:value="form.order_no" :placeholder="t('page.faults.uploadWorkOrder.inputOrderNo')" />
         </n-form-item>
         <!-- 工单创建时间 -->
-        <n-form-item label="工单创建时间" prop="created_at">
+        <n-form-item :label="t('page.faults.uploadWorkOrder.orderCreateTime')" prop="created_at">
           <n-input
             v-model:value="form.date"
             size="small"
-            placeholder="请选择工单创建时间"
+            :placeholder="t('page.faults.uploadWorkOrder.selectOrderCreateTime')"
           />
         </n-form-item>
         <!-- 场地下拉选择 -->
@@ -25,7 +25,7 @@
           @update:value="handleSiteChange"
           clearable
           filterable
-          placeholder="请选择场地"
+          :placeholder="t('page.faults.uploadWorkOrder.selectSite')"
         />
         <!-- 文件选择 -->
         <n-upload
@@ -36,51 +36,51 @@
           :on-change="handleFileChange"
           accept=".xls,.xlsx,.xlsm"
         >
-          <n-button size="small">选择文件</n-button>
+          <n-button size="small">{{ t('page.faults.uploadWorkOrder.selectFile') }}</n-button>
         </n-upload>
         <!-- 下载模板链接 -->
         <div style="text-align: left; margin-top: 8px;">
           <n-button text type="primary" @click="downloadTemplate">
-            📥 下载模板
+            {{ t('page.faults.uploadWorkOrder.downloadTemplate') }}
           </n-button>
         </div>
       </div>
       <template #action>
-        <n-button size="small" style="font-size: 12px;" @click="show = false">取消</n-button>
+        <n-button size="small" style="font-size: 12px;" @click="show = false">{{ t('page.faults.uploadWorkOrder.cancel') }}</n-button>
         <n-button size="small" style="font-size: 12px;" type="primary" :loading="uploading" @click="handleSubmit">
-          确定导入
+          {{ t('page.faults.uploadWorkOrder.confirmImport') }}
         </n-button>
       </template>
     </n-modal>
-    
+
     <!-- 导入结果弹框 -->
-    <n-modal v-model:show="showResult" preset="dialog" title="导入结果" style="width: 600px;">
+    <n-modal v-model:show="showResult" preset="dialog" :title="t('page.faults.uploadWorkOrder.importResult')" style="width: 600px;">
       <div v-if="importResult" style="display: flex; flex-direction: column; gap: 16px;">
         <!-- 导入统计 -->
         <div style="display: flex; gap: 24px; padding: 16px; background-color: #f5f5f5; border-radius: 6px;">
           <div style="text-align: center;">
             <div style="font-size: 24px; font-weight: bold; color: #52c41a;">{{ importResult.success_count }}</div>
-            <div style="color: #666;">成功导入</div>
+            <div style="color: #666;">{{ t('page.faults.uploadWorkOrder.successImport') }}</div>
           </div>
           <div style="text-align: center;">
             <div style="font-size: 24px; font-weight: bold; color: #ff4d4f;">{{ importResult.failure_count }}</div>
-            <div style="color: #666;">导入失败</div>
+            <div style="color: #666;">{{ t('page.faults.uploadWorkOrder.failImport') }}</div>
           </div>
         </div>
-        
+
         <!-- 错误详情 -->
         <div v-if="importResult.errors && importResult.errors.length > 0">
-          <h4 style="margin: 0 0 12px 0; color: #ff4d4f;">错误详情：</h4>
+          <h4 style="margin: 0 0 12px 0; color: #ff4d4f;">{{ t('page.faults.uploadWorkOrder.errorDetail') }}</h4>
           <!-- 错误操作：复制与导出 -->
           <div style="display: flex; gap: 8px;margin-top: -40px;  margin-bottom: 8px;justify-content:right">
-          <n-button size="small" secondary @click="copyErrors" title="复制错误信息" icon-placement="right">
+          <n-button size="small" secondary @click="copyErrors" :title="t('page.faults.uploadWorkOrder.copyError')" icon-placement="right">
             <template #icon>
               <NIcon>
                 <SvgIcon icon="material-symbols:content-copy" />
               </NIcon>
             </template>
           </n-button>
-          <n-button size="small" secondary @click="exportErrors" title="导出错误" icon-placement="right">
+          <n-button size="small" secondary @click="exportErrors" :title="t('page.faults.uploadWorkOrder.exportError')" icon-placement="right">
             <template #icon>
               <NIcon>
                 <SvgIcon icon="material-symbols:download" />
@@ -94,15 +94,15 @@
             </div>
           </div>
         </div>
-        
+
         <!-- 成功提示 -->
         <div v-if="importResult.failure_count === 0" style="padding: 12px; background-color: #f6ffed; border: 1px solid #b7eb8f; border-radius: 4px; color: #52c41a;">
-          ✅ 所有数据导入成功！
+          {{ t('page.faults.uploadWorkOrder.allSuccess') }}
         </div>
       </div>
-      
+
       <template #action>
-        <n-button size="small" style="font-size: 12px;" type="primary" @click="handleCloseResult">关闭</n-button>
+        <n-button size="small" style="font-size: 12px;" type="primary" @click="handleCloseResult">{{ t('page.faults.uploadWorkOrder.close') }}</n-button>
       </template>
     </n-modal>
   </div>
@@ -117,6 +117,10 @@ import axios from 'axios'
 import { getServiceBaseURL } from '@/utils/service'
 import { localStg } from '@/utils/storage'
 import { useAuthStore } from '@/store/modules/auth';
+import { useI18n } from 'vue-i18n';
+import SvgIcon from '@/components/custom/svg-icon.vue';
+
+const { t } = useI18n();
 
 const handleSiteChange = (val: number | null, option: SelectOption) => {
   form.site_id = val
@@ -127,7 +131,7 @@ const handleSiteChange = (val: number | null, option: SelectOption) => {
   }else{
      form.order_no = `${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`
   }
- 
+
 }
 
 const authStore = useAuthStore();
@@ -196,11 +200,11 @@ const handleFileChange = ({ file }: { file: UploadFileInfo }) => {
 
 const handleSubmit = async () => {
   if (!form.site_id && hasRole) {
-    message.warning('请选择场地')
+    message.warning(t('page.faults.uploadWorkOrder.pleaseSelectSite'))
     return
   }
   if (!form.file) {
-    message.warning('请先选择文件')
+    message.warning(t('page.faults.uploadWorkOrder.pleaseSelectFile'))
     return
   }
 
@@ -234,16 +238,16 @@ const handleSubmit = async () => {
       showResult.value = true
       emit('success')
     } else {
-      message.error(`文件 ${form.file.name} 导入失败！` + response.data.msg)
+      message.error(t('page.faults.uploadBindWorkOrder.importFailedFile', { name: form.file.name }) + response.data.msg)
       show.value = false
       emit('success')
     }
-    
+
     selectedFile.value = null
     selectedSite.value = null
   } catch (e) {
     console.error(e)
-    message.error('文件上传失败')
+    message.error(t('page.faults.uploadWorkOrder.fileUploadFailed'))
   } finally {
     uploading.value = false
   }
@@ -252,13 +256,13 @@ const handleSubmit = async () => {
 const copyErrors = async () => {
   const errors = importResult.value?.errors || []
   if (!errors.length) {
-    message.warning('暂无错误信息可复制')
+    message.warning(t('page.faults.uploadBindWorkOrder.noErrorToCopy'))
     return
   }
   const text = errors.join('\n')
   try {
     await navigator.clipboard.writeText(text)
-    message.success('错误信息已复制到剪贴板')
+    message.success(t('page.faults.uploadBindWorkOrder.copySuccess'))
   } catch (err) {
     const textarea = document.createElement('textarea')
     textarea.value = text
@@ -266,9 +270,9 @@ const copyErrors = async () => {
     textarea.select()
     try {
       document.execCommand('copy')
-      message.success('错误信息已复制到剪贴板')
+      message.success(t('page.faults.uploadBindWorkOrder.copySuccess'))
     } catch (e) {
-      message.error('复制失败，请手动复制')
+      message.error(t('page.faults.uploadBindWorkOrder.copyFailed'))
     } finally {
       document.body.removeChild(textarea)
     }
@@ -278,11 +282,11 @@ const copyErrors = async () => {
 const exportErrors = () => {
   const errors = importResult.value?.errors || []
   if (!errors.length) {
-    message.warning('暂无错误信息可导出')
+    message.warning(t('page.faults.uploadBindWorkOrder.noErrorToExport'))
     return
   }
 
-  const headers = ['序号', '错误信息']
+  const headers = [t('page.faults.uploadBindWorkOrder.index'), t('page.faults.uploadBindWorkOrder.errorMessage')]
   const escapeCsv = (s: string) => {
     if (s == null) return ''
     const str = String(s)
@@ -299,13 +303,13 @@ const exportErrors = () => {
   a.href = url
   const now = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
-  const filename = `导入错误_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.csv`
+  const filename = `importError_${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.csv`
   a.download = filename
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
-  message.success('错误信息已导出')
+  message.success(t('page.faults.uploadBindWorkOrder.exportSuccess'))
   }
 
 const handleCloseResult = () => {

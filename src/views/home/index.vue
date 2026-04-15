@@ -6,6 +6,7 @@ import LineChart from './modules/line-chart.vue';
 import PieChart from './modules/pie-chart.vue';
 import { fetchDashboard } from '@/service/api/site';
 import { onMounted } from 'vue';
+import { $t } from '@/locales';
 import { ref } from 'vue';
 
 const appStore = useAppStore();
@@ -24,16 +25,16 @@ const cardDataForChild = computed(() => {
   const result = [
     {
       key: 'assetCount',
-      title: '待修数',
+      title: $t('page.home.section1Area.pendingRepair'), //{{ $t('system.title') }}
       value: today_data.wait_repair_count || 0,
       rate: today_data.wait_repair_rate || 0,
       unit: '',
       color: { start: '#ec4786', end: '#b955a4' },
-      icon: 'ant-design:bar-chart-outlined' 
+      icon: 'ant-design:bar-chart-outlined'
     },
     {
       key: 'todayOffShelfCount',
-      title: '今日下架',
+      title: $t('page.home.section1Area.removedToday'),
       value: today_data.off_shelf_count || 0,
       rate: today_data.off_shelf_rate || 0,
       unit: '',
@@ -42,7 +43,7 @@ const cardDataForChild = computed(() => {
     },
     {
       key: 'pendingCount',
-      title: '待处理',
+      title: $t('page.home.section1Area.pendingProcessing'),
       // value: Math.floor(Math.random() * 500) || 0,
       value: today_data.pending_count || 0,
       rate: today_data.pending_rate || 0,
@@ -52,7 +53,7 @@ const cardDataForChild = computed(() => {
     },
     {
       key: 'inTransitCount',
-      title: '物流中',
+      title: $t('page.home.section1Area.inTransit'),
       value: today_data.logistics_count || 0,
       rate: today_data.logistics_rate || 0,
       // value: data.in_transit_count || 0,
@@ -62,7 +63,7 @@ const cardDataForChild = computed(() => {
     },
     {
       key: 'repairingCount',
-      title: '在修设备',
+      title: $t('page.home.section1Area.devicesUnderRepair'),
       // value: Math.floor(Math.random() * 200) || 0,
       value:today_data.repairing_count,
       rate: today_data.repairing_rate || 0,
@@ -72,7 +73,7 @@ const cardDataForChild = computed(() => {
     },
     {
       key: 'todayRepairedCount',
-      title: '今日维修',
+      title: $t('page.home.section1Area.repairedToday'),
       // value: Math.floor(Math.random() * 300) || 0,
       value: today_data.repaired_count || 0,
       rate: today_data.repaired_rate || 0,
@@ -82,7 +83,7 @@ const cardDataForChild = computed(() => {
     },
     {
       key: 'toBeShelvedCount',
-      title: '待上架',
+      title: $t('page.home.section1Area.pendingListing'),
       // value: Math.floor(Math.random() * 200) || 0,
       value: today_data.wait_on_shelf_count || 0,
       rate: today_data.wait_on_shelf_rate || 0,
@@ -92,7 +93,7 @@ const cardDataForChild = computed(() => {
     },
     {
       key: 'totalOffShelfCount',
-      title: '报废数',
+      title: $t('page.home.section1Area.scrappedCount'),
       // value:Math.floor(Math.random() * 100) ,
       value: today_data.scrapped_count || 0,
       rate: today_data.scrapped_rate || 0,

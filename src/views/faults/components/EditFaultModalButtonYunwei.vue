@@ -1,17 +1,17 @@
 <template>
   <NButton type="info" ghost style="margin-right: 8px;" @click="open">
-    修改描述
+    {{ t('page.faults.editFault.editDesc') }}
   </NButton>
-  <NModal v-model:show="show" style="width: 600px" preset="card" title="修改故障描述">
+  <NModal v-model:show="show" style="width: 600px" preset="card" :title="t('page.faults.editFault.editFaultDesc')">
     <NForm :model="editForm" label-width="100">
-      <NFormItem label="描述">
+      <NFormItem :label="t('page.faults.editFault.desc')">
         <NInput v-model:value="editForm.description" />
       </NFormItem>
     </NForm>
     <template #footer>
       <NSpace>
-        <NButton type="primary" @click="save">保存</NButton>
-        <NButton @click="show = false">取消</NButton>
+        <NButton type="primary" @click="save">{{ t('page.faults.editFault.save') }}</NButton>
+        <NButton @click="show = false">{{ t('page.faults.editFault.cancel') }}</NButton>
       </NSpace>
     </template>
   </NModal>
@@ -19,8 +19,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { NButton, NModal, NForm, NFormItem, NSelect, NSpace, useMessage } from 'naive-ui'
+import { NButton, NModal, NForm, NFormItem, NSelect, NSpace, useMessage, NInput } from 'naive-ui'
 import { updateFaults } from '@/service/api/faults'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 interface Faults {
   id: number;
@@ -76,22 +79,13 @@ const save = async () => {
 
     if (error == null) {
       if (Number(data?.code) == 0) {
-        message.success('修改成功！');
+        message.success(t('page.faults.editFault.editSuccess'));
         emit('updated');
       }
-    } 
+    }
 
-
-
-    // console.log(response)
-    // if (error==null &&  response?.data?.code == 0) {
-    //   message.success('修改成功！')
-    //   emit('updated')
-    // } else {
-    //   message.error('修改失败:' + response?.data?.msg)
-    // }
   } catch (err) {
-    message.error('修改失败')
+    message.error(t('page.faults.editFault.editFailed'))
   } finally {
     show.value = false
   }

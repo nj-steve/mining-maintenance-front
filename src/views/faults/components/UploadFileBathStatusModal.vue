@@ -1,7 +1,7 @@
 <template>
   <!-- 触发按钮 -->
-  <NButton 
-    type="warning" 
+  <NButton
+    type="warning"
     ghost
     size="small"
     @click="handleOpenModal"
@@ -11,59 +11,63 @@
             <SvgIcon icon="material-symbols:upload" />
           </NIcon>
         </template>
-    导入更新状态
+    {{ t('page.faults.uploadFileBatchStatus.importUpdateStatus') }}
   </NButton>
 
   <!-- 导入机器修改状态弹框 -->
-  <NModal v-model:show="visible" style="width: 500px" preset="card" title="批量修改状态">
+  <NModal v-model:show="visible" style="width: 500px" preset="card" :title="t('page.faults.uploadFileBatchStatus.batchModifyStatus')">
     <NForm :model="form" label-width="100">
       <!-- 工单输入框 -->
-      <NFormItem label="工单号" required>
-        <NInput 
+      <NFormItem :label="t('page.faults.uploadFileBatchStatus.workOrderNo')" required>
+        <NInput
           size="small"
           v-model:value="form.orderNumbers"
-          placeholder="请输入工单号"
+          :placeholder="t('page.faults.uploadFileBatchStatus.inputWorkOrderNo')"
           style="font-size: 12px;"
         />
       </NFormItem>
 
       <!-- 状态下拉选择 -->
-      <NFormItem label="状态" required>
-        <NSelect 
+      <NFormItem :label="t('page.faults.uploadFileBatchStatus.status')" required>
+        <NSelect
         size="small"
           v-model:value="form.status"
           :options="statusOptions"
-          placeholder="请选择状态"
+          :placeholder="t('page.faults.uploadFileBatchStatus.selectStatus')"
           style="font-size: 12px;"
         />
       </NFormItem>
 
       <!-- 文件上传 -->
-      <NFormItem label="文件上传" required>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <input 
-            ref="fileInputRef"
-            type="file" 
-            accept=".xlsx,.xls,.csv"
-            @change="handleFileChange"
-            style="width: 100%;"
-          />
-          <div style="font-size: 12px; color: #666;">
-            支持上传 Excel 或 CSV 文件，文件中应包含工单号列表
+      <NFormItem :label="t('page.faults.uploadFileBatchStatus.fileUpload')" required>
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+          <div class="custom-file-upload">
+            <NButton @click="() => fileInputRef?.click()" size="small">
+              {{ t('page.faults.uploadFileBatchStatus.chooseFile') || '选择文件' }}
+            </NButton>
+            <span class="file-name" v-if="!form.file">{{ t('page.faults.uploadFileBatchStatus.noFileChosen') || '未选择任何文件' }}</span>
+            <span class="file-name" v-else>{{ form.file.name }}</span>
+            <input
+              ref="fileInputRef"
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              @change="handleFileChange"
+              style="display: none;"
+            />
           </div>
-          <div v-if="form.file" style="font-size: 12px; color: #18a058;">
-            已选择文件: {{ form.file.name }}
+          <div style="font-size: 12px; color: #666;">
+            {{ t('page.faults.uploadFileBatchStatus.supportFormat') }}
           </div>
         </div>
       </NFormItem>
        <!-- 下载模板链接 -->
-       <NButton 
-            text 
-            type="primary" 
+       <NButton
+            text
+            type="primary"
             @click="downloadTemplate"
             style="font-size: 12px; padding: 0; text-align: left;"
           >
-            📥 下载模板
+            {{ t('page.faults.uploadFileBatchStatus.downloadTemplate') }}
           </NButton>
 
       <!-- 批量更新结果显示（移除原有内嵌结果提示，改用独立结果弹框） -->
@@ -71,20 +75,20 @@
         <div style="font-size: 12px;">成功：{{ resultInfo.success_count }}，失败：{{ resultInfo.failure_count }}</div>
       </NAlert> -->
     </NForm>
-    
+
     <template #footer>
       <NSpace>
-      <NButton type="primary" @click="handleSubmit">提交</NButton>
-      <NButton @click="handleCancel">取消</NButton>
+      <NButton type="primary" @click="handleSubmit">{{ t('page.faults.uploadFileBatchStatus.submit') }}</NButton>
+      <NButton @click="handleCancel">{{ t('page.faults.uploadFileBatchStatus.cancel') }}</NButton>
       </NSpace>
     </template>
   </NModal>
 
   <!-- 结果弹框 -->
-  <NModal v-model:show="resultVisible" style="width: 600px" preset="card" title="批量修改结果">
-    <div style="font-size: 12px;">成功：{{ resultData.success_count }}，失败：{{ resultData.failure_count }}</div>
+  <NModal v-model:show="resultVisible" style="width: 600px" preset="card" :title="t('page.faults.uploadFileBatchStatus.batchModifyResult')">
+    <div style="font-size: 12px;">{{ t('page.faults.uploadFileBatchStatus.successCount') }}{{ resultData.success_count }}，{{ t('page.faults.uploadFileBatchStatus.failureCount') }}{{ resultData.failure_count }}</div>
     <div v-if="resultData.errors && resultData.errors.length" style="margin-top: 12px;">
-      <NAlert type="warning" title="错误信息列表">
+      <NAlert type="warning" :title="t('page.faults.uploadFileBatchStatus.errorList')">
         <div style="max-height: 240px; overflow: auto; font-size: 12px;">
           <ul style="padding-left: 18px; margin: 0;">
             <li v-for="(err, idx) in resultData.errors" :key="idx" style="margin-bottom: 6px; color: #d03050;">
@@ -96,7 +100,7 @@
     </div>
     <template #footer>
       <NSpace>
-        <NButton type="primary" @click="handleResultClose">关闭</NButton>
+        <NButton type="primary" @click="handleResultClose">{{ t('page.faults.uploadFileBatchStatus.close') }}</NButton>
       </NSpace>
     </template>
   </NModal>
@@ -104,9 +108,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { NButton, NModal, NForm, NFormItem, NInput, NSelect, useMessage, NAlert } from 'naive-ui';
+import { NButton, NModal, NForm, NFormItem, NInput, NSelect, useMessage, NAlert, NSpace, NIcon } from 'naive-ui';
 import { batchUpdateStatus } from '@/service/api/faults';
+import { useI18n } from 'vue-i18n';
+import SvgIcon from '@/components/custom/svg-icon.vue';
 
+const { t } = useI18n();
 const message = useMessage();
 
 interface Props {
@@ -169,20 +176,20 @@ const handleFileChange = (event: Event) => {
 // 提交表单
 const handleSubmit = async () => {
   if (!form.value.orderNumbers.trim() ) {
-    message.error('请输入工单号');
+    message.error(t('page.faults.uploadFileBatchStatus.inputWorkOrderNo'));
     return;
   }
 
   if (form.value.status === null) {
-    message.error('请选择状态');
+    message.error(t('page.faults.uploadFileBatchStatus.selectStatus'));
     return;
   }
 
   if (!form.value.file) {
-    message.error('请上传文件');
+    message.error(t('page.faults.uploadFileBatchStatus.pleaseUploadFile'));
     return;
   }
-  
+
   try {
     // 这里需要调用批量修改状态的API
     const formData = new FormData();
@@ -207,21 +214,21 @@ const handleSubmit = async () => {
           success_count: Number(info.success_count || 0),
           failure_count: Number(info.failure_count || 0)
         };
-        resultMsg.value = String(data?.msg || '操作成功');
-        message.success('批量修改状态成功！');
+        resultMsg.value = String(data?.msg || t('page.faults.uploadFileBatchStatus.successCount').replace('：', ''));
+        message.success(t('page.faults.batchStatus.modifySuccess') || '批量修改状态成功！');
         // 关闭原始弹框，打开结果弹框
         visible.value = false;
         resultVisible.value = true;
         // 通知父组件刷新数据
         emit('refresh');
       } else {
-        message.error(String(data?.msg || '批量修改状态失败'));
+        message.error(String(data?.msg || t('page.faults.batchStatus.modifyFailed')));
       }
     } else {
-      message.error('批量修改状态失败');
+      message.error(t('page.faults.batchStatus.modifyFailed'));
     }
   } catch (error) {
-    message.error('批量修改状态失败');
+    message.error(t('page.faults.batchStatus.modifyFailed'));
     console.error('批量修改状态失败:', error);
   }
 };
@@ -254,11 +261,11 @@ const downloadTemplate = () => {
   // 创建一个临时链接来下载模板文件
   const link = document.createElement('a');
   link.href = '/template/status_machine_template.xlsx'; // 模板文件路径
-  link.download = '批量改机器状态模板.xlsx';
+  link.download = t('page.faults.uploadFileBatchStatus.templateName');
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  message.success('模板下载已开始');
+  message.success(t('page.faults.uploadFileBatchStatus.templateDownloaded'));
 };
 </script>
 <style scoped lang="scss">
@@ -273,5 +280,18 @@ const downloadTemplate = () => {
 }
 :deep(.n-input-wrapper){
   font-size: 12px !important;
+}
+.custom-file-upload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.file-name {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 </style>

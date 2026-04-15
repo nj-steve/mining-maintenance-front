@@ -4,7 +4,7 @@
     <NInput
       v-model:value="serialModel"
       @change="emit('search')"
-      placeholder="请输入场地名称"
+      :placeholder="t('page.miningSite.searchBar.placeholder.siteName')"
       clearable
       style="width: 240px"
       size="medium"
@@ -16,7 +16,7 @@
       :options="salerOptions"
       clearable
       filterable
-      placeholder="选择售后专员"
+      :placeholder="t('page.miningSite.searchBar.placeholder.afterSalesSpecialist')"
       style="width: 200px"
       size="medium"
       @update:value="emit('search')"
@@ -28,7 +28,7 @@
       :options="siteStatusOptions"
       clearable
       filterable
-      placeholder="选择站点状态"
+      :placeholder="t('page.miningSite.searchBar.placeholder.siteStatus')"
       style="width: 200px"
       size="medium"
       @update:value="emit('search')"
@@ -40,7 +40,7 @@
       :options="bindTypeOptions"
       clearable
       filterable
-      placeholder="选择绑定工单类型"
+      :placeholder="t('page.miningSite.searchBar.placeholder.bindType')"
       style="width: 200px"
       size="medium"
       @update:value="emit('search')"
@@ -52,6 +52,9 @@
 import { computed } from 'vue';
 import { NInput, NSelect } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   serial: string;

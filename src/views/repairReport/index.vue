@@ -3,19 +3,19 @@
     <NCard :bordered="false" class="rounded-8px shadow-sm">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-12px">
-          <span class="text-14px text-gray-600">统计周期</span>
+          <span class="text-14px text-gray-600">{{ $t('page.repairReport.statisticalPeriod') }}</span>
           <NRadioGroup v-model:value="periodMode" size="small">
-            <NRadioButton value="custom">自定义</NRadioButton>
-            <NRadioButton value="quick">快捷</NRadioButton>
+            <NRadioButton value="custom">{{ $t('page.repairReport.custom') }}</NRadioButton>
+            <NRadioButton value="quick">{{ $t('page.repairReport.quick') }}</NRadioButton>
           </NRadioGroup>
           <div v-if="periodMode === 'custom'" class="flex items-center gap-8px">
             <NDatePicker v-model:value="customRange" type="daterange" clearable size="small" @update:value="handleQuery" />
           </div>
           <div v-else class="flex items-center gap-8px">
-            <NButton size="small" :type="quickRange === 30 ? 'primary' : 'default'" :ghost="quickRange === 30" @click="quickRange = 30;handleQuery()">近 30 天</NButton>
-            <NButton size="small" :type="quickRange === 60 ? 'primary' : 'default'" :ghost="quickRange === 60" @click="quickRange = 60;handleQuery()">近 60 天</NButton>
-            <NButton size="small" :type="quickRange === 90 ? 'primary' : 'default'" :ghost="quickRange === 90" @click="quickRange = 90;handleQuery()">近 90 天</NButton>
-            <NButton size="small" :type="quickRange === 0 ? 'primary' : 'default'" :ghost="quickRange === 0" @click="quickRange = 0;handleQuery()">全部</NButton>
+            <NButton size="small" :type="quickRange === 30 ? 'primary' : 'default'" :ghost="quickRange === 30" @click="quickRange = 30;handleQuery()">{{ $t('page.repairReport.last30Days') }}</NButton>
+            <NButton size="small" :type="quickRange === 60 ? 'primary' : 'default'" :ghost="quickRange === 60" @click="quickRange = 60;handleQuery()">{{ $t('page.repairReport.last60Days') }}</NButton>
+            <NButton size="small" :type="quickRange === 90 ? 'primary' : 'default'" :ghost="quickRange === 90" @click="quickRange = 90;handleQuery()">{{ $t('page.repairReport.last90Days') }}</NButton>
+            <NButton size="small" :type="quickRange === 0 ? 'primary' : 'default'" :ghost="quickRange === 0" @click="quickRange = 0;handleQuery()">{{ $t('page.repairReport.all') }}</NButton>
           </div>
         </div>
         <div class="flex items-center gap-8px">
@@ -23,16 +23,16 @@
             <template #icon>
               <Icon icon="ant-design:search-outlined" />
             </template>
-            查询
+            {{ $t('common.search') }}
           </NButton>
-          <NButton size="small" @click="handleReset">重置</NButton>
+          <NButton size="small" @click="handleReset">{{ $t('common.reset') }}</NButton>
         </div>
       </div>
     </NCard>
 
     <NTabs v-model:value="activeTab" type="line">
-      <NTab name="site" tab="场地维度分析" />
-      <NTab name="station" tab="网点维度分析" />
+      <NTab name="site" :tab="$t('page.repairReport.siteDimensionAnalysis')" />
+      <NTab name="station" :tab="$t('page.repairReport.stationDimensionAnalysis')" />
     </NTabs>
     <div v-if="activeTab === 'site'">
       <SiteInfo :start-date="queryStartDate" :end-date="queryEndDate" />
@@ -51,7 +51,10 @@ import SiteInfo from './components/siteInfo.vue'
 import StationInfo from './components/stationInfo.vue'
 import dayjs from 'dayjs'
 
-// const message = useMessage()
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+const message = useMessage()
 
 const periodMode = ref<'custom' | 'quick'>('quick')
 const quickRange = ref<number>(60)
@@ -88,7 +91,7 @@ function handleQuery() {
   queryStartDate.value = start
   queryEndDate.value = end
 
-  // message.success('已按筛选条件查询')
+  message.success(t('page.repairReport.searchSuccess'))
 }
 
 function handleReset() {
@@ -97,7 +100,7 @@ function handleReset() {
   customRange.value = null
   // activeTab.value = 'site' // Keep current tab
   handleQuery() // Reset triggers query with default values
-  // message.success('已重置筛选')
+  message.success(t('page.repairReport.resetSuccess'))
 }
 
 watch([periodMode, quickRange, customRange], () => {

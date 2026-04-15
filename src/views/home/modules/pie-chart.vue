@@ -97,14 +97,14 @@ watch(
     const today = (val?.today_data || {}) as Partial<TodayData>;
     updateOptions(opts => {
       opts.series[0].data = [
-        { name: '待修数', value: today.wait_repair_count ?? 0 },
-        { name: '今日下架', value: today.off_shelf_count ?? 0 },
-        { name: '待处理', value: today.pending_count ?? 0 },
-        { name: '物流中', value: today.logistics_count ?? 0 },
-        { name: '在修设备', value: today.repairing_count ?? 0 },
-        { name: '今日维修', value: today.repaired_count ?? 0 },
-        { name: '待上架', value: today.wait_on_shelf_count ?? 0 },
-        { name: '报废数', value: today.scrapped_count ?? 0 }
+        { name: $t('page.home.section1Area.pendingRepair'), value: today.wait_repair_count ?? 0 },
+        { name: $t('page.home.section1Area.removedToday'), value: today.off_shelf_count ?? 0 },
+        { name: $t('page.home.section1Area.pendingProcessing'), value: today.pending_count ?? 0 },
+        { name: $t('page.home.section1Area.inTransit'), value: today.logistics_count ?? 0 },
+        { name: $t('page.home.section1Area.devicesUnderRepair'), value: today.repairing_count ?? 0 },
+        { name: $t('page.home.section1Area.repairedToday'), value: today.repaired_count ?? 0 },
+        { name: $t('page.home.section1Area.pendingListing'), value: today.wait_on_shelf_count ?? 0 },
+        { name: $t('page.home.section1Area.scrappedCount'), value: today.scrapped_count ?? 0 }
       ];
       return opts;
     });

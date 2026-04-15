@@ -13,7 +13,13 @@ import SearchFilters from './components/SearchFilters.vue';
 import ActionButtons from './components/ActionButtons.vue'
 import AddLogModal from './components/AddLogModal.vue'
 import { useAuthStore } from '@/store/modules/auth';
+import { useI18n } from 'vue-i18n';
 
+defineOptions({
+  name: 'WorkFlow'
+});
+
+const { t } = useI18n();
 const router = useRouter();
 interface Order {
   ID: number;                     // 工单ID
@@ -65,7 +71,7 @@ const pagination = ref<PaginationProps>({
   showSizePicker: true,
   pageSizes: [10, 20, 50, 100],
   prefix({ itemCount }) {
-    return `共 ${itemCount} 条`
+    return t('page.workflow.totalItems', { count: itemCount })
   },
   onChange: page => {
     pagination.value.page = page;
@@ -119,7 +125,7 @@ const handleOpenEdit = (row: Order) => {
     "onsite": row.Onsite||0,
     "order_status": row.OrderStatus||0,
     "payment_date": row.PaymentDate && row.PaymentDate!==""? dayjs(row.PaymentDate).format("YYYY-MM-DD"):null,
-    // payment_date: row.PaymentDate && row.PaymentDate!=="" ? dayjs(row.PaymentDate).valueOf().toString() : null, 
+    // payment_date: row.PaymentDate && row.PaymentDate!=="" ? dayjs(row.PaymentDate).valueOf().toString() : null,
     "repair_cost": row.RepairCost||0,
     "settlement_status": row.SettlementStatus||0,
     "total_cost": row.TotalCost||0,
@@ -165,29 +171,29 @@ const handleOpenDispatch = (row: Order) => {
 // 批量派单处理
 const handleBatchDispatch = () => {
   if (selectedOrders.value.length === 0) {
-    message.warning('请先选择要派单的工单');
+    message.warning(t('page.workflow.pleaseSelectOrderToDispatch'));
     return;
   }
-  
+
   // 检查是否存在已派单的工单（StationID != 0）
   const alreadyDispatchedOrders = selectedOrders.value.filter(order => order.StationID !== 0);
   if (alreadyDispatchedOrders.length > 0) {
-    message.warning('请选择未派单的工单');
+    message.warning(t('page.workflow.pleaseSelectUnDispatchedOrder'));
     return;
   }
-  
+
   // 使用第一个选中的工单作为模板
   currentOrder.value = selectedOrders.value[0];
-  
+
   // 重置表单
   dispatchForm.value = {
     fault_count: selectedOrders.value.reduce((sum, order) => sum + order.FaultCount, 0),
     repair_method: null as null | number,
     repair_station_id: null as null | number,
     order_ids: selectedOrders.value.map(order => order.ID),
-    remark: `批量派单 - 共${selectedOrders.value.length}个工单`
+    remark: t('page.workflow.batchDispatchRemark', { count: selectedOrders.value.length })
   };
-  
+
   showDispatchModal.value = true;
 };
 
@@ -196,12 +202,12 @@ const handleSubmitDispatch = async () => {
   if (!currentOrder.value) return;
 
   if (dispatchForm.value.repair_method === null) {
-    message.error('请选择维修方式');
+    message.error(t('page.workflow.pleaseSelectRepairMethod'));
     return;
   }
 
   if (dispatchForm.value.repair_station_id === null) {
-    message.error('请选择维修站');
+    message.error(t('page.workflow.pleaseSelectStation'));
     return;
   }
   try {
@@ -217,14 +223,14 @@ const handleSubmitDispatch = async () => {
 
     // 判断是批量派单还是单个派单
     const ordersToDispatch = selectedOrders.value.length > 0 ? selectedOrders.value : [currentOrder.value];
-    
+
     let successCount = 0;
     let failCount = 0;
-    
+
     // for (const order of ordersToDispatch) {
       try {
         const res = await dispatchOrders(submitData);
-        
+
         if (res.response?.data?.code == String(0)) {
           successCount++;
         } else {
@@ -235,19 +241,19 @@ const handleSubmitDispatch = async () => {
       }
     // }
     if (failCount === 0) {
-      message.success(`派单成功！共处理${successCount}个工单`);
+      message.success(t('page.workflow.dispatchSuccess', { successCount }));
     } else if (successCount === 0) {
-      message.error(`派单失败！共${failCount}个工单处理失败`);
+      message.error(t('page.workflow.dispatchFail', { failCount }));
     } else {
-      message.warning(`部分成功：${successCount}个成功，${failCount}个失败`);
+      message.warning(t('page.workflow.dispatchPartialSuccess', { successCount, failCount }));
     }
     fetchData(); // 刷新表格
     showDispatchModal.value = false;
     checkedRowKeys.value = []; // 清空选择
-    
-    
+
+
   } catch (err) {
-    message.error('派单失败');
+    message.error(t('page.workflow.dispatchFailed'));
   }
 };
 
@@ -255,30 +261,30 @@ const handleGoback=async(row: Order)=>{
   // 确认退回（Naive UI 对话框）
   const confirm = await new Promise<boolean>((resolve) => {
     (window as any).$dialog?.warning({
-      title: '确认退回工单？',
-      content: `是否确认退回工单 ${row.OrderNo}？`,
-      positiveText: '确认',
-      negativeText: '取消',
+      title: t('page.workflow.confirmReturnOrderTitle'),
+      content: t('page.workflow.confirmReturnOrderContent', { orderNo: row.OrderNo }),
+      positiveText: t('page.workflow.confirm'),
+      negativeText: t('page.workflow.cancel'),
       onPositiveClick: () => resolve(true),
       onNegativeClick: () => resolve(false)
     });
   });
   if (!confirm) return;
-  
+
   try {
     const res = await gobackOrders(row.ID, {
       order_status: 1,
-      remark: '用户退回工单'
+      remark: t('page.workflow.userReturnOrder')
     });
-    
+
     if (res.response?.data?.code == String(0)) {
-      message.success('退回成功！');
+      message.success(t('page.workflow.returnSuccess'));
       await fetchData(); // 刷新表格
     } else {
-      message.error('退回失败:' + (res.response?.data?.msg || ''));
+      message.error(t('page.workflow.returnFailed') + (res.response?.data?.msg || ''));
     }
   } catch (err) {
-    message.error('退回失败');
+    message.error(t('page.workflow.returnFailed'));
   }
 };
 
@@ -302,15 +308,15 @@ const handleSaveEdit = async () => {
 
     if (error == null) {
       if (Number(data?.code) == 0) {
-        message.success('修改成功！');
+        message.success(t('page.workflow.modifySuccess'));
         // 刷新数据
         fetchData();
       }
-    }  
+    }
 
 
   } catch (err) {
-    message.error('修改失败');
+    message.error(t('page.workflow.modifyFailed'));
   }finally{
     showEditModal.value = false;
   }
@@ -323,9 +329,9 @@ const columns: DataTableColumns<Order> = [
     type: 'selection',
     width: 50
   },
-  { 
-    title: () => renderHeaderTitle('工单编号'), 
-    key: 'OrderNo', 
+  {
+    title: () => renderHeaderTitle(t('page.workflow.orderNo')),
+    key: 'OrderNo',
     width: 220,
     fixed: 'left',
     render: (row: Order) => {
@@ -336,9 +342,9 @@ const columns: DataTableColumns<Order> = [
       const onCopy = async () => {
         try {
           await navigator.clipboard.writeText(full);
-          message.success('工单编号已复制');
+          message.success(t('page.workflow.copySuccess'));
         } catch (e) {
-          message.error('复制失败');
+          message.error(t('page.workflow.copyFailed'));
         }
       };
       return h(
@@ -346,10 +352,10 @@ const columns: DataTableColumns<Order> = [
         null,
         {
           trigger: () => h(
-            'div', 
-            { 
+            'div',
+            {
               style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
-            }, 
+            },
             [
               h(
                 'span',
@@ -372,7 +378,7 @@ const columns: DataTableColumns<Order> = [
       );
     }
   },
-  { title: () => renderHeaderTitle('故障机数量'), key: 'FaultCount', width: 200, render: (row: any ) => {
+  { title: () => renderHeaderTitle(t('page.workflow.faultCount')), key: 'FaultCount', width: 200, render: (row: any ) => {
     const total = Number(row.FaultCount ?? 0)
     const repaired = Number(row.RepairedCount ?? 0)
     const safeTotal = total > 0 ? total : 0
@@ -392,7 +398,7 @@ const columns: DataTableColumns<Order> = [
       ]
     )
   }},
-  { title: () => renderHeaderTitle('维修方式'), key: 'RepairMethod',
+  { title: () => renderHeaderTitle(t('page.workflow.repairMethod')), key: 'RepairMethod',
     render: (row: any ) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         1: 'success',
@@ -400,23 +406,23 @@ const columns: DataTableColumns<Order> = [
         3: 'primary',
       };
       // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, { class: 'text-xs', type: tagMap[row.RepairMethod || '无'],size:'small', round:true }, () => repairMethodRecord[row.RepairMethod || '未知'] || '未知')
+      return h(NTag, { class: 'text-xs', type: tagMap[row.RepairMethod || '-'],size:'small', round:true }, () => repairMethodRecord[row.RepairMethod || t('page.workflow.unknown')] || t('page.workflow.unknown'))
     }
   },
-  { title: () => renderHeaderTitle('工单状态'), key: 'OrderStatusText',
+  { title: () => renderHeaderTitle(t('page.workflow.orderStatus')), key: 'OrderStatusText',
       render: (row: any) => {
         const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '已完成': 'success',
-        '维修': 'primary',
-        '未解决': 'error',
-        '待处理':'warning',
-        '处理中':'primary',
+        [t('page.workflow.completed')]: 'success',
+        [t('page.workflow.repairing')]: 'primary',
+        [t('page.workflow.unresolved')]: 'error',
+        [t('page.workflow.pending')]: 'warning',
+        [t('page.workflow.processing')]: 'primary',
         };
-        const label = row.OrderStatusText || '未知';
-        return h(NTag, { class: 'text-xs', type: tagMap[row.OrderStatusText || '未知'],size:'small', round:true }, () => label)
+        const label = row.OrderStatusText || t('page.workflow.unknown');
+        return h(NTag, { class: 'text-xs', type: tagMap[row.OrderStatusText || t('page.workflow.unknown')] || 'default',size:'small', round:true }, () => label)
       }
   },
-   { title: () => renderHeaderTitle('创建时间'), key: 'CreatedAt',
+   { title: () => renderHeaderTitle(t('page.workflow.createdAt')), key: 'CreatedAt',
       render: (row: any) => {
         if (!row.CreatedAt) {
           return '-';
@@ -428,54 +434,55 @@ const columns: DataTableColumns<Order> = [
   // { title: '总费用', key: 'RepairCost',
   //   render: (row: any ) => {
   //     if (row.RepairCost === null || row.RepairCost === undefined) {
-  //       return '未知';
+  //       return t('page.workflow.unknown');
   //     }
-  //     return row.RepairCost || '未知';
+  //     return row.RepairCost || t('page.workflow.unknown');
   //   }
   //  },
   ...(hasRole ? [
-    { title: () => renderHeaderTitle('付款状态'), key: 'SettlementStatus', 
+    { title: () => renderHeaderTitle(t('page.workflow.paymentStatus')), key: 'SettlementStatus',
       render: (row: any ) => {
         if (row.SettlementStatusText === null || row.SettlementStatusText === undefined) {
           return null;
         }
         //待处理，处理中，已完成，未解决
         const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-          '已付款': 'success',
-          '未付款': 'warning',
-          '未申请': 'default',
+          [t('page.workflow.paid')]: 'success',
+          [t('page.workflow.unpaid')]: 'warning',
+          [t('page.workflow.unapplied')]: 'default',
         };
 
-        const label = row.SettlementStatusText || '未知';
+        const label = row.SettlementStatusText || t('page.workflow.unknown');
         // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-        return h(NTag, { class: 'text-sm', type: tagMap[row.SettlementStatusText || '未知'],size:'small', round:true }, () => label)
+        return h(NTag, { class: 'text-sm', type: tagMap[row.SettlementStatusText || t('page.workflow.unknown')] || 'default',size:'small', round:true }, () => label)
       }
     },
-    { title: () => renderHeaderTitle('付款日期'), key: 'PaymentDate',
+    { title: () => renderHeaderTitle(t('page.workflow.paymentDate')), key: 'PaymentDate',
       render: (row: Order) => {
-        if (!row.PaymentDate) {
-          return '-';
+        if (!row.PaymentDate || row.PaymentDate === '0001-01-01T00:00:00Z') {
+          return h('span', { class: 'text-sm text-gray-500' }, '-');
         }
         return h('span', { class: 'text-sm text-gray-500' }, dayjs(row.PaymentDate).format('YYYY-MM-DD'));
       }
     },
 
-      { title: () => renderHeaderTitle('创建日期'), key: 'CreateDate',
+      { title: () => renderHeaderTitle(t('page.workflow.createDate')), key: 'CreateDate',
       render: (row: Order) => {
-        if (!row.CreatedAt) {
-          return '-';
+        if (!row.CreatedAt || row.CreatedAt === '0001-01-01T00:00:00Z') {
+          return h('span', { class: 'text-sm text-gray-500' }, '-');
         }
         return h('span', { class: 'text-sm text-gray-500' }, dayjs(row.CreatedAt).format('YYYY-MM-DD'));
       }
     },
   ] : []),
-  { title: () => renderHeaderTitle('场地'), key: 'SiteName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SiteName || '') },
-    { 
-    title: () => renderHeaderTitle('维修商'), 
-    key: 'StationName', 
+  { title: () => renderHeaderTitle(t('page.workflow.site')), key: 'SiteName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SiteName || '') },
+    {
+    title: () => renderHeaderTitle(t('page.workflow.repairer')),
+    key: 'StationName',
     width: 120,
     render: (row: any) => {
       const text = row.StationName || '';
+      if (!text) return h('span', { class: 'text-sm text-gray-500' }, '-');
       return h(
         NTooltip,
         null,
@@ -486,11 +493,11 @@ const columns: DataTableColumns<Order> = [
       );
     }
   },
-  ...(hasRole ? [{ title: () => renderHeaderTitle('售后专员'), key: 'SalerName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SalerName || '') }] : []),
+  ...(hasRole ? [{ title: () => renderHeaderTitle(t('page.workflow.afterSalesSpecialist')), key: 'SalerName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SalerName || '') }] : []),
 
   // { title: '短保期开始', key: 'warranty_status_text' },
   // { title: '剩余短保期', key: 'warranty_status_text' },
-  { title: () => renderHeaderTitle('操作'),
+  { title: () => renderHeaderTitle(t('page.workflow.operation')),
     key: 'actions',
     fixed: 'right',
     render: (row: Order) => {
@@ -502,7 +509,7 @@ const columns: DataTableColumns<Order> = [
         onDetail: () => handleOpenDetail(row),
         onDispatch: () => handleOpenDispatch(row),
         onReturn: () => handleGoback(row)
-      })
+      });
     }
   }
 ];
@@ -531,10 +538,10 @@ const fetchData = async () => {
         pagination.value.page =  data.pagination.page;
         pagination.value.pageSize =  data.pagination.page_size;
     }else{
-        message.error(`加载失败: ${error}`);
+        message.error(t('page.workflow.loadFailed') + error);
     }
   } catch (err) {
-    message.error(`加载失败${err}`);
+    message.error(t('page.workflow.loadFailed') + err);
   } finally {
     loading.value = false;
   }
@@ -571,7 +578,7 @@ const fetchSiteData = async () => {
       }));
     }
   } catch (err) {
-    message.error('获取场地数据失败');
+    message.error(t('page.workflow.getSiteDataFailed'));
   }
 };
 
@@ -588,7 +595,7 @@ const fetchStationData = async () => {
       }));
     }
   } catch (err) {
-    message.error('获取维修站数据失败');
+    message.error(t('page.workflow.getStationDataFailed'));
   }
 };
 
@@ -602,17 +609,17 @@ const fetchOrderStatusData = async () => {
 
   try {
     const {data,error} = await fetchOrdersStatus(params);
-    
+
     if(error==null){
        statusOptions.value = data.map((item: any) => ({
         label: item.name,
         value: item.id,
       }));
     }else{
-        message.error(`加载失败: ${error}`);
+        message.error(t('page.workflow.loadFailed') + error);
     }
   } catch (err) {
-    message.error(`加载失败${err}`);
+    message.error(t('page.workflow.loadFailed') + err);
   } finally {
     loading.value = false;
   }
@@ -663,12 +670,12 @@ const fetchDetailData = async (orderId: number) => {
       detailData.value = data;
       operation_history.value = data.operation_history.sort((a: any, b: any) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime());
     } else {
-      message.error("获取工单日志失败");
+      message.error(t('page.workflow.getOrderLogFailed'));
       detailData.value ={order_no:""}
       operation_history.value = [];
     }
   } catch (err) {
-    message.error("获取工单日志异常");
+    message.error(t('page.workflow.getOrderLogException'));
     detailData.value ={order_no:""}
     operation_history.value = [];
   }
@@ -706,39 +713,39 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
         @search="fetchData"
         @reset="handleReset"
       />
-    
-    <div class="flex-1 flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto"> 
+
+    <div class="flex-1 flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
     <!-- 查询框和批量操作 -->
     <div class="mb-4" style="margin-bottom: 16px; display: flex; justify-content: flex-end;">
       <!-- 第一行：批量操作按钮 -->
       <div class="flex items-center gap-2" v-if="hasRole">
-        <NButton 
-          type="primary" 
+        <NButton
+          type="primary"
           ghost
           size="medium"
           :disabled="!isBatchDispatchEnabled"
           :class="{ 'batch-dispatch-disabled': !isBatchDispatchEnabled, 'batch-dispatch-enabled': isBatchDispatchEnabled }"
           @click="handleBatchDispatch"
         >
-          批量派单 ({{ selectedOrders.length }})
+          {{ t('page.workflow.batchDispatch', { count: selectedOrders.length }) }}
         </NButton>
       <div>
      <NSwitch v-model:value="onlyMySite" size="medium" />
-    <span style="font-size: 12px; margin-left: 4px;">我的场地</span>
+    <span style="font-size: 12px; margin-left: 4px;">{{ t('page.workflow.mySite') }}</span>
     </div>
       </div>
     </div>
     <!-- 表格 -->
-    <NDataTable 
+    <NDataTable
       flex-height
-      :columns="columns" 
-      :data="tableData" 
-      :pagination="pagination" 
-      :loading="loading" 
+      :columns="columns"
+      :data="tableData"
+      :pagination="pagination"
+      :loading="loading"
       :fixed="['actions']"
       :row-key="(row: Order) => row.ID"
       v-model:checked-row-keys="checkedRowKeys"
-      remote 
+      remote
       :scroll-x="1800"
       striped
       class="sm:h-full"
@@ -746,56 +753,56 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
     </div>
 
     <!-- 修改弹框 -->
-    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" title="修改工单信息">
+    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" :title="t('page.workflow.modifyOrderInfo')">
       <NForm :model="editForm" label-width="100">
         <!-- 工单编号 -->
-    <NFormItem label="工单编号">
+    <NFormItem :label="t('page.workflow.orderNo')">
       <NInput size="medium" v-model:value="editForm.order_no" disabled />
     </NFormItem>
 
-      <NFormItem label="维修方式" required>
-          <NSelect 
+      <NFormItem :label="t('page.workflow.repairMethod')" required>
+          <NSelect
             v-model:value="editForm.repair_method"
             :options="repairMethodOptions"
-            placeholder="请选择维修方式"
+            :placeholder="t('page.workflow.pleaseSelectRepairMethodPlaceholder')"
           />
       </NFormItem>
 
       <!-- 选择维修站 -->
-        <NFormItem label="选择维修站" required>
-          <NSelect 
+        <NFormItem :label="t('page.workflow.selectStation')" required>
+          <NSelect
             v-model:value="editForm.repair_station_id"
             :options="stationOptions"
-            placeholder="请选择就近维修站"
+            :placeholder="t('page.workflow.pleaseSelectNearestStation')"
           />
         </NFormItem>
 
-    <NFormItem label="付款状态">
+    <NFormItem :label="t('page.workflow.paymentStatus')">
         <NSelect size="medium"
           v-model:value="editForm.settlement_status"
-          :options="[{ label: '未付款', value: 1 }, { label: '已付款', value: 2 }]"
+          :options="[{ label: t('page.workflow.unpaid'), value: 1 }, { label: t('page.workflow.paid'), value: 2 }]"
         />
       </NFormItem>
 
-      <NFormItem label="工单状态">
+      <NFormItem :label="t('page.workflow.orderStatus')">
         <NSelect size="medium"
           v-model:value="editForm.order_status"
           :options="statusOptions"
         />
       </NFormItem>
-      </NForm> 
+      </NForm>
       <template #footer>
         <n-space item-style="display: flex;">
-        <NButton size="medium" type="primary" @click="handleSaveEdit" style="margin-right: 8px;">保存</NButton>
-        <NButton size="medium" @click="showEditModal = false">取消</NButton>
+        <NButton size="medium" type="primary" @click="handleSaveEdit" style="margin-right: 8px;">{{ t('page.workflow.save') }}</NButton>
+        <NButton size="medium" @click="showEditModal = false">{{ t('page.workflow.cancel') }}</NButton>
         </n-space>
       </template>
     </NModal>
 
     <!-- 查看详情弹框 -->
-    <NModal v-model:show="showDetailModal" style="width: 600px" preset="card" title="工单操作日志">
+    <NModal v-model:show="showDetailModal" style="width: 600px" preset="card" :title="t('page.workflow.orderOperationLog')">
       <div v-if="operation_history.length > 0" class="detail-container">
-        <h2>工单编号：{{ detailData?.order_no }}</h2>
+        <h2>{{ t('page.workflow.orderNo') }}：{{ detailData?.order_no }}</h2>
         <div class="timeline">
         <div v-for="(log, index) in operation_history" :key="log.occurred_at" class="timeline-item">
           <div class="timeline-line" :class="{ 'is-first': index === 0, 'is-last': index === operation_history.length - 1 }">
@@ -808,7 +815,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
             </div>
             <div class="timeline-body">
               <div class="timeline-description">{{ log.info }}</div>
-              <div class="timeline-operator">操作人：{{ log.operator_name }}</div>
+              <div class="timeline-operator">{{ t('page.workflow.operator') }}{{ log.operator_name }}</div>
             </div>
             </div>
           </div>
@@ -816,55 +823,55 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
       </div>
 
       <template #footer>
-        <NButton @click="showDetailModal = false">关闭</NButton>
+        <NButton @click="showDetailModal = false">{{ t('page.workflow.close') }}</NButton>
       </template>
     </NModal>
-    
+
     <!-- 派单弹框 -->
-    <NModal v-model:show="showDispatchModal" style="width: 600px" preset="card" title="派单">
+    <NModal v-model:show="showDispatchModal" style="width: 600px" preset="card" :title="t('page.workflow.dispatch')">
       <NForm :model="dispatchForm" label-width="120">
         <!-- 选择故障机数量 -->
-        <NFormItem label="选择故障机数量">
+        <NFormItem :label="t('page.workflow.selectFaultCount')">
           <NInputNumber disabled v-model:value="dispatchForm.fault_count" :min="1" />
         </NFormItem>
 
         <!-- 是否驻场 -->
         <!-- <NFormItem label="是否驻场" required>
-          <NSelect 
+          <NSelect
             v-model:value="dispatchForm.onsite"
             :options="siteStationOptions"
             placeholder="请选择"
           />
         </NFormItem> -->
-        <NFormItem label="维修方式" required>
-          <NSelect 
+        <NFormItem :label="t('page.workflow.repairMethod')" required>
+          <NSelect
             v-model:value="dispatchForm.repair_method"
             :options="repairMethodOptions"
-            placeholder="请选择维修方式"
+            :placeholder="t('page.workflow.pleaseSelectRepairMethodPlaceholder')"
           />
         </NFormItem>
-        
+
         <!-- 选择维修站 -->
-        <NFormItem label="选择维修站" required>
-          <NSelect 
+        <NFormItem :label="t('page.workflow.selectStation')" required>
+          <NSelect
             v-model:value="dispatchForm.repair_station_id"
             :options="stationOptions"
-            placeholder="请选择就近维修站"
+            :placeholder="t('page.workflow.pleaseSelectNearestStation')"
           />
         </NFormItem>
           <!-- 备注 -->
-          <NFormItem label="备注">
-            <NInput 
+          <NFormItem :label="t('page.workflow.remark')">
+            <NInput
               v-model:value="dispatchForm.remark"
               type="textarea"
-              placeholder="请填写其他需要说明的信息"
+              :placeholder="t('page.workflow.pleaseEnterRemark')"
             />
           </NFormItem>
       </NForm>
 
       <template #footer>
-        <NButton type="primary" style="margin-right: 8px;" @click="handleSubmitDispatch">确认派单</NButton>
-        <NButton @click="showDispatchModal = false">取消</NButton>
+        <NButton type="primary" style="margin-right: 8px;" @click="handleSubmitDispatch">{{ t('page.workflow.confirmDispatch') }}</NButton>
+        <NButton @click="showDispatchModal = false">{{ t('page.workflow.cancel') }}</NButton>
       </template>
     </NModal>
 

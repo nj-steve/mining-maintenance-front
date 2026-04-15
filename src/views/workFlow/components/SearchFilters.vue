@@ -4,132 +4,135 @@
      <template #header>
       <!-- 工单编号 -->
        <div class="text-sm text-gray-500" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
-      <NInput 
-        v-model:value="serialModel" 
-        placeholder="工单号" 
-        clearable 
+      <NInput
+        v-model:value="serialModel"
+        :placeholder="t('page.workflow.orderNo')"
+        clearable
         size="small"
         class="text-sm text-gray-500"
         style="width: 95%;"
       />
       <!-- 场地筛选 -->
        <div class="relative" style="width: 95%;">
-         <NButton 
-         size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter"> 
+         <NButton
+         size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter">
            <span class="truncate">{{ getSelectedSiteLabel() }}</span>
-           <Icon 
-             v-if="siteIdModel" 
-             icon="ant-design:close-circle-outlined" 
-             class="ml-2 text-xs text-gray-400 hover:text-gray-600 z-10" 
-             @click.stop="clearSiteSelection" 
+           <Icon
+             v-if="siteIdModel"
+             icon="ant-design:close-circle-outlined"
+             class="ml-2 text-xs text-gray-400 hover:text-gray-600 z-10"
+             @click.stop="clearSiteSelection"
            />
            <Icon v-else icon="ant-design:down-outlined" class="ml-2 text-xs" />
-         </NButton> 
-         <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]"> 
-           <div class="font-medium text-gray-900 mb-3">选择场地</div> 
-           <NInput size="small" placeholder="搜索场地..." class="mb-3" v-model:value="siteNameFilter" /> 
-           <div class="max-h-60 overflow-y-auto"> 
-             <div 
-               v-for="site in filteredSiteOptions" 
-               :key="String(site.value)" 
-               class="flex items-center py-2 hover:bg-gray-50 rounded px-2" 
-             > 
-               <input 
-                 type="checkbox" 
-                 :id="`site-${site.value}`" 
-                 class="h-4 w-4 text-blue-600 rounded border-gray-300" 
-                 :checked="isSiteSelected(Number(site.value))" 
-                 @change="toggleSiteSelection(Number(site.value))" 
-               /> 
-               <label :for="`site-${site.value}`" class="ml-2 text-gray-700 cursor-pointer flex-grow">{{ site.label }}</label> 
-             </div> 
-           </div> 
-           <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200 gap-2"> 
-             <NButton size="small" @click="showSiteFilter = false">取消</NButton> 
-             <NButton size="small" type="primary" @click="applySiteFilter">应用</NButton> 
-           </div> 
-         </div> 
+         </NButton>
+         <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]">
+           <div class="font-medium text-gray-900 mb-3">{{ t('page.workflow.site') }}</div>
+           <NInput size="small" :placeholder="t('page.workflow.searchSite')" class="mb-3" v-model:value="siteNameFilter" />
+           <div class="max-h-60 overflow-y-auto">
+             <div
+               v-for="site in filteredSiteOptions"
+               :key="String(site.value)"
+               class="flex items-center py-2 hover:bg-gray-50 rounded px-2"
+             >
+               <input
+                 type="checkbox"
+                 :id="`site-${site.value}`"
+                 class="h-4 w-4 text-blue-600 rounded border-gray-300"
+                 :checked="isSiteSelected(Number(site.value))"
+                 @change="toggleSiteSelection(Number(site.value))"
+               />
+               <label :for="`site-${site.value}`" class="ml-2 text-gray-700 cursor-pointer flex-grow">{{ site.label }}</label>
+             </div>
+           </div>
+           <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200 gap-2">
+             <NButton size="small" @click="showSiteFilter = false">{{ t('page.workflow.cancel') }}</NButton>
+             <NButton size="small" type="primary" @click="applySiteFilter">{{ t('page.workflow.apply') }}</NButton>
+           </div>
+         </div>
        </div>
-      
+
       <!-- 维修站筛选 -->
-      <NSelect 
+      <NSelect
         v-if="hasRole"
-        v-model:value="stationIdModel" 
-        :options="stationOptions" 
-        placeholder="请选择维修站" 
-        clearable 
+        v-model:value="stationIdModel"
+        :options="stationOptions"
+        :placeholder="t('page.workflow.selectStation')"
+        clearable
         filterable
         size="small"
         class="text-sm text-gray-500"
         style="width: 95%;"
       />
-        <NSelect 
-        v-model:value="orderStatusModel" 
-        :options="statusOptions" 
-        placeholder="工单状态" 
+        <NSelect
+        v-model:value="orderStatusModel"
+        :options="statusOptions"
+        :placeholder="t('page.workflow.orderStatus')"
         size="small"
-        clearable 
+        clearable
         class="text-sm text-gray-500"
         style="width: 90%;"
       />
       </div>
      </template>
     <div v-show="!collapsed" class="text-sm text-gray-500" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
-      <NSelect 
+      <NSelect
         v-show="!onlyMySiteLocal && hasRole"
-        v-model:value="salerIdModel" 
-        :options="salerOptions" 
-        placeholder="售后专员" 
+        v-model:value="salerIdModel"
+        :options="salerOptions"
+        :placeholder="t('page.workflow.afterSalesSpecialist')"
         size="small"
-        clearable 
+        clearable
         class="text-sm text-gray-500"
         style="width: 90%;"
       />
       <!-- 开始时间 -->
-      <NDatePicker 
-        v-model:value="startDateModel" 
-        type="date" 
-        placeholder="开始时间" 
-        clearable 
+      <NDatePicker
+        v-model:value="startDateModel"
+        type="date"
+        :placeholder="t('page.workflow.startDate')"
+        clearable
         size="small"
         class="text-sm text-gray-500"
         style="width: 100%;"
       />
       <!-- 结束时间 -->
-      <NDatePicker 
-        v-model:value="endDateModel" 
-        type="date" 
+      <NDatePicker
+        v-model:value="endDateModel"
+        type="date"
         size="small"
-        placeholder="结束时间" 
-        clearable 
+        :placeholder="t('page.workflow.endDate')"
+        clearable
         class="text-sm text-gray-500"
         style="width: 100%;"
       />
       <!-- 工单状态 -->
-       
+
 
     </div>
     <template #header-extra>
       <div class="text-sm text-gray-500" style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
         <!-- 查询按钮 -->
-      <NButton type="primary" size="small" class="text-sm text-white" @click="emit('search')">查询</NButton>
-      <NButton size="small" class="text-sm text-gray-500" @click="emit('reset')">重置</NButton>
+      <NButton type="primary" size="small" class="text-sm text-white" @click="emit('search')">{{ t('page.workflow.search') }}</NButton>
+      <NButton size="small" class="text-sm text-gray-500" @click="emit('reset')">{{ t('page.workflow.reset') }}</NButton>
        <NButton quaternary size="small" class="text-sm text-gray-500" @click="collapsed = !collapsed">
-        {{ collapsed ? '展开' : '收起' }}
+        {{ collapsed ? t('page.workflow.expand') : t('page.workflow.collapse') }}
       </NButton>
       </div>
     </template>
   </NCard>
-  
+
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';  
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 
 import { NCard, NInput, NSelect, NDatePicker, NButton } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 import { fetchUser } from '@/service/api';
 import { Icon } from '@iconify/vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 const salerMap = ref<Record<number, string>>({});
 // import { useAuthStore } from '@/stores/auth';
 
@@ -154,15 +157,15 @@ const tempSelectedSiteId = ref<number | null>(null); // 临时选中的场地ID�
 
 const filteredSiteOptions = computed(() => {
   if (!siteNameFilter.value) return props.siteOptions;
-  return props.siteOptions.filter(site => 
+  return props.siteOptions.filter(site =>
     String(site.label).toLowerCase().includes(siteNameFilter.value.toLowerCase())
   );
 });
 
 const getSelectedSiteLabel = () => {
-  if (!siteIdModel.value) return '场地筛选';
+  if (!siteIdModel.value) return t('page.workflow.siteFilter');
   const site = props.siteOptions.find(s => s.value === siteIdModel.value);
-  return site ? String(site.label) : '场地筛选';
+  return site ? String(site.label) : t('page.workflow.siteFilter');
 };
 
 const isSiteSelected = (id: number) => {

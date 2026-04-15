@@ -5,8 +5,7 @@
     <div class=" mx-auto">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">报废机管理</h1>
-        <!-- <p class="text-gray-600">查看和管理所有报废设备信息</p> -->
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ t('page.scrapMachine.title') }}</h1>
       </div>
       <!-- Stats Cards -->
       <ScrapSummaryCards ref="summaryRef" />
@@ -26,16 +25,12 @@
           <div v-if="!isRead" class="flex gap-2">
             <button @click="exportExcel" class="!rounded-button whitespace-nowrap px-4 py-2 text-sm border border-gray-300 rounded-md flex items-center">
               <i class="fas fa-download mr-2"></i>
-              导出数据
+              {{ t('page.scrapMachine.exportData') }}
             </button>
-            <!-- <button class="!rounded-button whitespace-nowrap px-4 py-2 text-sm bg-blue-600 text-white rounded-md flex items-center">
-              <i class="fas fa-plus mr-2"></i>
-              新增报废
-            </button> -->
           </div>
         </div>
       </div>
-      
+
       <!-- Table -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
@@ -43,43 +38,43 @@
             <thead class="bg-gray-50">
               <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50">
-                  报废编号
+                  {{ t('page.scrapMachine.scrapNo') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  场地
+                  {{ t('page.scrapMachine.site') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  机型
+                  {{ t('page.scrapMachine.model') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  整机 SN
+                  {{ t('page.scrapMachine.machineSn') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  控制板 SN
+                  {{ t('page.scrapMachine.controlSn') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  板 1 SN
+                  {{ t('page.scrapMachine.board1Sn') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  板 2 SN
+                  {{ t('page.scrapMachine.board2Sn') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  板 3 SN
+                  {{ t('page.scrapMachine.board3Sn') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  电源 SN
+                  {{ t('page.scrapMachine.powerSn') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  状态
+                  {{ t('page.scrapMachine.status') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  报废日期
+                  {{ t('page.scrapMachine.scrapDate') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  报废次数
+                  {{ t('page.scrapMachine.scrapCount') }}
                 </th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 bg-white">
-                  操作
+                  {{ t('page.scrapMachine.action') }}
                 </th>
               </tr>
             </thead>
@@ -153,11 +148,11 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                  <span 
+                  <span
                     :class="[
                       'px-2 py-1 rounded-full text-xs',
-                      item.status === 1 ? 'text-yellow-600 bg-yellow-100' : 
-                      item.status === 2 ? 'text-blue-600 bg-blue-100' : 
+                      item.status === 1 ? 'text-yellow-600 bg-yellow-100' :
+                      item.status === 2 ? 'text-blue-600 bg-blue-100' :
                       item.status === 4 ? 'text-green-600 bg-green-100' :
                       'text-purple-600 bg-purple-100'
                     ]"
@@ -169,7 +164,7 @@
                   {{ formatYMD(item.scrap_time) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span class="font-medium text-gray-900">{{ item.scrap_count }} 次</span>
+                  <span class="font-medium text-gray-900">{{ item.scrap_count }} {{ t('page.scrapMachine.times') }}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm sticky right-0 bg-white">
                   <div v-if="!isRead" class="flex space-x-2">
@@ -185,17 +180,9 @@
                       :disabled="item.status != 2 || Number(item.scrap_count) === 1"
                       @click="confirmScrap(item)"
                     >
-                    <!-- {{ item.status === 3 ? '已审批' : '确认报废' }} -->
-                      {{ item.status >= 3 ? (item.status == 4 ? '已修复' : '已审批') : '确认报废' }}
+                    <!-- {{ item.status === 3 ? t('page.scrapMachine.approved') : t('page.scrapMachine.confirmScrap') }} -->
+                      {{ item.status >= 3 ? (item.status == 4 ? t('page.scrapMachine.repaired') : t('page.scrapMachine.approved')) : t('page.scrapMachine.confirmScrap') }}
                     </button>
-
-
-                    <!-- <button class="text-blue-600 hover:text-blue-900 text-sm px-2 py-1" @click="openDetail(item)">
-                      查看详情
-                    </button> -->
-                    <!-- <button class="text-red-600 hover:text-red-900 text-sm px-2 py-1">
-                      删除
-                    </button> -->
                   </div>
                 </td>
               </tr>
@@ -206,25 +193,29 @@
         <!-- Pagination -->
         <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
           <div class="flex-1 flex justify-between sm:hidden">
-            <button 
+            <button
               @click="prevPage"
               :disabled="currentPage === 1"
               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
-              上一页
+              {{ t('page.scrapMachine.previous') }}
             </button>
-            <button 
+            <button
               @click="nextPage"
               :disabled="currentPage === totalPages"
               class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
-              下一页
+              {{ t('page.scrapMachine.next') }}
             </button>
           </div>
           <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p class="text-sm text-gray-700">
-                显示第 <span class="font-medium">{{ (serverPagination.page - 1) * serverPagination.page_size + 1 }}</span> 至 <span class="font-medium">{{ Math.min(serverPagination.page * serverPagination.page_size, serverPagination.total) }}</span> 条记录，共 <span class="font-medium">{{ serverPagination.total }}</span> 条记录
+                {{ t('page.scrapMachine.showingRecords', {
+                  start: (serverPagination.page - 1) * serverPagination.page_size + 1,
+                  end: Math.min(serverPagination.page * serverPagination.page_size, serverPagination.total),
+                  total: serverPagination.total
+                }) }}
               </p>
               </div>
             <div>
@@ -234,7 +225,7 @@
                   :disabled="currentPage === 1"
                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
-                  <span class="sr-only">上一页</span>
+                  <span class="sr-only">{{ t('page.scrapMachine.previous') }}</span>
                   <i class="fas fa-chevron-left"></i>
                 </button>
                 <button
@@ -243,8 +234,8 @@
                   @click="goToPage(page)"
                   :class="[
                     'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
-                    page === currentPage 
-                      ? 'z-10 bg-blue-50 border-blue-500 text-blue-600' 
+                    page === currentPage
+                      ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                   ]"
                 >
@@ -255,7 +246,7 @@
                   :disabled="currentPage === totalPages"
                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
-                  <span class="sr-only">下一页</span>
+                  <span class="sr-only">{{ t('page.scrapMachine.next') }}</span>
                   <i class="fas fa-chevron-right"></i>
                 </button>
               </nav>
@@ -272,22 +263,21 @@ import { ref, computed, onMounted, watch, reactive } from 'vue';
 import { fetchScrapLists, exportScrapDetail, updateScrapStatus } from '@/service/api/repair'
 import {  useMessage, useDialog } from 'naive-ui';
 import ScrapSummaryCards from './components/ScrapSummaryCards.vue'
-// import ScrapDetailDrawer from './components/ScrapDetailDrawer.vue'
 import ScrapSearchBar from './components/ScrapSearchBar.vue'
 import {fetchOrdersSite} from '@/service/api';
 import { Icon } from '@iconify/vue'
 import { useAuthStore } from '@/store/modules/auth';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const authStore = useAuthStore();
-const hasRole=!authStore.userInfo.roles.includes('3')
-const isAdmin=authStore.userInfo.roles.includes('1') // 超管
 const isRead=authStore.userInfo.roles.includes('5') // 只读用户
 
 const message = useMessage();
 const dialog = useDialog();
 const summaryRef = ref<any>(null)
-const showDetail = ref(false)
-const currentRow = ref<ScrapItemApi | null>(null)
+
 interface ScrapItemApi {
   id: number
   site_name: string
@@ -311,10 +301,6 @@ interface ScrapItemApi {
 
 // Data refs
 const filteredData = ref<ScrapItemApi[]>([]);
-// const searchText = ref('');
-// const selectedSite = ref('全部场地');
-// const selectedModel = ref('全部机型');
-// const selectedStatus = ref('全部状态');
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
 const showSiteDropdown = ref(false);
 const showStatusDropdown = ref(false);
@@ -323,7 +309,7 @@ const pageSize = ref(10);
 const serverPagination = ref({ page: 1, page_size: 10, pages: 0, total: 0 })
 
 // 搜索筛选（sn、site_id、status）
-const filters = reactive<{ sn: string; siteId: number | null; 
+const filters = reactive<{ sn: string; siteId: number | null;
   status: number | null;
   scrap_count: number | null;
   order_fields: number | null;
@@ -366,7 +352,7 @@ const fetchSiteData = async () => {
       }));
     }
   } catch (err) {
-    message.error('获取场地数据失败');
+    message.error(t('page.scrapMachine.fetchSiteDataFailed'));
   }
 };
 
@@ -411,7 +397,7 @@ async function fetchData() {
   if (filters.scrap_count != null) params.scrap_count = filters.scrap_count
   if (filters.order_fields != null) params.order_fields = filters.order_fields
   if (filters.order_type != null) params.order_type = filters.order_type
-  
+
   const { data, error } = await fetchScrapLists(params)
   if (error == null && data) {
     filteredData.value = Array.isArray(data.list) ? data.list : []
@@ -432,24 +418,24 @@ onMounted(() => {
 // 二次确认并更新报废状态为 3（已审批）
 async function confirmScrap(item: ScrapItemApi) {
   if (!item || item.status === 3) {
-    message.info('该记录已审批，无需重复操作');
+    message.info(t('page.scrapMachine.alreadyApproved'));
     return;
   }
 
   dialog.warning({
-    title: '确认操作',
-    content: '确认该机器报废？',
-    positiveText: '确认',
-    negativeText: '取消',
+    title: t('page.scrapMachine.confirmAction'),
+    content: t('page.scrapMachine.confirmScrapPrompt'),
+    positiveText: t('page.scrapMachine.confirm'),
+    negativeText: t('page.scrapMachine.cancel'),
     maskClosable: true,
     onPositiveClick: async () => {
       const { error } = await updateScrapStatus({ id: item.id, status: 3 })
       if (error == null) {
-        message.success('操作成功，列表已刷新')
+        message.success(t('page.scrapMachine.operationSuccess'))
         await fetchData()
 
       } else {
-        message.error(`操作失败：${String(error)}`)
+        message.error(t('page.scrapMachine.operationFailed', { error: String(error) }))
       }
     }
   })
@@ -463,11 +449,11 @@ const totalPages = computed(() => serverPagination.value.pages || 0);
 // 将后端状态数值映射为中文标签
 // 1: 待处理；2:待审核；3:已审批；4: 已修复
 const statusLabel = (status: number) => {
-  if (status === 3) return '已审批';
-  if (status === 1) return '待处理';
-  if (status === 2) return '待审核';
-  if (status === 4) return '已修复';
-  return '未知';
+  if (status === 3) return t('page.scrapMachine.approved');
+  if (status === 1) return t('page.scrapMachine.pendingProcess');
+  if (status === 2) return t('page.scrapMachine.pendingReview');
+  if (status === 4) return t('page.scrapMachine.repaired');
+  return t('page.scrapMachine.unknown');
 };
 
 // SN 标记图标与颜色（0: 未标注 -> 橙色提醒；2: 正常 -> 绿色勾；1: 损坏 -> 红色叉）
@@ -504,7 +490,7 @@ const visiblePages = computed(() => {
   const pages: number[] = [];
   const total = totalPages.value;
   const current = currentPage.value;
-  
+
   if (total <= 5) {
     for (let i = 1; i <= total; i++) {
       pages.push(i);
@@ -518,7 +504,7 @@ const visiblePages = computed(() => {
       pages.push(current - 2, current - 1, current, current + 1, current + 2);
     }
   }
-  
+
   return pages;
 });
 
@@ -564,29 +550,29 @@ async function exportExcel() {
 
     const { data, error } = await exportScrapDetail(params)
     if (error != null) {
-      window.$message?.error(`导出失败: ${error}`)
+      window.$message?.error(t('page.scrapMachine.exportFailed', { error: String(error) }))
       return
     }
 
     const list: any[] = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : [])
     if (!list.length) {
-      window.$message?.warning('当前筛选无可导出数据')
+      window.$message?.warning(t('page.scrapMachine.noDataToExport'))
       return
     }
 
     const headers = [
-      '报废编号',
-      '场地',
-      '机型',
-      '整机 SN',
-      '控制板 SN',
-      '板1 SN',
-      '板2 SN',
-      '板3 SN',
-      '电源 SN',
-      '状态',
-      '报废日期',
-      '报废次数'
+      t('page.scrapMachine.scrapNo'),
+      t('page.scrapMachine.site'),
+      t('page.scrapMachine.model'),
+      t('page.scrapMachine.machineSn'),
+      t('page.scrapMachine.controlSn'),
+      t('page.scrapMachine.board1Sn'),
+      t('page.scrapMachine.board2Sn'),
+      t('page.scrapMachine.board3Sn'),
+      t('page.scrapMachine.powerSn'),
+      t('page.scrapMachine.status'),
+      t('page.scrapMachine.scrapDate'),
+      t('page.scrapMachine.scrapCount')
     ]
 
     const th = headers.map(h => `<th style="mso-number-format:'\@';border:1px solid #ddd;padding:6px;background:#f5f5f5;">${h}</th>`).join('')
@@ -613,7 +599,7 @@ async function exportExcel() {
         <head>
           <meta charset="UTF-8" />
           <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
-          <x:Name>报废明细</x:Name>
+          <x:Name>${t('page.scrapMachine.scrapDetailExport')}</x:Name>
           <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
           </x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
         </head>
@@ -630,14 +616,14 @@ async function exportExcel() {
     const link = document.createElement('a')
     const date = new Date().toISOString().slice(0, 10)
     link.href = url
-    link.download = `报废明细_导出_${date}.xls`
+    link.download = `${t('page.scrapMachine.scrapDetailExportFile')}${date}.xls`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-    window.$message?.success('导出成功，下载已开始')
+    window.$message?.success(t('page.scrapMachine.exportSuccess'))
   } catch (err: any) {
-    window.$message?.error(`导出失败: ${err?.message || err}`)
+    window.$message?.error(t('page.scrapMachine.exportFailed', { error: err?.message || err }))
   }
 }
 
@@ -649,15 +635,8 @@ function formatYMD(input: any) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
-function openDetail(item: ScrapItemApi) {
-  currentRow.value = item
-  showDetail.value = true
-}
 </script>
 
 <style scoped>
 /* Custom styles if needed */
 </style>
-
-<!-- 详情抽屉 -->
-<ScrapDetailDrawer v-model:show="showDetail" :item="currentRow" />

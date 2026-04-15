@@ -3,9 +3,19 @@
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { NCard, NButton, NInput, NSelect, NDatePicker, NSwitch } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
-import { repairResultOptions } from '@/constants/business';
+// import { repairResultOptions } from '@/constants/business';
 import { fetchUser } from '@/service/api';
 import { Icon } from '@iconify/vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
+const computedRepairResultOptions = computed(() => [
+  { label: t('business.repairResult.pending'), value: 1 },
+  { label: t('business.repairResult.unrepaired'), value: 2 },
+  { label: t('business.repairResult.repaired'), value: 3 },
+  { label: t('business.repairResult.scrapped'), value: 4 },
+]);
 
 
 const serial = defineModel<string>('serial', { default: '' });
@@ -17,8 +27,6 @@ const status = defineModel<number | null>('status', { default: null });
 const resultStatus = defineModel<number | null>('resultStatus', { default: null });
 const salerIdModel = defineModel<number | null>('salerId', { default: null });
 const repairType = defineModel<number | null>('repairType', { default: null });
-
-
 
 const props = defineProps<{
    siteOptions: SelectOption[];
@@ -36,7 +44,6 @@ const onlyMySiteLocal = ref<boolean>(localStorage.getItem('onlyMySite') === 'tru
 let onlyMySitePoller: number | null = null;
 const readOnlyMySite = () => localStorage.getItem('onlyMySite') === 'true';
 const salerMap = ref<Record<number, string>>({});
-
 
 const fetchUsers = async () => {
   const {data,error} = await fetchUser({
@@ -116,9 +123,9 @@ const filteredSiteOptions = computed(() => {
 });
 
 const getSelectedSiteLabel = () => {
-  if (!siteId.value) return '场地筛选';
+  if (!siteId.value) return t('page.faults.searchCard.siteFilter');
   const site = props.siteOptions.find(s => s.value === siteId.value);
-  return site ? String(site.label) : '场地筛选';
+  return site ? String(site.label) : t('page.faults.searchCard.siteFilter');
 };
 
 const isSiteSelected = (id: number) => {
@@ -194,8 +201,8 @@ function toggleExpand() {
            <Icon v-else icon="ant-design:down-outlined" class="ml-2 text-xs" />
          </NButton>
          <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]">
-           <div class="font-medium text-gray-900 mb-3">选择场地</div>
-           <NInput size="small" placeholder="搜索场地..." class="mb-3" v-model:value="siteNameFilter" >
+           <div class="font-medium text-gray-900 mb-3">{{ t('page.faults.searchCard.selectSite') }}</div>
+           <NInput size="small" :placeholder="t('page.faults.searchCard.searchSite')" class="mb-3" v-model:value="siteNameFilter" >
 
           </NInput>
            <div class="max-h-60 overflow-y-auto">
@@ -215,8 +222,8 @@ function toggleExpand() {
              </div>
            </div>
            <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200 gap-2">
-             <NButton size="small" @click="showSiteFilter = false">取消</NButton>
-             <NButton size="small" type="primary" @click="applySiteFilter">应用</NButton>
+             <NButton size="small" @click="showSiteFilter = false">{{ t('page.faults.searchCard.cancel') }}</NButton>
+             <NButton size="small" type="primary" @click="applySiteFilter">{{ t('page.faults.searchCard.apply') }}</NButton>
            </div>
          </div>
        </div>
@@ -224,7 +231,7 @@ function toggleExpand() {
        <NInput
         v-model:value="workOrderNo"
         size="small"
-        placeholder="请输入工单号"
+        :placeholder="t('page.faults.searchCard.inputOrderNo')"
         clearable
         style="width: 100%"
       />
@@ -232,15 +239,15 @@ function toggleExpand() {
         size="small"
         v-model:value="status"
         :options="props.statusOptions"
-        placeholder="流转状态"
+        :placeholder="t('page.faults.searchCard.flowStatus')"
         clearable
         style="width: 100%"
       />
       <NSelect
         size="small"
         v-model:value="resultStatus"
-        :options="repairResultOptions"
-        placeholder="维修状态"
+        :options="computedRepairResultOptions"
+        :placeholder="t('page.faults.searchCard.repairStatus')"
         clearable
         style="width: 100%"
       />
@@ -248,7 +255,7 @@ function toggleExpand() {
         size="small"
         v-model:value="repairType"
         :options="props.repairTypeOptions"
-        placeholder="类型"
+        :placeholder="t('page.faults.searchCard.type')"
         clearable
         style="width: 100%"
       />
@@ -258,7 +265,7 @@ function toggleExpand() {
       <NInput
         v-model:value="serial"
         size="small"
-        placeholder="请输入机器SN"
+        :placeholder="t('page.faults.searchCard.inputSn')"
         clearable
         style="width: 100%"
       />
@@ -266,7 +273,7 @@ function toggleExpand() {
         v-show="!onlyMySiteLocal && props.hasRole"
         v-model:value="salerIdModel"
         :options="salerOptions"
-        placeholder="售后专员"
+        :placeholder="t('page.faults.searchCard.afterSalesSpecialist')"
         size="small"
         clearable
         style="width: 100%; font-size: 12px;"
@@ -275,7 +282,7 @@ function toggleExpand() {
       <NDatePicker
         v-model:value="startDate"
         type="date"
-        placeholder="开始时间"
+        :placeholder="t('page.faults.searchCard.startDate')"
         clearable
         size="small"
         style="width: 100%"
@@ -285,7 +292,7 @@ function toggleExpand() {
         v-model:value="endDate"
         type="date"
         size="small"
-        placeholder="结束时间"
+        :placeholder="t('page.faults.searchCard.endDate')"
         clearable
         style="width: 100%"
       />
@@ -298,8 +305,8 @@ function toggleExpand() {
     </template>
     <template #header-extra>
       <div style="display: flex; justify-content: flex-end;margin-left: 20px;  gap: 12px;">
-        <NButton type="primary" size="small" @click="onSearch">搜索</NButton>
-        <NButton size="small" quaternary @click="toggleExpand">{{ expanded ? '折叠' : '展开' }}</NButton>
+        <NButton type="primary" size="small" @click="onSearch">{{ t('page.faults.searchCard.search') }}</NButton>
+        <NButton size="small" quaternary @click="toggleExpand">{{ expanded ? t('page.faults.searchCard.collapse') : t('page.faults.searchCard.expand') }}</NButton>
       </div>
     </template>
     <!-- 移除底部按钮容器，按钮固定在右上角 -->

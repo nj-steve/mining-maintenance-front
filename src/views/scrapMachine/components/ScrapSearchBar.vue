@@ -3,7 +3,7 @@
     <!-- SN 搜索 -->
     <div class="relative w-64">
       <input
-        placeholder="搜索 SN 编号..."
+        :placeholder="t('page.scrapMachine.searchSn')"
         class="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
         :value="sn"
         @input="onSnInput($event)"
@@ -18,8 +18,8 @@
         style="background-color: transparent;"
         class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 text-sm"
         @click="clearSn"
-        aria-label="清除"
-        title="清除"
+        :aria-label="t('page.scrapMachine.clear')"
+        :title="t('page.scrapMachine.clear')"
       >
         <Icon icon="ant-design:close-circle-outlined" width="16" height="16" />
       </button>
@@ -32,7 +32,7 @@
         :value="siteId ?? ''"
         @change="onSiteChange($event)"
       >
-        <option value="">全部场地</option>
+        <option value="">{{ t('page.scrapMachine.allSites') }}</option>
         <option
           v-for="opt in siteOptions"
           :key="String(opt.value)"
@@ -51,11 +51,11 @@
         :value="status ?? ''"
         @change="onStatusChange($event)"
       >
-        <option value="">全部状态</option>
-        <option :value="1">待处理</option>
-        <option :value="2">待审核</option>
-        <option :value="3">已审批</option>
-        <option :value="4">已修复</option>
+        <option value="">{{ t('page.scrapMachine.allStatuses') }}</option>
+        <option :value="1">{{ t('page.scrapMachine.pendingProcess') }}</option>
+        <option :value="2">{{ t('page.scrapMachine.pendingReview') }}</option>
+        <option :value="3">{{ t('page.scrapMachine.approved') }}</option>
+        <option :value="4">{{ t('page.scrapMachine.repaired') }}</option>
       </select>
     </div>
 
@@ -66,14 +66,14 @@
         :value="scrap_count ?? ''"
         @change="onScrapCountChange($event)"
       >
-        <option value="">全部维修次数</option>
-        <option :value="0">0次</option>
-        <option :value="1">1次</option>
-        <option :value="2">2次</option>
-        <option :value="3">3次</option>
-        <option :value="4">4次</option>
-        <option :value="5">5次</option>
-        <option :value="6">6次</option>
+        <option value="">{{ t('page.scrapMachine.allRepairCounts') }}</option>
+        <option :value="0">0{{ t('page.scrapMachine.times') }}</option>
+        <option :value="1">1{{ t('page.scrapMachine.times') }}</option>
+        <option :value="2">2{{ t('page.scrapMachine.times') }}</option>
+        <option :value="3">3{{ t('page.scrapMachine.times') }}</option>
+        <option :value="4">4{{ t('page.scrapMachine.times') }}</option>
+        <option :value="5">5{{ t('page.scrapMachine.times') }}</option>
+        <option :value="6">6{{ t('page.scrapMachine.times') }}</option>
       </select>
     </div>
   </div>
@@ -81,6 +81,9 @@
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 interface SiteOption {
   label: string
   value: number | string | null
