@@ -5,8 +5,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { fetchSitesDetail } from '@/service/api/site';
 import History from './components/History.vue';
 import { useAuthStore } from '@/store/modules/auth';
+import { useI18n } from 'vue-i18n';
 // 使用项目内置的图标系统
 const authStore = useAuthStore();
+const { t } = useI18n();
 const hasRole=!authStore.userInfo.roles.includes('3')
 const isAdmin=authStore.userInfo.roles.includes('1') // 超管
 
@@ -55,20 +57,20 @@ const goBack = () => {
 // 获取场地详情数据
 const fetchData = async () => {
   if (!siteId.value) {
-    message.error('场地ID无效');
+    message.error(t('page.siteDetail.invalidSiteId'));
     return;
   }
-  
+
   loading.value = true;
   try {
     const { data, error } = await fetchSitesDetail(siteId.value);
     if (error == null) {
       siteData.value = data;
     } else {
-      message.error(`加载失败: ${error}`);
+      message.error(`${t('page.siteDetail.loadFailed')}${error}`);
     }
   } catch (err) {
-    message.error(`加载失败: ${err}`);
+    message.error(`${t('page.siteDetail.loadFailed')}${err}`);
   } finally {
     loading.value = false;
   }
@@ -89,7 +91,7 @@ onMounted(() => {
             <SvgIcon icon="material-symbols:arrow-back" />
           </NIcon>
         </template>
-        返回
+        {{ t('page.siteDetail.back') }}
       </NButton>
     </div>
 
@@ -97,24 +99,24 @@ onMounted(() => {
     <NSpin :show="loading" class="loading-container">
       <div v-if="siteData" class="content">
         <!-- 基础信息 -->
-        <NCard title="基础信息" class="info-card">
+        <NCard :title="t('page.siteDetail.basicInfo')" class="info-card">
           <div class="info-grid">
             <div class="info-item">
-              <span class="label">场地名称:</span>
+              <span class="label">{{ t('page.siteDetail.siteName') }}</span>
               <span class="value">{{ siteData.name || '' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">场地地址:</span>
+              <span class="label">{{ t('page.siteDetail.siteAddress') }}</span>
               <span class="value">{{ siteData.address || '' }}</span>
             </div>
             <div class="info-item">
-              <span class="label">场地状态:</span>
+              <span class="label">{{ t('page.siteDetail.siteStatus') }}</span>
               <span class="value" :class="siteData.site_status === 1 ? 'status-yes' : 'status-no'">
-                {{ siteData.site_status === 1 ? '驻场' : siteData.site_status === 2 ? '寄修' : '驻场+寄修' }}
+                {{ siteData.site_status === 1 ? t('page.siteDetail.statusOnsite') : siteData.site_status === 2 ? t('page.siteDetail.statusSendRepair') : t('page.siteDetail.statusBoth') }}
               </span>
             </div>
              <div class="info-item" v-if="hasRole">
-              <span class="label">售后负责人:</span>
+              <span class="label">{{ t('page.siteDetail.afterSalesManager') }}</span>
               <span class="value">{{ siteData.saler_name || '' }}</span>
             </div>
             <div class="info-item" style="height: 5px;">
@@ -129,40 +131,40 @@ onMounted(() => {
         </NCard>
 
         <!-- 资产统计 -->
-        <NCard title="资产统计" class="stats-card">
+        <NCard :title="t('page.siteDetail.assetStats')" class="stats-card">
           <div class="stats-grid">
             <div class="stat-item">
-              <span class="stat-label">总资产数:</span>
-              <span class="stat-value">{{ siteData.asset_count || 0 }} 台</span>
+              <span class="stat-label">{{ t('page.siteDetail.totalAssets') }}</span>
+              <span class="stat-value">{{ siteData.asset_count || 0 }} {{ t('page.siteDetail.unit') }}</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label">故障数:</span>
-              <span class="stat-value">{{ siteData.fault_count || 0 }} 台</span>
+              <span class="stat-label">{{ t('page.siteDetail.faultCount') }}</span>
+              <span class="stat-value">{{ siteData.fault_count || 0 }} {{ t('page.siteDetail.unit') }}</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label">物流中:</span>
-              <span class="stat-value">{{ siteData.in_logistics_count || 0 }} 台</span>
+              <span class="stat-label">{{ t('page.siteDetail.inLogistics') }}</span>
+              <span class="stat-value">{{ siteData.in_logistics_count || 0 }} {{ t('page.siteDetail.unit') }}</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label">在修数:</span>
-              <span class="stat-value">{{ siteData.repairing || 0 }} 台</span>
+              <span class="stat-label">{{ t('page.siteDetail.repairing') }}</span>
+              <span class="stat-value">{{ siteData.repairing || 0 }} {{ t('page.siteDetail.unit') }}</span>
             </div>
               <div class="stat-item">
-              <span class="stat-label">在架待修数:</span>
-              <span class="stat-value">{{ siteData.on_shelf_wait_repair_count || 0 }} 台</span>
+              <span class="stat-label">{{ t('page.siteDetail.onShelfWaitRepair') }}</span>
+              <span class="stat-value">{{ siteData.on_shelf_wait_repair_count || 0 }} {{ t('page.siteDetail.unit') }}</span>
             </div>
 
             <div class="stat-item">
-              <span class="stat-label">总待修数:</span>
-              <span class="stat-value">{{ siteData.wait_repair_count+siteData.on_shelf_wait_repair_count || 0 }} 台</span>
+              <span class="stat-label">{{ t('page.siteDetail.totalWaitRepair') }}</span>
+              <span class="stat-value">{{ siteData.wait_repair_count+siteData.on_shelf_wait_repair_count || 0 }} {{ t('page.siteDetail.unit') }}</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label">待上架:</span>
-              <span class="stat-value">{{ siteData.wait_on_shelf_count || 0 }} 台</span>
+              <span class="stat-label">{{ t('page.siteDetail.waitOnShelf') }}</span>
+              <span class="stat-value">{{ siteData.wait_on_shelf_count || 0 }} {{ t('page.siteDetail.unit') }}</span>
             </div>
             <div class="stat-item">
-               <span class="stat-label">报废数:</span>
-               <span class="stat-value">{{ siteData.scrapped_count || 0 }} 台</span>
+               <span class="stat-label">{{ t('page.siteDetail.scrappedCount') }}</span>
+               <span class="stat-value">{{ siteData.scrapped_count || 0 }} {{ t('page.siteDetail.unit') }}</span>
              </div>
           </div>
         </NCard>
@@ -184,12 +186,12 @@ onMounted(() => {
             </div>
           </div>
         </NCard> -->
-        
+
         <!-- 历史数据 -->
-          <NCard title="历史数据" class="info-card">
+          <NCard :title="t('page.siteDetail.historyData')" class="info-card">
             <History />
           </NCard>
-        
+
       </div>
     </NSpin>
   </div>
@@ -314,16 +316,16 @@ onMounted(() => {
   .site-detail-container {
     padding: 16px;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 16px;
   }
-  
+
   .stat-item {
     padding: 16px;
   }
-  
+
   .stat-value {
     font-size: 18px;
   }

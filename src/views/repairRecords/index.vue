@@ -107,11 +107,11 @@ const pagination = ref<PaginationProps>({
   prefix({ itemCount }) {
     return t('page.repairRecords.totalItems', { count: itemCount })
   },
-  onChange: page => {
+  onChange: (page: number) => {
     pagination.value.page = page;
     fetchData();
   },
-  onUpdatePageSize: pageSize => {
+  onUpdatePageSize: (pageSize: number) => {
     pagination.value.pageSize = pageSize;
     pagination.value.page = 1;
     fetchData();
@@ -403,7 +403,7 @@ const fetchData = async () => {
     loading.value = true;
     const params: any = {
       page: pagination.value.page,
-      limit: pagination.value.pageSize,
+      page_size: pagination.value.pageSize,
       work_order_no: work_order_no.value,
       sn: sn.value,
       repair_result: repair_result.value,
@@ -421,9 +421,9 @@ const fetchData = async () => {
     const { data, error } = await fetchRepairDetails(params);
     if(error==null){
         tableData.value = data.list;
-        pagination.value.itemCount = data.pagination.total;
-        pagination.value.page =  data.pagination.page;
-        pagination.value.pageSize =  data.pagination.page_size;
+        pagination.value.itemCount = Number(data.pagination.total) || 0;
+        pagination.value.page = Number(data.pagination.page) || 1;
+        pagination.value.pageSize = Number(data.pagination.page_size) || 20;
     }else{
         message.error(t('page.repairRecords.loadFailed', { error }));
     }
@@ -440,6 +440,7 @@ onMounted(() => {
   getSiteList();
 });
 watch(() => [work_order_no.value, sn.value, repair_result.value, site_id.value, repair_type.value], () => {
+  tableData.value=[];
   pagination.value.page = 1;
   fetchData();
 });

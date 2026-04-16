@@ -6,6 +6,7 @@ import type { DataTableColumns } from 'naive-ui'
 import { fetchRepairDetailsByID,fetchScrapsDetailInfo, updateRepairDetail } from '@/service/api/repair'
 import { updateRepairDetails } from '@/service/api/repair'
 import { Icon } from '@iconify/vue'
+import { useI18n } from 'vue-i18n';
 import dayjs from 'dayjs';
 
 interface Props {
@@ -21,6 +22,7 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
+const { t } = useI18n()
 const message = useMessage()
 const loading = ref(false)
 
@@ -90,11 +92,11 @@ function buildTableRows() {
   // console.log("repair detail row:", r)
   tableRows.value = [
     // { key: 'sn_flag', name: '整机 SN', sn: r.DeviceSN || '' },
-    { key: 'control_sn_flag', name: '控制板 SN', sn: r.ControlSN || '' },
-    { key: 'power_sn_flag', name: '电源 SN', sn: r.PowerSN || '' },
-    { key: 'board_sn1_flag', name: '板1 SN', sn: r.BoardSN1 || '' },
-    { key: 'board_sn2_flag', name: '板2 SN', sn: r.BoardSN2 || '' },
-    { key: 'board_sn3_flag', name: '板3 SN', sn: r.BoardSN3 || '' }
+    { key: 'control_sn_flag', name: t('page.scrapFlagsModal.controlBoardSN'), sn: r.ControlSN || '' },
+    { key: 'power_sn_flag', name: t('page.scrapFlagsModal.powerSN'), sn: r.PowerSN || '' },
+    { key: 'board_sn1_flag', name: t('page.scrapFlagsModal.board1SN'), sn: r.BoardSN1 || '' },
+    { key: 'board_sn2_flag', name: t('page.scrapFlagsModal.board2SN'), sn: r.BoardSN2 || '' },
+    { key: 'board_sn3_flag', name: t('page.scrapFlagsModal.board3SN'), sn: r.BoardSN3 || '' }
   ]
 }
 
@@ -143,7 +145,7 @@ async function loadDetail() {
     //   message.error(`加载标记失败：${error}`)
     // }
   } catch (err) {
-    message.error('加载标记失败')
+    message.error(t('page.scrapFlagsModal.loadFlagFailed'))
   } finally {
     buildTableRows()
     loading.value = false
@@ -190,7 +192,7 @@ watch(
 
 async function handleSave() {
   if (!props.detailId) {
-    message.error('缺少维修明细 ID')
+    message.error(t('page.scrapFlagsModal.missingDetailId'))
     return
   }
   loading.value = true
@@ -204,14 +206,14 @@ async function handleSave() {
     // 再保存功能状态标记
     const { error: flagError } = await updateRepairDetail(props.detailId, { ...formModel.value })
     if (flagError === null) {
-      message.success('保存成功')
+      message.success(t('page.scrapFlagsModal.saveSuccess'))
       emit('success')
       emit('update:show', false)
     } else {
-      message.error('保存失败')
+      message.error(t('page.scrapFlagsModal.saveFailed'))
     }
   } catch (err) {
-    message.error('保存失败')
+    message.error(t('page.scrapFlagsModal.saveFailed'))
   } finally {
     loading.value = false
   }
@@ -241,7 +243,7 @@ function cancelEditImages() {
 
 async function saveImagesOnly() {
   if (!props.detailId) {
-    message.error('缺少维修明细 ID')
+    message.error(t('page.scrapFlagsModal.missingDetailId'))
     return
   }
   try {
@@ -252,13 +254,13 @@ async function saveImagesOnly() {
     }
     const { error } = await updateRepairDetails(props.detailId, payload)
     if (error === null) {
-      message.success('图片已添加')
+      message.success(t('page.scrapFlagsModal.imageAdded'))
       isImageEditing.value = false
     } else {
-      message.error('保存失败')
+      message.error(t('page.scrapFlagsModal.saveFailed'))
     }
   } catch (err) {
-    message.error('保存失败')
+    message.error(t('page.scrapFlagsModal.saveFailed'))
   } finally {
     loading.value = false
   }
@@ -281,17 +283,17 @@ async function saveSnInline(row?: RowItem) {
     return await saveImagesOnly()
   }
   if (!props.detailId) {
-    message.error('缺少维修明细 ID')
+    message.error(t('page.scrapFlagsModal.missingDetailId'))
     return
   }
   const field = getSnFieldByKey(row.key)
   if (!field) {
-    message.error('未知部件，无法保存')
+    message.error(t('page.scrapFlagsModal.unknownComponent'))
     return
   }
   const value = editingValue.value.trim()
   if (!value) {
-    message.warning('请输入有效的序列号')
+    message.warning(t('page.scrapFlagsModal.pleaseEnterValidSN'))
     return
   }
   try {
@@ -305,23 +307,23 @@ async function saveSnInline(row?: RowItem) {
       // 更新本地显示
       const idx = tableRows.value.findIndex(r => r.key === row.key)
       if (idx >= 0) tableRows.value[idx].sn = value
-      message.success('序列号已保存')
+      message.success(t('page.scrapFlagsModal.snSaved'))
       cancelEditInline()
     } else {
-      message.error('保存失败')
+      message.error(t('page.scrapFlagsModal.saveFailed'))
     }
   } catch (err) {
-    message.error('保存失败')
+    message.error(t('page.scrapFlagsModal.saveFailed'))
   } finally {
     loading.value = false
   }
 }
 
-const columns: DataTableColumns<RowItem> = [
-  { title: () => h('span', { class: 'text-sm text-gray-500' }, '部件名称'), key: 'name', width: 80, render: (row) => (
+const columns = computed<DataTableColumns<RowItem>>(() => [
+  { title: () => h('span', { class: 'text-sm text-gray-500' }, t('page.scrapFlagsModal.componentName')), key: 'name', width: 80, render: (row) => (
     h('span', { class: 'text-sm text-gray-500' }, row.name)
   ) },
-  { title: () => h('span', { class: 'text-sm text-gray-500' }, '序列号'), width: 200, key: 'sn', render: (row) => {
+  { title: () => h('span', { class: 'text-sm text-gray-500' }, t('page.scrapFlagsModal.serialNumber')), width: 200, key: 'sn', render: (row) => {
     const isEditing = editingKey.value === row.key
     if (isEditing) {
       return h('div', { style: 'display:flex; align-items:center; gap:8px;' }, [
@@ -330,7 +332,7 @@ const columns: DataTableColumns<RowItem> = [
           'onUpdate:value': (v: string) => (editingValue.value = v),
           size: 'small',
           class: 'text-sm',
-          placeholder: '请输入序列号',
+          placeholder: t('page.scrapFlagsModal.pleaseEnterSN'),
           style: 'width: 110px'
         }),
         h(NButton, {
@@ -362,33 +364,33 @@ const columns: DataTableColumns<RowItem> = [
     }
     return h('span', { class: 'text-sm text-gray-500' }, row.sn)
   } },
-  { title: () => h('span', { class: 'text-sm text-gray-500' }, '功能状态'), key: 'flag', width: 220, render: (row) => (
+  { title: () => h('span', { class: 'text-sm text-gray-500' }, t('page.scrapFlagsModal.functionalStatus')), key: 'flag', width: 220, render: (row) => (
     h(NRadioGroup, {
       value: (formModel.value as any)[row.key],
       'onUpdate:value': (v: number) => ((formModel.value as any)[row.key] = v)
     }, {
       default: () => [
-        h(NRadio, {class: 'text-sm text-red-500', value: 2}, { default: () => '正常' }),
-        h(NRadio, {class: 'text-sm text-green-500', value: 1,style:'margin-left: 2px;' }, { default: () => '损坏' }),
-        h(NRadio, {class: 'text-sm text-gray-500', value: 0,style:'margin-left: 2px;' }, { default: () => '全不选' }),
+        h(NRadio, {class: 'text-sm text-red-500', value: 2}, { default: () => t('page.scrapFlagsModal.normal') }),
+        h(NRadio, {class: 'text-sm text-green-500', value: 1,style:'margin-left: 2px;' }, { default: () => t('page.scrapFlagsModal.damaged') }),
+        h(NRadio, {class: 'text-sm text-gray-500', value: 0,style:'margin-left: 2px;' }, { default: () => t('page.scrapFlagsModal.selectAll') }),
       ]
     })
   ) }
-]
+])
 </script>
 
 <template>
   <NDrawer v-model:show="visible" placement="right" :width="550" :mask-closable="false">
-    <NDrawerContent title="部件标记">
+    <NDrawerContent :title="t('page.scrapFlagsModal.componentMark')">
       <NDataTable :columns="columns" :data="tableRows" size="small" />
       <!-- 维修部位图片 -->
       <div class="mt-4 border border-gray-200 p-4 rounded" >
         <div class="mb-2 flex items-center justify-between">
-          <span class="text-sm text-gray-500">维修部位图片</span>
+          <span class="text-sm text-gray-500">{{ t('page.scrapFlagsModal.repairImage') }}</span>
           <template v-if="!isImageEditing">
             <NButton text size="small" class="text-sm" @click="startEditImages">
               <Icon icon="ant-design:upload-outlined" width="16" height="16" />
-              <span style="margin-left:4px">上传图</span>
+              <span style="margin-left:4px">{{ t('page.scrapFlagsModal.uploadImage') }}</span>
             </NButton>
           </template>
         </div>
@@ -406,21 +408,21 @@ const columns: DataTableColumns<RowItem> = [
             <QiniuImageUpload
               v-model:images="(editRow as any).images"
               :max="10"
-              button-text="上传图片"
+              :button-text="t('page.scrapFlagsModal.uploadImage')"
               @uploaded="(url: string) => (editRow as any).images.push(url)"
               @removed="(url: string) => (editRow as any).images = (editRow as any).images.filter((u: string) => u !== url)"
             />
           </div>
           <NSpace justify="end" style="margin-top: 8px;">
-            <NButton size="small" ghost class="text-sm" @click="cancelEditImages">取消</NButton>
-            <NButton size="small" type="primary" class="text-sm" :loading="loading" @click="saveSnInline()">添加</NButton>
-          </NSpace>
+          <NButton size="small" ghost class="text-sm" @click="cancelEditImages">{{ t('page.scrapFlagsModal.cancel') }}</NButton>
+          <NButton size="small" type="primary" class="text-sm" :loading="loading" @click="saveImagesOnly">{{ t('page.scrapFlagsModal.save') }}</NButton>
+        </NSpace>
         </template>
       </div>
 
       <NSpace justify="end" style="margin-top: 12px;">
-        <NButton size="small" ghost @click="handleCancel">取消</NButton>
-        <NButton size="small" type="primary" :loading="loading" @click="handleSave">保存</NButton>
+        <NButton size="small" ghost @click="handleCancel">{{ t('page.scrapFlagsModal.cancel') }}</NButton>
+        <NButton size="small" type="primary" :loading="loading" @click="handleSave">{{ t('page.scrapFlagsModal.save') }}</NButton>
       </NSpace>
     </NDrawerContent>
   </NDrawer>

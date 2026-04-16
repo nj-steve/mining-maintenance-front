@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref, computed,h, onUnmounted } from 'vue';
-import { useMessage, NButton, NCard, NSpin, NIcon,NTooltip } from 'naive-ui';
+import { onMounted, ref, computed, h } from 'vue';
+import { useMessage, NDataTable, NTooltip } from 'naive-ui';
 import { Icon } from '@iconify/vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { fetchSitesHistory } from '@/service/api/site';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
+const { t } = useI18n();
 const historyData = ref<any[]>([]);
-const columns = [
+
+const columns = computed(() => [
   {
-    title: '日期',
+    title: t('page.siteDetail.date'),
     key: 'date',
     width: 180,
     render: (row: any) => {
@@ -31,12 +34,12 @@ const columns = [
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:100px;' },
         [
-          '24H故障数',
+          t('page.siteDetail.faultCount'),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '近24小时导入故障机数',
+              default: () => t('page.miningSite.fault24hCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -58,12 +61,12 @@ const columns = [
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
         [
-          '物流中',
+          t('page.miningSite.inLogistics'),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '状态：“物流进+物流出” 机器数',
+              default: () => t('page.miningSite.inLogisticsTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -85,12 +88,12 @@ const columns = [
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
         [
-          '在修数',
+          t('page.miningSite.repairingCount'),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '状态：“维修中” 的机器数',
+              default: () => t('page.miningSite.repairingCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -111,12 +114,12 @@ const columns = [
     //     'div',
     //     { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
     //     [
-    //       '在架待修数',
+    //       t('page.faults.onShelfWaitRepairCount'),
     //       h(
     //         NTooltip,
     //         { placement: 'top' },
     //         {
-    //           default: () => '状态：“在架，等待下架” 故障机数',
+    //           default: () => t('page.faults.onShelfWaitRepairCountTooltip'),
     //           trigger: () =>
     //             h(Icon, {
     //               icon: 'ant-design:question-circle-outlined',
@@ -135,12 +138,12 @@ const columns = [
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:180px;' },
         [
-          '待修数',
+          t('page.miningSite.waitRepairCount'),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '状态：“未下架+已下架+待处理” 故障机器数',
+              default: () => t('page.miningSite.waitRepairCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -156,19 +159,19 @@ const columns = [
     key: 'wait_repair_count',
     width: 120,
     // render: (row: any) => h('span', (row.wait_repair_count+row.on_shelf_wait_repair_count)?.toLocaleString?.() || '0') },
-          },
-          {
+  },
+  {
     title: () =>
       h(
         'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        { style: 'display:flex; align-items:center; gap:6px;width:150px;' },
         [
-          '待上架',
+          t('page.miningSite.pendingShelf'),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '状态：“待上架” 的机器数',
+              default: () => t('page.miningSite.pendingShelfTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -182,7 +185,7 @@ const columns = [
         ]
       ),
     key: 'wait_on_shelf_count',
-    width: 120,
+    width: 150,
   },
    {
     title:  () =>
@@ -190,12 +193,12 @@ const columns = [
         'div',
         { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
         [
-          '净故障数',
+          t('page.miningSite.netFaultCount'),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '“待修数+寄修数+驻场”',
+              default: () => t('page.miningSite.netFaultCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -218,12 +221,12 @@ const columns = [
         'div',
         { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
         [
-          '预报废数',
+          t('page.miningSite.scrappedCount'),
           h(
             NTooltip,
             { placement: 'top' },
             {
-              default: () => '维修状态：“报废” 故障机数',
+              default: () => t('page.miningSite.scrappedCountTooltip'),
               trigger: () =>
                 h(Icon, {
                   icon: 'ant-design:question-circle-outlined',
@@ -239,7 +242,7 @@ const columns = [
     key: 'scrapped_count',
     width: 120,
   },
-];
+]);
 const pagination = ref({
   page: 1,
   pageSize: 10,
@@ -256,7 +259,7 @@ onMounted(async () => {
       pagination.value.itemCount = data.length;
     }
   } catch (e) {
-    console.error('加载场地历史数据失败', e);
+    console.error(t('page.siteDetail.loadHistoryFailed'), e);
   }
 });
 </script>

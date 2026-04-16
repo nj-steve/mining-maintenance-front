@@ -1,0 +1,41 @@
+node_modules/.pnpm/@intlify+core-base@11.1.9/node_modules/@intlify/core-base/dist/core-base.d.ts(6,45): error TS2307: Cannot find module '@intlify/devtools-types' or its corresponding type declarations.
+node_modules/.pnpm/@intlify+core-base@11.1.9/node_modules/@intlify/core-base/dist/core-base.d.ts(7,50): error TS2307: Cannot find module '@intlify/devtools-types' or its corresponding type declarations.
+node_modules/.pnpm/@intlify+core-base@11.1.9/node_modules/@intlify/core-base/dist/core-base.d.ts(8,43): error TS2307: Cannot find module '@intlify/devtools-types' or its corresponding type declarations.
+node_modules/.pnpm/@intlify+core-base@11.1.9/node_modules/@intlify/core-base/dist/core-base.d.ts(10,41): error TS2307: Cannot find module '@intlify/devtools-types' or its corresponding type declarations.
+node_modules/.pnpm/@vue+babel-plugin-jsx@1.5.0_@babel+core@7.28.4/node_modules/@vue/babel-plugin-jsx/dist/index.d.mts(3,28): error TS7016: Could not find a declaration file for module '@babel/core'. '/Users/zhouying/wwwroot/Xuefeng/mining-maintenance-front/node_modules/.pnpm/@babel+core@7.28.4/node_modules/@babel/core/lib/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/babel__core` if it exists or add a new declaration (.d.ts) file containing `declare module '@babel/core';`
+node_modules/.pnpm/@vue+babel-plugin-resolve-type@1.5.0_@babel+core@7.28.4/node_modules/@vue/babel-plugin-resolve-type/dist/index.d.mts(2,28): error TS7016: Could not find a declaration file for module '@babel/core'. '/Users/zhouying/wwwroot/Xuefeng/mining-maintenance-front/node_modules/.pnpm/@babel+core@7.28.4/node_modules/@babel/core/lib/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/babel__core` if it exists or add a new declaration (.d.ts) file containing `declare module '@babel/core';`
+node_modules/.pnpm/@vueuse+core@13.5.0_vue@3.5.17_typescript@5.8.3_/node_modules/@vueuse/core/index.d.mts(640,15): error TS2304: Cannot find name 'BluetoothLEScanFilter'.
+node_modules/.pnpm/@vueuse+core@13.5.0_vue@3.5.17_typescript@5.8.3_/node_modules/@vueuse/core/index.d.mts(648,24): error TS2304: Cannot find name 'BluetoothServiceUUID'.
+node_modules/.pnpm/@vueuse+core@13.5.0_vue@3.5.17_typescript@5.8.3_/node_modules/@vueuse/core/index.d.mts(671,24): error TS2304: Cannot find name 'BluetoothDevice'.
+node_modules/.pnpm/@vueuse+core@13.5.0_vue@3.5.17_typescript@5.8.3_/node_modules/@vueuse/core/index.d.mts(673,24): error TS2304: Cannot find name 'BluetoothRemoteGATTServer'.
+node_modules/.pnpm/alova@3.3.4/node_modules/alova/typings/stateshook/react.d.ts(2,42): error TS2307: Cannot find module 'react' or its corresponding type declarations.
+node_modules/.pnpm/alova@3.3.4/node_modules/alova/typings/stateshook/solid.d.ts(2,34): error TS2307: Cannot find module 'solid-js' or its corresponding type declarations.
+node_modules/.pnpm/alova@3.3.4/node_modules/alova/typings/stateshook/svelte.d.ts(2,36): error TS2307: Cannot find module 'svelte/store' or its corresponding type declarations.
+node_modules/.pnpm/bumpp@10.2.0/node_modules/bumpp/dist/index.d.ts(1,55): error TS7016: Could not find a declaration file for module 'semver'. '/Users/zhouying/wwwroot/Xuefeng/mining-maintenance-front/node_modules/.pnpm/semver@7.7.2/node_modules/semver/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`
+node_modules/.pnpm/echarts@5.6.0/node_modules/echarts/index.d.ts(23,1): error TS1203: Export assignment cannot be used when targeting ECMAScript modules. Consider using 'export default' or another module format instead.
+node_modules/.pnpm/ofetch@1.4.1/node_modules/ofetch/dist/shared/ofetch.d0b3d489.d.mts(1,25): error TS2307: Cannot find module 'undici' or its corresponding type declarations.
+node_modules/.pnpm/unconfig@7.3.3/node_modules/unconfig/dist/index.d.mts(7,67): error TS2304: Cannot find name 'Args'.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(1,31): error TS2307: Cannot find module '@farmfe/core' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(2,26): error TS2307: Cannot find module '@farmfe/core' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(3,47): error TS2307: Cannot find module '@rspack/core/dist/config/zod' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(4,26): error TS2307: Cannot find module 'webpack' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(5,49): error TS2307: Cannot find module 'webpack' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(6,68): error TS2307: Cannot find module 'webpack' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(7,45): error TS2307: Cannot find module 'rolldown/dist/types/plugin' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(14,36): error TS2307: Cannot find module 'rolldown' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(15,42): error TS2307: Cannot find module 'rolldown' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(19,62): error TS2307: Cannot find module '@rspack/core' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@1.12.0/node_modules/unplugin/dist/index.d.mts(20,66): error TS2307: Cannot find module '@rspack/core' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@2.3.10/node_modules/unplugin/dist/index.d.ts(2,46): error TS2307: Cannot find module '@farmfe/core' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@2.3.10/node_modules/unplugin/dist/index.d.ts(3,94): error TS2307: Cannot find module '@rspack/core' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@2.3.10/node_modules/unplugin/dist/index.d.ts(5,42): error TS2307: Cannot find module 'rolldown' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@2.3.10/node_modules/unplugin/dist/index.d.ts(7,42): error TS2307: Cannot find module 'unloader' or its corresponding type declarations.
+node_modules/.pnpm/unplugin@2.3.10/node_modules/unplugin/dist/index.d.ts(9,132): error TS2307: Cannot find module 'webpack' or its corresponding type declarations.
+node_modules/.pnpm/vite@7.0.4_@types+node@24.0.13_jiti@2.5.1_sass@1.89.2_tsx@4.20.3_yaml@2.8.1/node_modules/vite/dist/node/module-runner.d.ts(161,11): error TS2430: Interface 'ModuleRunnerImportMeta' incorrectly extends interface 'ImportMeta'.
+  Types of property 'env' are incompatible.
+    Type 'ImportMetaEnv' is missing the following properties from type 'ImportMeta': VITE_BASE_URL, VITE_APP_TITLE, VITE_APP_DESC, VITE_ICON_PREFIX, and 11 more.
+node_modules/.pnpm/vite@7.0.4_@types+node@24.0.13_jiti@2.5.1_sass@1.89.2_tsx@4.20.3_yaml@2.8.1/node_modules/vite/types/importMeta.d.ts(28,12): error TS2717: Subsequent property declarations must have the same type.  Property 'env' must be of type 'ImportMeta', but here has type 'ImportMetaEnv'.
+node_modules/.pnpm/webpack-virtual-modules@0.6.2/node_modules/webpack-virtual-modules/lib/index.d.ts(1,31): error TS2307: Cannot find module 'webpack' or its corresponding type declarations.

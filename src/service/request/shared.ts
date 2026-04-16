@@ -2,6 +2,7 @@ import { useAuthStore } from '@/store/modules/auth';
 import { localStg } from '@/utils/storage';
 import { fetchRefreshToken } from '../api';
 import type { RequestInstanceState } from './type';
+import { setTokenCookie } from '@/store/modules/auth/shared';
 
 export function getAuthorization() {
   const token = localStg.get('token');
@@ -19,6 +20,7 @@ async function handleRefreshToken() {
   if (!error) {
     localStg.set('token', data.token);
     localStg.set('refreshToken', data.refreshToken);
+    setTokenCookie(data.token);
     return true;
   }
 

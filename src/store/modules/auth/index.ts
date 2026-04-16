@@ -9,7 +9,7 @@ import { SetupStoreId } from '@/enum';
 import { $t } from '@/locales';
 import { useRouteStore } from '../route';
 import { useTabStore } from '../tab';
-import { clearAuthStorage, getToken } from './shared';
+import { clearAuthStorage, getToken, setTokenCookie } from './shared';
 
 export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   const route = useRoute();
@@ -113,6 +113,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
     localStg.set('token', data?.token??"");
     localStg.set('refreshToken', data?.token??"");
+    setTokenCookie(data?.token??"");
     localStorage.setItem('userInfo', JSON.stringify(data));
 
     Object.assign(userInfo, data);
@@ -164,6 +165,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     // 1. stored in the localStorage, the later requests need it in headers
     localStg.set('token', loginToken);
     localStg.set('refreshToken', loginToken);
+    setTokenCookie(loginToken);
 
     // 2. get user info
     const pass = await getUserInfo();

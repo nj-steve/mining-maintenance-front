@@ -100,8 +100,24 @@ const editForm = ref({
   "repair_station_id": null as number | null,
 });
 
+const getTranslatedOrderStatus = (name: string | undefined | null) => {
+  if (!name) return '';
+  const map: Record<string, string> = {
+    '已完成': t('page.workflow.completed'),
+    '维修': t('page.workflow.repairing'),
+    '未解决': t('page.workflow.unresolved'),
+    '待处理': t('page.workflow.pending'),
+    '处理中': t('page.workflow.processing'),
+  };
+  return map[name] || name;
+};
+
 // 状态下拉选项
-const statusOptions = ref<{ label: string; value: number }[]>([]);
+const statusOptionsData = ref<any[]>([]);
+const statusOptions = computed(() => statusOptionsData.value.map(item => ({
+  label: getTranslatedOrderStatus(item.name),
+  value: item.id,
+})));
 const searchOrderStatus = ref<number | undefined>(undefined);
 
 // 新增筛选项
@@ -305,7 +321,6 @@ const handleSaveEdit = async () => {
     const { error, response: { data } } = await updateOrders(editForm.value.id, editForm.value);
     // console.log('创建工单响应:', data, error);
     // console.log('data.code', data?.code);
-
     if (error == null) {
       if (Number(data?.code) == 0) {
         message.success(t('page.workflow.modifySuccess'));
@@ -313,8 +328,6 @@ const handleSaveEdit = async () => {
         fetchData();
       }
     }
-
-
   } catch (err) {
     message.error(t('page.workflow.modifyFailed'));
   }finally{
@@ -399,18 +412,40 @@ const columns: DataTableColumns<Order> = [
     )
   }},
   { title: () => renderHeaderTitle(t('page.workflow.repairMethod')), key: 'RepairMethod',
-    render: (row: any ) => {
+    render: (row: any) => {
+      const getTranslatedRepairMethod = (method: number | undefined | null) => {
+        if (!method) return '';
+        const map: Record<number, string> = {
+          1: t('business.repairMethod.onsite'),
+          2: t('business.repairMethod.sendRepair'),
+          3: t('business.repairMethod.exchange'),
+        };
+        return map[method] || '';
+      };
+
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         1: 'success',
         2: 'primary',
         3: 'primary',
       };
       // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, { class: 'text-xs', type: tagMap[row.RepairMethod || '-'],size:'small', round:true }, () => repairMethodRecord[row.RepairMethod || t('page.workflow.unknown')] || t('page.workflow.unknown'))
+      return h(NTag, { class: 'text-xs', type: tagMap[row.RepairMethod || '-'],size:'small', round:true }, () => getTranslatedRepairMethod(row.RepairMethod) || t('page.workflow.unknown'))
     }
   },
   { title: () => renderHeaderTitle(t('page.workflow.orderStatus')), key: 'OrderStatusText',
       render: (row: any) => {
+        const getTranslatedOrderStatus = (name: string | undefined | null) => {
+          if (!name) return '';
+          const map: Record<string, string> = {
+            '已完成': t('page.workflow.completed'),
+            '维修': t('page.workflow.repairing'),
+            '未解决': t('page.workflow.unresolved'),
+            '待处理': t('page.workflow.pending'),
+            '处理中': t('page.workflow.processing'),
+          };
+          return map[name] || name;
+        };
+
         const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
         [t('page.workflow.completed')]: 'success',
         [t('page.workflow.repairing')]: 'primary',
@@ -418,8 +453,8 @@ const columns: DataTableColumns<Order> = [
         [t('page.workflow.pending')]: 'warning',
         [t('page.workflow.processing')]: 'primary',
         };
-        const label = row.OrderStatusText || t('page.workflow.unknown');
-        return h(NTag, { class: 'text-xs', type: tagMap[row.OrderStatusText || t('page.workflow.unknown')] || 'default',size:'small', round:true }, () => label)
+        const translatedLabel = getTranslatedOrderStatus(row.OrderStatusText) || t('page.workflow.unknown');
+        return h(NTag, { class: 'text-xs', type: tagMap[translatedLabel] || 'default',size:'small', round:true }, () => translatedLabel)
       }
   },
    { title: () => renderHeaderTitle(t('page.workflow.createdAt')), key: 'CreatedAt',
@@ -445,6 +480,17 @@ const columns: DataTableColumns<Order> = [
         if (row.SettlementStatusText === null || row.SettlementStatusText === undefined) {
           return null;
         }
+
+        const getTranslatedPaymentStatus = (name: string | undefined | null) => {
+          if (!name) return '';
+          const map: Record<string, string> = {
+            '已付款': t('page.workflow.paid'),
+            '未付款': t('page.workflow.unpaid'),
+            '未申请': t('page.workflow.unapplied'),
+          };
+          return map[name] || name;
+        };
+
         //待处理，处理中，已完成，未解决
         const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
           [t('page.workflow.paid')]: 'success',
@@ -452,9 +498,9 @@ const columns: DataTableColumns<Order> = [
           [t('page.workflow.unapplied')]: 'default',
         };
 
-        const label = row.SettlementStatusText || t('page.workflow.unknown');
+        const translatedLabel = getTranslatedPaymentStatus(row.SettlementStatusText) || t('page.workflow.unknown');
         // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-        return h(NTag, { class: 'text-sm', type: tagMap[row.SettlementStatusText || t('page.workflow.unknown')] || 'default',size:'small', round:true }, () => label)
+        return h(NTag, { class: 'text-sm', type: tagMap[translatedLabel] || 'default',size:'small', round:true }, () => translatedLabel)
       }
     },
     { title: () => renderHeaderTitle(t('page.workflow.paymentDate')), key: 'PaymentDate',
@@ -611,10 +657,7 @@ const fetchOrderStatusData = async () => {
     const {data,error} = await fetchOrdersStatus(params);
 
     if(error==null){
-       statusOptions.value = data.map((item: any) => ({
-        label: item.name,
-        value: item.id,
-      }));
+       statusOptionsData.value = data;
     }else{
         message.error(t('page.workflow.loadFailed') + error);
     }

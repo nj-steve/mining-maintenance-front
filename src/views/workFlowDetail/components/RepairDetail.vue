@@ -1,35 +1,31 @@
 <template>
     <n-config-provider :theme-overrides="selectThemeOverrides">
     <div class="p-4 space-y-6 text-sm">
-      <!-- 基础信息 -->
-       <!-- <div class="flex justify-end gap-4 mt-4" v-if="!isRead">
-        <n-button size="small" class="text-sm" type="primary" @click="save">保存</n-button>
-      </div> -->
-      <n-card title="基础信息">
+      <n-card :title="$t('page.workflowDetail.basicInfo')">
         <n-space vertical>
           <n-descriptions :column="2" label-placement="left" bordered size="small" class="text-sm">
             <n-descriptions-item>
-              <template #label><span class="text-sm text-gray-500">日期</span></template>
+              <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.date') }}</span></template>
               <n-date-picker size="small" class="text-sm" v-model:formatted-value="form.date" type="date" value-format="yyyy-MM-dd" />
             </n-descriptions-item>
 
             <n-descriptions-item>
-              <template #label><span class="text-sm text-gray-500">工单编号</span></template>
+              <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.orderNo') }}</span></template>
               <n-input size="small" class="text-sm" disabled v-model:value="form.work_order_no" />
             </n-descriptions-item>
 
             <n-descriptions-item>
-              <template #label><span class="text-sm text-gray-500">机型</span></template>
+              <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.model') }}</span></template>
               <n-input size="small" class="text-sm" disabled v-model:value="form.machine_model" />
             </n-descriptions-item>
 
             <n-descriptions-item>
-              <template #label><span class="text-sm text-gray-500">维修站点</span></template>
+              <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.repairStation') }}</span></template>
               <n-select size="small" class="text-sm" disabled v-model:value="form.repairStation" />
             </n-descriptions-item>
 
             <n-descriptions-item>
-              <template #label><span class="text-sm text-gray-500">MAC 地址</span></template>
+              <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.macAddress') }}</span></template>
               <n-input size="small" class="text-sm" v-model:value="form.mac_address" />
             </n-descriptions-item>
           </n-descriptions>
@@ -37,121 +33,118 @@
       </n-card>
 
       <!-- 设备信息 -->
-      <n-card title="设备信息">
+      <n-card :title="$t('page.workflowDetail.deviceInfo')">
         <n-descriptions :column="1" label-placement="left" bordered size="small" class="text-sm">
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">整机 SN</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.machineSN') }}</span></template>
             <n-input size="small" class="text-sm" disabled v-model:value="form.device_sn" />
           </n-descriptions-item>
            <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">控制板 SN</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.controlBoardSN') }}</span></template>
             <n-input size="small" class="text-sm" v-model:value="form.control_sn" />
           </n-descriptions-item>
 
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">电源 SN</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.powerSN') }}</span></template>
             <div>
-              <!-- <n-dynamic-input v-model:value="form.powerSN" placeholder="请输入电源 SN" /> -->
-               <n-input size="small" class="text-sm" v-model:value="form.power_sn" placeholder="请输入电源SN"  style="width: 100%; margin-bottom: 10px;" />
+               <n-input size="small" class="text-sm" v-model:value="form.power_sn" :placeholder="$t('page.workflowDetail.inputPowerSN')"  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
 
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">板1 SN</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.board1SN') }}</span></template>
             <div>
-               <n-input size="small" class="text-sm" v-model:value="form.board_sn_1" placeholder="请输入板1 码"  style="width: 100%; margin-bottom: 10px;" />
+               <n-input size="small" class="text-sm" v-model:value="form.board_sn_1" :placeholder="$t('page.workflowDetail.inputBoard1SN')"  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
            <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">板2 SN</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.board2SN') }}</span></template>
             <div>
-               <n-input size="small" class="text-sm" v-model:value="form.board_sn_2" placeholder="请输入板2 码 "  style="width: 100%; margin-bottom: 10px;" />
+               <n-input size="small" class="text-sm" v-model:value="form.board_sn_2" :placeholder="$t('page.workflowDetail.inputBoard2SN')"  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
            <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">板3 SN</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.board3SN') }}</span></template>
             <div>
-               <n-input size="small" class="text-sm" v-model:value="form.board_sn_3" placeholder="请输入板3 码 "  style="width: 100%; margin-bottom: 10px;" />
+               <n-input size="small" class="text-sm" v-model:value="form.board_sn_3" :placeholder="$t('page.workflowDetail.inputBoard3SN')"  style="width: 100%; margin-bottom: 10px;" />
             </div>
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
 
       <!-- 维修详情 -->
-      <n-card title="维修详情">
+      <n-card :title="$t('page.workflowDetail.repairDetail')">
         <n-descriptions :column="1" label-placement="left" bordered size="small" class="text-sm">
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">维修部件</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.repairComponent') }}</span></template>
             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <n-checkbox-group v-model:value="selectedComponents">
                 <n-space>
                   <n-checkbox
-                    v-for="opt in componentOptions"
-                    :key="opt"
-                    :label="opt"
-                    :value="opt"
+                    v-for="opt in computedComponentOptions"
+                    :key="opt.value"
+                    :label="opt.label"
+                    :value="opt.value"
                   />
                 </n-space>
               </n-checkbox-group>
               <n-input
                 v-if="selectedComponents.includes('其他')"
                 v-model:value="otherComponent" size="small" class="text-sm"
-                placeholder="请输入其他项"
+                :placeholder="$t('page.workflowDetail.inputOtherItem')"
                 style="max-width: 200px;"
               />
             </div>
           </n-descriptions-item>
 
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">额外操作</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.extraOperations') }}</span></template>
             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <n-checkbox-group v-model:value="selectedExtraOperations">
                 <n-space>
                   <n-checkbox
-                    v-for="opt in componentExtraOperations"
-                    :key="opt"
-                    :label="opt"
-                    :value="opt"
+                    v-for="opt in computedExtraOperationOptions"
+                    :key="opt.value"
+                    :label="opt.label"
+                    :value="opt.value"
                   />
                 </n-space>
               </n-checkbox-group>
             </div>
           </n-descriptions-item>
 
-          <!-- 涂硅脂, 涂三防漆, 换升压模块, 清灰, 贴铝片 -->
-
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">初测不良原因</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.defectReason') }}</span></template>
             <n-input size="small" class="text-sm" v-model:value="form.defect_reason" />
           </n-descriptions-item>
 
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">不良代码L2</span></template>
-            <n-input size="small" class="text-sm" v-model:value="form.defect_code_2" placeholder="请输入不良代码L2" />
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.defectCode2') }}</span></template>
+            <n-input size="small" class="text-sm" v-model:value="form.defect_code_2" :placeholder="$t('page.workflowDetail.inputDefectCode2')" />
           </n-descriptions-item>
            <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">不良代码L3</span></template>
-            <n-input size="small" class="text-sm" v-model:value="form.defect_code_3" placeholder="请输入不良代码L3" />
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.defectCode3') }}</span></template>
+            <n-input size="small" class="text-sm" v-model:value="form.defect_code_3" :placeholder="$t('page.workflowDetail.inputDefectCode3')" />
           </n-descriptions-item>
 
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">位号信息</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.positionInfo') }}</span></template>
             <n-input size="small" class="text-sm" v-model:value="form.position" />
           </n-descriptions-item>
 
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">查证缺陷</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.verifyDefect') }}</span></template>
             <n-input size="small" class="text-sm" v-model:value="form.verify_defect" />
           </n-descriptions-item>
 
 
           <n-descriptions-item class="text-sm">
-            <template #label><span class="text-sm text-gray-500">维修部位图片</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.repairPartImage') }}</span></template>
             <div class="text-sm text-gray-600">
               <QiniuImageUpload
                 v-model:images="form.images"
                 :max="10"
-                button-text="上传图片"
+                :button-text="$t('page.workflowDetail.uploadImage')"
                 @uploaded="(url: string) => form.images.push(url)"
                 @removed="(url: string) => form.images = form.images.filter(u => u !== url)"
               />
@@ -159,31 +152,31 @@
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
-      <n-modal v-model:show="previewVisible" preset="card" title="图片预览" style="width: 800px;">
+      <n-modal v-model:show="previewVisible" preset="card" :title="$t('page.workflowDetail.imagePreview')" style="width: 800px;">
         <div style="display:flex; justify-content:center; align-items:center;">
-          <img :src="previewSrc" alt="预览" style="max-width:100%; max-height:70vh; object-fit:contain;" />
+          <img :src="previewSrc" :alt="$t('page.workflowDetail.preview')" style="max-width:100%; max-height:70vh; object-fit:contain;" />
         </div>
       </n-modal>
 
       <!-- 维修进程 -->
-      <n-card title="维修进程">
+      <n-card :title="$t('page.workflowDetail.repairProcess')">
         <n-descriptions :column="2" label-placement="left" bordered size="small" class="text-sm">
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">开始时间</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.startTime') }}</span></template>
             <n-date-picker size="small" class="text-sm" v-model:formatted-value="form.start_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
           </n-descriptions-item>
            <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">结束时间</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.endTime') }}</span></template>
             <n-date-picker size="small" class="text-sm" v-model:formatted-value="form.end_time" type="datetime" value-format="yyyy-MM-dd HH:mm" />
           </n-descriptions-item>
 
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">维修状态</span></template>
-            <n-select size="small" class="text-sm" v-model:value="form.repair_result" :options="repairResultOptions" />
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.repairStatus') }}</span></template>
+            <n-select size="small" class="text-sm" v-model:value="form.repair_result" :options="computedRepairResultOptions" />
           </n-descriptions-item>
 
           <n-descriptions-item>
-            <template #label><span class="text-sm text-gray-500">维修人员</span></template>
+            <template #label><span class="text-sm text-gray-500">{{ $t('page.workflowDetail.repairer') }}</span></template>
             <n-input size="small" class="text-sm" v-model:value="form.repairer_name" />
           </n-descriptions-item>
         </n-descriptions>
@@ -191,25 +184,25 @@
 
       <!-- 操作按钮 -->
       <div class="flex justify-end gap-4 mt-4">
-        <!-- <n-button v-if="!isEdit" @click="isEdit = true">编辑</n-button> -->
-        <n-button type="primary" @click="save">保存</n-button>
-        <!-- <n-button @click="cancel">取消</n-button> -->
+        <n-button type="primary" @click="save">{{ $t('page.workflowDetail.save') }}</n-button>
       </div>
     </div>
     </n-config-provider>
   </template>
 
   <script setup lang="ts">
-  import { ref, onMounted, watch } from "vue"
+  import { ref, onMounted, watch, computed } from "vue"
+  import { useI18n } from 'vue-i18n';
   import { useRoute } from "vue-router"
   import dayjs from 'dayjs';
   import { useMessage } from 'naive-ui';
   import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace, NCheckbox, NCheckboxGroup, NModal, NConfigProvider } from "naive-ui"
+  import type { GlobalThemeOverrides } from 'naive-ui'
   import { fetchRepairDetailsByFaults, createRepairDetails,updateRepairDetails } from '@/service/api/repair'
-  import { repairResultOptions, repairResultMap } from '@/constants/business'
   import QiniuImageUpload from '@/components/upload/QiniuImageUpload.vue'
   import { useAuthStore } from '@/store/modules/auth';
 
+  const { t } = useI18n();
   const authStore = useAuthStore();
   const hasRole=!authStore.userInfo.roles.includes('3')
   const isAdmin=authStore.userInfo.roles.includes('1') // 超管
@@ -239,12 +232,12 @@
 
   const previewVisible = ref(false)
   const previewSrc = ref('')
-  const selectThemeOverrides = {
+  const selectThemeOverrides: GlobalThemeOverrides = {
     Select: {
       fontSizeSmall: '12px',
       optionFontSizeSmall: '12px'
     }
-  } as const
+  }
 
   const form = ref({
     date: dayjs().format('YYYY-MM-DD'),
@@ -281,11 +274,33 @@
 
   // 维修部件选项与编辑态状态
   const componentOptions = ['板1', '板2', '板3', '电源', '控制板', '其他']
+  const computedComponentOptions = computed(() => [
+    { label: t('page.workflowDetail.componentOptions.board1'), value: '板1' },
+    { label: t('page.workflowDetail.componentOptions.board2'), value: '板2' },
+    { label: t('page.workflowDetail.componentOptions.board3'), value: '板3' },
+    { label: t('page.workflowDetail.componentOptions.power'), value: '电源' },
+    { label: t('page.workflowDetail.componentOptions.controlBoard'), value: '控制板' },
+    { label: t('page.workflowDetail.componentOptions.other'), value: '其他' },
+  ])
   const selectedComponents = ref<string[]>([])
   const otherComponent = ref('')
 
   const componentExtraOperations = ['涂硅脂', '涂三防漆', '换升压模块', '清灰', '贴铝片']
+  const computedExtraOperationOptions = computed(() => [
+    { label: t('page.workflowDetail.extraOperationOptions.thermalGrease'), value: '涂硅脂' },
+    { label: t('page.workflowDetail.extraOperationOptions.conformalCoating'), value: '涂三防漆' },
+    { label: t('page.workflowDetail.extraOperationOptions.boostModule'), value: '换升压模块' },
+    { label: t('page.workflowDetail.extraOperationOptions.dustCleaning'), value: '清灰' },
+    { label: t('page.workflowDetail.extraOperationOptions.aluminumFoil'), value: '贴铝片' },
+  ])
   const selectedExtraOperations = ref<string[]>([])
+
+  const computedRepairResultOptions = computed(() => [
+    { label: t('business.repairResult.pending'), value: 1 },
+    { label: t('business.repairResult.unrepaired'), value: 2 },
+    { label: t('business.repairResult.repaired'), value: 3 },
+    { label: t('business.repairResult.scrapped'), value: 4 },
+  ])
 
   function save() {
     // console.log("保存数据", form.value)
@@ -315,7 +330,7 @@
     // return false
     form.value.repair_image_urls = form.value.images.join(',')
     createRepairDetails(form.value).then(() => {
-      message.success('添加成功')
+      message.success(t('page.workflowDetail.addSuccess'))
       emit('success')
     })
   }
@@ -384,7 +399,7 @@
 
       }
     } catch (error) {
-      console.error('获取详情数据失败:', error);
+      console.error(t('page.workflowDetail.getDetailFailed'), error);
     } finally {
       loading.value = false;
     }

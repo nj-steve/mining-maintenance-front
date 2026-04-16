@@ -1,9 +1,21 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { NInput, NSelect } from 'naive-ui';
-import { repairResultOptions, repairTypeOptions } from '@/constants/business'
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+
+const translatedRepairTypeOptions = computed(() => [
+  { label: t('business.repairType.wholeMachine'), value: "整机" },
+  { label: t('business.repairType.hashBoard'), value: "算力板" },
+]);
+
+const translatedRepairResultOptions = computed(() => [
+  { label: t('business.repairResult.pending'), value: 1 },
+  { label: t('business.repairResult.unrepaired'), value: 2 },
+  { label: t('business.repairResult.repaired'), value: 3 },
+  { label: t('business.repairResult.scrapped'), value: 4 },
+]);
 
 const props = defineProps<{
   workOrderNo: string;
@@ -58,7 +70,7 @@ const emit = defineEmits<{
     />
     <NSelect
       :value="repairType"
-      :options="repairTypeOptions"
+      :options="translatedRepairTypeOptions"
       :placeholder="t('page.repairRecords.repairType')"
       clearable
       size="small"
@@ -68,7 +80,7 @@ const emit = defineEmits<{
     />
     <NSelect
       :value="repairResult"
-      :options="repairResultOptions"
+      :options="translatedRepairResultOptions"
       clearable
       :placeholder="t('page.repairRecords.repairResult')"
       size="small"

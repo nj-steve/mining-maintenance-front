@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { NModal, NForm, NFormItem, NInput, NSelect, NButton, useMessage } from 'naive-ui';
+import { ref, watch, computed } from 'vue';
+import { NModal, NForm, NFormItem, NInput, NSelect, NButton, useMessage, NSpace } from 'naive-ui';
 import { updateRepairStation } from '@/service/api/repair';
+import { useI18n } from 'vue-i18n';
 
 interface CompanyInfo {
   ID: number;
@@ -30,6 +31,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
 const message = useMessage();
+const { t } = useI18n();
 
 // 表单数据
 const editForm = ref({
@@ -43,10 +45,10 @@ const editForm = ref({
 });
 
 // KYC状态选项
-const kycStatusOptions = [
-  { label: '未认证', value: 0 },
-  { label: '已认证', value: 1 }
-];
+const kycStatusOptions = computed(() => [
+  { label: t('page.repairStation.unauthenticated'), value: 0 },
+  { label: t('page.repairStation.authenticated'), value: 1 }
+]);
 
 // 监听编辑数据变化，填充表单
 watch(() => props.editData, (newData) => {
@@ -85,12 +87,12 @@ const handleClose = () => {
 // 保存修改
 const handleSaveEdit = async () => {
   if (!props.editData) {
-    message.error('编辑数据不存在');
+    message.error(t('page.repairStation.editDataNotExist'));
     return;
   }
   // 验证表单
   if (!editForm.value.name || !editForm.value.address || !editForm.value.legal_representative || !editForm.value.contact_name || !editForm.value.contact_phone) {
-    message.warning('请填写完整信息');
+    message.warning(t('page.repairStation.pleaseFillComplete'));
     return;
   }
   try {
@@ -101,48 +103,50 @@ const handleSaveEdit = async () => {
     };
     const {error} = await updateRepairStation(props.editData.ID, formData);
     if(error===null){
-        message.success('修改成功！');
+        message.success(t('page.repairStation.editSuccess'));
         handleClose();
         emit('success'); // 通知父组件刷新数据
       }else{
-        message.error('修改失败:');
+        message.error(t('page.repairStation.editFailed') + ':');
       }
   } catch (err) {
-    message.error('修改失败');
+    message.error(t('page.repairStation.editFailed'));
   }finally{
-    
+
   }
 };
 </script>
 
 <template>
-  <NModal :show="show" @update:show="handleClose" style="width: 600px" preset="card" title="修改维修站">
+  <NModal :show="show" @update:show="handleClose" style="width: 600px" preset="card" :title="t('page.repairStation.editStation')">
     <NForm :model="editForm" label-width="120px">
-      <NFormItem label="维修站名称" required>
-        <NInput v-model:value="editForm.name" placeholder="请输入维修站名称" />
+      <NFormItem :label="t('page.repairStation.stationName')" required>
+        <NInput v-model:value="editForm.name" :placeholder="t('page.repairStation.pleaseEnterStationName')" />
       </NFormItem>
-      <NFormItem label="详细地址" required>
-        <NInput v-model:value="editForm.address" placeholder="请输入详细地址" />
+      <NFormItem :label="t('page.repairStation.address')" required>
+        <NInput v-model:value="editForm.address" :placeholder="t('page.repairStation.pleaseEnterDetailedAddress')" />
       </NFormItem>
-      <NFormItem label="法人代表" required>
-        <NInput v-model:value="editForm.legal_representative" placeholder="请输入法人代表" />
+      <NFormItem :label="t('page.repairStation.legalRepresentative')" required>
+        <NInput v-model:value="editForm.legal_representative" :placeholder="t('page.repairStation.pleaseEnterLegalRepresentative')" />
       </NFormItem>
-      <NFormItem label="联系人" required>
-        <NInput v-model:value="editForm.contact_name" placeholder="请输入联系人" />
+      <NFormItem :label="t('page.repairStation.contactName')" required>
+        <NInput v-model:value="editForm.contact_name" :placeholder="t('page.repairStation.pleaseEnterContactName')" />
       </NFormItem>
-      <NFormItem label="联系电话" required>
-        <NInput v-model:value="editForm.contact_phone" placeholder="请输入联系电话" />
+      <NFormItem :label="t('page.repairStation.contactPhone')" required>
+        <NInput v-model:value="editForm.contact_phone" :placeholder="t('page.repairStation.pleaseEnterContactPhone')" />
       </NFormItem>
-      <NFormItem label="白名单认证">
+      <NFormItem :label="t('page.repairStation.kycStatus')">
         <NSelect v-model:value="editForm.kyc_status" :options="kycStatusOptions" />
       </NFormItem>
-      <NFormItem label="评分">
-        <NInput v-model:value="editForm.score" placeholder="请输入评分" />
+      <NFormItem :label="t('page.repairStation.score')">
+        <NInput v-model:value="editForm.score" :placeholder="t('page.repairStation.pleaseEnterScore')" />
       </NFormItem>
     </NForm>
     <template #footer>
-      <NButton type="primary" @click="handleSaveEdit" style="margin-right: 10px;" >保存</NButton>
-      <NButton @click="handleClose">取消</NButton>
+      <NSpace>
+        <NButton type="primary" @click="handleSaveEdit" style="margin-right: 10px;" >{{ t('page.repairStation.save') }}</NButton>
+        <NButton @click="handleClose">{{ t('page.repairStation.cancel') }}</NButton>
+      </NSpace>
     </template>
   </NModal>
 </template>

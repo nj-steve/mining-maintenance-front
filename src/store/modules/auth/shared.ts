@@ -5,10 +5,23 @@ export function getToken() {
   return localStg.get('token') || '';
 }
 
+/** Set token to cookie with specific domain */
+export function setTokenCookie(token: string) {
+  const domain = '.datasting.cc';
+  document.cookie = `token=${token}; domain=${domain}; path=/; max-age=${60 * 60 * 24 * 7};`;
+}
+
+/** Remove token cookie from specific domain */
+export function removeTokenCookie() {
+  const domain = '.datasting.cc';
+  document.cookie = `token=; domain=${domain}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+}
+
 /** Clear auth storage */
 export function clearAuthStorage() {
   localStg.remove('token');
   localStg.remove('refreshToken');
+  removeTokenCookie();
   // 清除所有token
   // 1. 清除 cookie
     // clearAllCookies();
