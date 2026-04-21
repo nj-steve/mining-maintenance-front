@@ -169,7 +169,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm sticky right-0 bg-white">
                   <div v-if="!isRead" class="flex space-x-2">
 
-                    <button
+                    <!-- <button
                       :class="[
                         'px-3 py-1 text-sm rounded whitespace-nowrap',
                         item.status === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' :
@@ -178,6 +178,17 @@
                         'bg-purple-600 text-white'
                       ]"
                       :disabled="item.status != 2 || Number(item.scrap_count) === 1"
+                      @click="confirmScrap(item)"
+                    > -->
+                     <button
+                      :class="[
+                        'px-3 py-1 text-sm rounded whitespace-nowrap',
+                        item.status === 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' :
+                        item.status === 2 ? 'bg-blue-600 text-white' :
+                        item.status === 4 ? 'bg-green-600 text-white' :
+                        'bg-purple-600 text-white'
+                      ]"
+                      :disabled="item.status != 2"
                       @click="confirmScrap(item)"
                     >
                     <!-- {{ item.status === 3 ? t('page.scrapMachine.approved') : t('page.scrapMachine.confirmScrap') }} -->
