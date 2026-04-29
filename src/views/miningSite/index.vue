@@ -58,6 +58,7 @@ const selectedSalerId = ref<number | null>(null);
 const selectedSiteStatus = ref<number | null>(null);
 const bindTypeModel = ref<string | null>(null);
 const borderBindTypeModel = ref<string | null>(null);
+const searchDate = ref<string | null>(null);
 
 // 分页
 const pagination = ref<PaginationProps>({
@@ -667,6 +668,22 @@ const fetchData = async () => {
     border_bind_type: borderBindTypeModel.value || undefined,
     site_status: selectedSiteStatus.value===0 ? 0 : selectedSiteStatus.value || undefined
   };
+
+  if (searchDate.value) {
+    const startDate = new Date(searchDate.value);
+    const endDate = new Date(searchDate.value);
+
+    // 设置开始时间为当天的 00:00:00
+    startDate.setHours(0, 0, 0, 0);
+    // 设置结束时间为当天的 23:59:59
+    endDate.setHours(23, 59, 59, 999);
+
+    // Convert back to string with local timezone to prevent UTC offset shift
+    // Or simpler, just append time to the selected string
+    // params.datetime = `${searchDate.value}T00:00:00`;
+    params.date_time = `${searchDate.value}`;
+  }
+
   console.log("params",params)
 
   try {
@@ -687,7 +704,7 @@ onMounted(() => {
   fetchData()
   fetchUsers();
 });
-watch([searchSerial, selectedSalerId, selectedSiteStatus,bindTypeModel, borderBindTypeModel], () => {
+watch([searchSerial, selectedSalerId, selectedSiteStatus, bindTypeModel, borderBindTypeModel, searchDate], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
@@ -744,6 +761,7 @@ const borderBindTypeOptions = [
     <!-- 查询框 -->
      <div class="flex justify-between items-center" v-if="hasRole">
       <SearchBar
+      v-model:date="searchDate"
       v-model:serial="searchSerial"
       v-model:salerId="selectedSalerId"
       v-model:siteStatus="selectedSiteStatus"

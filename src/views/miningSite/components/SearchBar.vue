@@ -1,5 +1,16 @@
 <template>
   <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
+    <!-- 日期选择 -->
+    <NDatePicker
+      v-model:formatted-value="dateModel"
+      value-format="yyyy-MM-dd"
+      type="date"
+      clearable
+      size="medium"
+      style="width: 160px"
+      @update:value="emit('search')"
+    />
+
     <!-- 场地名称搜索 -->
     <NInput
       v-model:value="serialModel"
@@ -50,13 +61,14 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { NInput, NSelect } from 'naive-ui';
+import { NInput, NSelect, NDatePicker } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
 const props = defineProps<{
+  date: string | null;
   serial: string;
   salerId: number | null;
   siteStatus: number | null;
@@ -68,6 +80,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  (e: 'update:date', v: string | null): void;
   (e: 'update:serial', v: string): void;
   (e: 'update:salerId', v: number | null): void;
   (e: 'update:siteStatus', v: number | null): void;
@@ -75,6 +88,11 @@ const emit = defineEmits<{
   (e: 'update:borderBindType', v: string | null): void;
   (e: 'search'): void;
 }>();
+
+const dateModel = computed({
+  get: () => props.date,
+  set: v => emit('update:date', v)
+});
 
 const serialModel = computed({
   get: () => props.serial,
