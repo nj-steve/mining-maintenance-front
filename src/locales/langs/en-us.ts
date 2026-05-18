@@ -792,7 +792,8 @@ const local: App.I18n.Schema = {
           afterSalesSpecialist: 'Select after-sales specialist',
           siteStatus: 'Select site status',
           bindType: 'Select bind order type'
-        }
+        },
+        allSites: 'All Sites',
       }
     },
     repairRecords: {

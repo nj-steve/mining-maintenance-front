@@ -28,7 +28,7 @@
       clearable
       filterable
       :placeholder="t('page.miningSite.searchBar.placeholder.afterSalesSpecialist')"
-      style="width: 200px"
+      style="width: 130px"
       size="medium"
       @update:value="emit('search')"
     />
@@ -40,7 +40,7 @@
       clearable
       filterable
       :placeholder="t('page.miningSite.searchBar.placeholder.siteStatus')"
-      style="width: 200px"
+      style="width: 130px"
       size="medium"
       @update:value="emit('search')"
     />
@@ -52,32 +52,44 @@
       clearable
       filterable
       :placeholder="t('page.miningSite.searchBar.placeholder.bindType')"
-      style="width: 200px"
+      style="width: 130px"
       size="medium"
       @update:value="emit('search')"
     />
+
+    <!-- 所有场地复选框 -->
+    <NCheckbox
+      v-model:checked="statusModel"
+      size="medium"
+      @update:checked="emit('search')"
+    >
+      {{ t('page.miningSite.searchBar.allSites') }}
+    </NCheckbox>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { NInput, NSelect, NDatePicker } from 'naive-ui';
+import { NInput, NSelect, NDatePicker, NCheckbox } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   date: string | null;
   serial: string;
   salerId: number | null;
   siteStatus: number | null;
   bindType: string | null;
+  status: string;
   salerOptions: SelectOption[];
   siteStatusOptions: SelectOption[];
   bindTypeOptions: SelectOption[];
   borderBindTypeOptions: SelectOption[];
-}>();
+}>(), {
+  status: 'active'
+});
 
 const emit = defineEmits<{
   (e: 'update:date', v: string | null): void;
@@ -86,6 +98,7 @@ const emit = defineEmits<{
   (e: 'update:siteStatus', v: number | null): void;
   (e: 'update:bindType', v: string | null): void;
   (e: 'update:borderBindType', v: string | null): void;
+  (e: 'update:status', v: string): void;
   (e: 'search'): void;
 }>();
 
@@ -112,6 +125,11 @@ const siteStatusModel = computed({
 const bindTypeModel = computed({
   get: () => props.bindType,
   set: v => emit('update:bindType', v as string | null)
+});
+
+const statusModel = computed({
+  get: () => props.status === 'all',
+  set: v => emit('update:status', v ? 'all' : 'active')
 });
 </script>
 

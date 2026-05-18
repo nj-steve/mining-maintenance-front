@@ -45,6 +45,7 @@ interface Site {
   board_bind_type?: string;
   board_order_id?: string | number;
   board_order_no?: string;
+  status?: string;
 }
 
 const message = useMessage();
@@ -59,6 +60,7 @@ const selectedSiteStatus = ref<number | null>(null);
 const bindTypeModel = ref<string | null>(null);
 const borderBindTypeModel = ref<string | null>(null);
 const searchDate = ref<string | null>(null);
+const statusModel = ref<string>('active');
 
 // 分页
 const pagination = ref<PaginationProps>({
@@ -530,6 +532,27 @@ const columns: DataTableColumns<Site> = [
       ]);
   }},
 
+  {
+    title: () => renderHeaderTitle('Status'),
+    width: 100,
+    key: 'status',
+    render: (row: Site) => {
+      const status = row.status || '';
+      let type: 'success' | 'error' | 'warning' = 'warning';
+      let label = status;
+
+      if (status === 'active') {
+        type = 'success';
+        label = 'Active';
+      } else if (status === 'remove') {
+        type = 'error';
+        label = 'Remove';
+      }
+
+      return h(NTag, { class: 'text-sm', type, size: 'small' }, () => label);
+    }
+  },
+
   { title: () => renderHeaderTitle(t('page.miningSite.repairStatus')), width: 120, key: 'site_status',render: (row: any ) => {
     const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
       0: 'default',
@@ -666,7 +689,8 @@ const fetchData = async () => {
     saler_id: selectedSalerId.value || undefined,
     bind_type: bindTypeModel.value || undefined,
     border_bind_type: borderBindTypeModel.value || undefined,
-    site_status: selectedSiteStatus.value===0 ? 0 : selectedSiteStatus.value || undefined
+    site_status: selectedSiteStatus.value===0 ? 0 : selectedSiteStatus.value || undefined,
+    status: statusModel.value
   };
 
   if (searchDate.value) {
@@ -704,7 +728,7 @@ onMounted(() => {
   fetchData()
   fetchUsers();
 });
-watch([searchSerial, selectedSalerId, selectedSiteStatus, bindTypeModel, borderBindTypeModel, searchDate], () => {
+watch([searchSerial, selectedSalerId, selectedSiteStatus, bindTypeModel, borderBindTypeModel, searchDate, statusModel], () => {
   tableData.value = [];
   pagination.value.page = 1;
   fetchData();
@@ -767,6 +791,7 @@ const borderBindTypeOptions = [
       v-model:siteStatus="selectedSiteStatus"
       v-model:bindType="bindTypeModel"
       v-model:borderBindType="borderBindTypeModel"
+      v-model:status="statusModel"
       :salerOptions="salerOptions"
       :siteStatusOptions="siteStatusOptions"
       :bindTypeOptions="bindTypeOptions"

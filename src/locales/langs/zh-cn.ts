@@ -939,7 +939,8 @@ const local: App.I18n.Schema = {
           afterSalesSpecialist: '选择售后专员',
           siteStatus: '选择站点状态',
           bindType: '选择绑定工单类型'
-        }
+        },
+        allSites: '所有场地',
       }
     },
     siteDetail: {

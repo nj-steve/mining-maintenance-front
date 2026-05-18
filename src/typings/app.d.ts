@@ -1197,6 +1197,7 @@ declare namespace App {
               siteStatus: string;
               bindType: string;
             };
+            allSites: string;
           };
         };
         siteDetail: {
