@@ -1190,6 +1190,7 @@ declare namespace App {
           dailyReport: string;
           edit: string;
           view: string;
+          statusLabel: string;
           searchBar: {
             placeholder: {
               siteName: string;
@@ -1198,6 +1199,11 @@ declare namespace App {
               bindType: string;
             };
             allSites: string;
+          };
+          status: {
+            active: string;
+            inactive: string;
+            remove: string;
           };
         };
         siteDetail: {

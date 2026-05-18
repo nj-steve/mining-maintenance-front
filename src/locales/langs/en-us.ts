@@ -786,6 +786,7 @@ const local: App.I18n.Schema = {
       dailyReport: 'Daily Report',
       edit: 'Edit',
       view: 'View',
+      statusLabel: 'Status',
       searchBar: {
         placeholder: {
           siteName: 'Please enter site name',
@@ -793,7 +794,12 @@ const local: App.I18n.Schema = {
           siteStatus: 'Select site status',
           bindType: 'Select bind order type'
         },
-        allSites: 'All Sites',
+        allSites: 'All Sites'
+      },
+      status: {
+        active: 'Active',
+        inactive: 'Inactive',
+        remove: 'Remove'
       }
     },
     repairRecords: {

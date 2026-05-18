@@ -933,6 +933,7 @@ const local: App.I18n.Schema = {
       dailyReport: '日报',
       edit: '编辑',
       view: '查看',
+      statusLabel: '场地状态',
       searchBar: {
         placeholder: {
           siteName: '请输入场地名称',
@@ -940,7 +941,12 @@ const local: App.I18n.Schema = {
           siteStatus: '选择站点状态',
           bindType: '选择绑定工单类型'
         },
-        allSites: '所有场地',
+        allSites: '所有场地'
+      },
+      status: {
+        active: '活跃',
+        inactive: '非活跃',
+        remove: '撤场'
       }
     },
     siteDetail: {

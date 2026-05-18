@@ -533,7 +533,7 @@ const columns: DataTableColumns<Site> = [
   }},
 
   {
-    title: () => renderHeaderTitle('Status'),
+    title: () => renderHeaderTitle(t('page.miningSite.statusLabel')),
     width: 100,
     key: 'status',
     render: (row: Site) => {
@@ -543,10 +543,13 @@ const columns: DataTableColumns<Site> = [
 
       if (status === 'active') {
         type = 'success';
-        label = 'Active';
+        label = t('page.miningSite.status.active');
+      } else if (status === 'inactive') {
+        type = 'warning';
+        label = t('page.miningSite.status.inactive');
       } else if (status === 'remove') {
         type = 'error';
-        label = 'Remove';
+        label = t('page.miningSite.status.remove');
       }
 
       return h(NTag, { class: 'text-sm', type, size: 'small' }, () => label);
