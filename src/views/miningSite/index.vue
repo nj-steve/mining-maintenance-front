@@ -108,6 +108,7 @@ const getOrders = async (siteId: number) => {
   orderLoading.value = true;
   try {
     const { data, error } = await fetchOrders({ site_id: siteId });
+
     if (!error && data.list) {
       orderOptions.value = data.list.map((item: any) => ({
         label: item.OrderNo || item.ID,
@@ -716,7 +717,11 @@ const fetchData = async () => {
   try {
     const {data,error} = await fetchSites(params);
     if(error==null){
-        tableData.value = data.list;
+        if (data && data.list) {
+            tableData.value = data.list;
+        } else {
+            tableData.value = [];
+        }
     }else{
         message.error(t('page.miningSite.loadFailed') + error);
     }

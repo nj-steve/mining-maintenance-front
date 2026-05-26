@@ -224,6 +224,10 @@ const hasRole=!authStore.userInfo.roles.includes('3')
       formData.append('file', selectedFile.value)
       formData.append('site_id', String(selectedSite.value))
 
+      if (authStore.activeGroupId) {
+        formData.append('group_id', String(authStore.activeGroupId))
+      }
+
       Object.entries(props?.params || {}).forEach(([key, value]) => {
         formData.append(key, String(value))
       })

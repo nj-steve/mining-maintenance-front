@@ -102,7 +102,7 @@ const handleBeforeUpload = async (data: { file: UploadFileInfo; fileList?: Uploa
       }
     })
     // console.log('tokenResp', tokenResp)
-    const { uploadToken, uploadUrl } = tokenResp.data.data || {};   
+    const { uploadToken, uploadUrl } = tokenResp.data.data || {};
     // console.log('uploadToken', uploadToken)
     // console.log('uploadUrl', uploadUrl)
 
@@ -120,7 +120,7 @@ const handleBeforeUpload = async (data: { file: UploadFileInfo; fileList?: Uploa
 
     // 2. 上传到七牛
     const formData = new FormData()
-    formData.append('token', uploadToken) 
+    formData.append('token', uploadToken)
     formData.append('file', file.file)
     formData.append('key', key)
 

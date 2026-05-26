@@ -98,10 +98,10 @@ import type { UploadFileInfo } from 'naive-ui'
 import axios from 'axios'
 import { getServiceBaseURL } from '@/utils/service'
 import { localStg } from '@/utils/storage'
-import { useAuthStore } from '@/store/modules/auth';
-import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/store/modules/auth'
+import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n();
+const { t } = useI18n()
 
 // const handleSiteChange = (val: number | null, option: SelectOption) => {
 //   form.site_id = val
@@ -167,13 +167,25 @@ const handleSubmit = async () => {
     const token = localStg.get('token')
     const Authorization = token ? `Bearer ${token}` : ''
 
+    const formData = new FormData();
+    Object.entries(form).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value as any);
+      }
+    });
+
+    if (authStore.activeGroupId) {
+      formData.append('group_id', String(authStore.activeGroupId));
+    }
+
     const response = await axios.request({
       url: baseURL + '/api/orders/bind', // API Endpoint for Order Import
       method: 'post',
-      data: form,
+      data: formData,
       headers: {
         'Content-Type': 'multipart/form-data',
-        'Authorization': Authorization
+        'Authorization': Authorization,
+        'Group-Id': authStore.activeGroupId || ''
       }
     })
 

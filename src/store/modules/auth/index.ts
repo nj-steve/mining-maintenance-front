@@ -21,11 +21,15 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   const token = ref(getToken());
 
+  const activeGroupId = ref<string | number>(localStg.get('activeGroupId') || '');
+
   const userInfo: Api.Auth.UserInfo = reactive({
     user_id: '',
     user_name: '',
     roles: [],
-    buttons: []
+    buttons: [],
+    groups: [],
+    group_ids: '',
   });
 
   /** is super role in static route */
@@ -119,6 +123,14 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     Object.assign(userInfo, data);
 
 
+    const loginData = data as any;
+    if (loginData?.groups && loginData.groups.length > 0) {
+      if (!activeGroupId.value || !loginData.groups.find((g: any) => g.id == activeGroupId.value)) {
+        activeGroupId.value = loginData.groups[0].id;
+        localStg.set('activeGroupId', activeGroupId.value);
+      }
+    }
+
     if (!error) {
       const pass = await loginByToken(data?.token??"");
 
@@ -181,10 +193,18 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   async function getUserInfo() {
     const { data: info, error } = await fetchGetUserInfo();
+    console.log("getUserInfo", info, error);
 
     if (!error) {
       // update store
       Object.assign(userInfo, info);
+
+      if (info?.groups && info.groups.length > 0) {
+        if (!activeGroupId.value || !info.groups.find((g: any) => g.id == activeGroupId.value)) {
+          activeGroupId.value = info.groups[0].id;
+          localStg.set('activeGroupId', activeGroupId.value);
+        }
+      }
 
       return true;
     }
@@ -208,6 +228,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   return {
     token,
     userInfo,
+    activeGroupId,
     isStaticSuper,
     isLogin,
     loginLoading,

@@ -66,6 +66,8 @@ declare namespace Api {
       user_name: string;
       roles: string[];
       buttons: string[];
+      groups?: { id: number | string; name: string }[];
+      group_ids?: string;
     }
   }
 

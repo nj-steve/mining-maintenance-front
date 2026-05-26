@@ -77,6 +77,11 @@ import { ref, computed } from 'vue';
 import { NModal, NForm, NFormItem, NInput, NButton, NSpace, NTag, useMessage } from 'naive-ui';
 import { bindFaultsToOrder } from '@/service/api/faults';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/store/modules/auth'
+
+const authStore = useAuthStore()
+
+
 
 const { t } = useI18n();
 const message = useMessage();
@@ -176,7 +181,8 @@ const handleSubmit = async () => {
       date: form.value.workOrderDate,
       fault_ids: faultIds,
       order_no: form.value.workOrderNo,
-      site_id: siteId.value
+      site_id: siteId.value,
+      group_id: String(authStore.activeGroupId) || ''
     };
 
         // 调用创建工单API

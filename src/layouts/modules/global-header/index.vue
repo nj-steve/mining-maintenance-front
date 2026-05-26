@@ -8,6 +8,10 @@ import GlobalBreadcrumb from '../global-breadcrumb/index.vue';
 import GlobalSearch from '../global-search/index.vue';
 import ThemeButton from './components/theme-button.vue';
 import UserAvatar from './components/user-avatar.vue';
+import { useAuthStore } from '@/store/modules/auth';
+import { computed } from 'vue';
+import { NSelect } from 'naive-ui';
+import { localStg } from '@/utils/storage';
 
 defineOptions({
   name: 'GlobalHeader'
@@ -26,7 +30,25 @@ defineProps<Props>();
 
 const appStore = useAppStore();
 const themeStore = useThemeStore();
+const authStore = useAuthStore();
 const { isFullscreen, toggle } = useFullscreen();
+
+const groupOptions = computed(() => {
+  return (authStore.userInfo.groups || []).map((g: any) => ({
+    label: g.name,
+    value: g.id
+  }));
+});
+
+function handleGroupChange(val: string | number) {
+  authStore.activeGroupId = val;
+  localStg.set('activeGroupId', val);
+
+  // 延迟 300ms 刷新，等待 NSelect 的下拉收起动画执行完毕，避免 parentNode 为 null 的报错
+  setTimeout(() => {
+    window.location.reload();
+  }, 300);
+}
 </script>
 
 <template>
@@ -52,6 +74,14 @@ const { isFullscreen, toggle } = useFullscreen();
         @switch="themeStore.toggleThemeScheme"
       />
       <ThemeButton />
+      <NSelect
+        v-if="groupOptions.length > 1"
+        :value="authStore.activeGroupId"
+        :options="groupOptions"
+        @update:value="handleGroupChange"
+        size="small"
+        class="w-120px mx-12px"
+      />
       <UserAvatar />
     </div>
   </DarkModeContainer>

@@ -22,6 +22,22 @@ export const request = createFlatRequest<App.Service.Response, RequestInstanceSt
       const Authorization = getAuthorization();
       Object.assign(config.headers, { Authorization });
 
+      const authStore = useAuthStore();
+      if (authStore.activeGroupId) {
+        Object.assign(config.headers, { 'Group-Id': authStore.activeGroupId });
+
+        // Add group_id to URL params for GET requests, or body data for others
+        if (config.method?.toUpperCase() === 'GET') {
+          config.params = { ...config.params, group_id: authStore.activeGroupId };
+        } else if (config.method?.toUpperCase() === 'POST' || config.method?.toUpperCase() === 'PUT' || config.method?.toUpperCase() === 'PATCH') {
+          if (config.data instanceof FormData) {
+            config.data.append('group_id', String(authStore.activeGroupId));
+          } else {
+            config.data = { ...config.data, group_id: String(authStore.activeGroupId) };
+          }
+        }
+      }
+
       return config;
     },
     isBackendSuccess(response) {

@@ -795,6 +795,7 @@ const handleConfirmWorkOrder = async () => {
       fault_ids: workOrderForm.value.selectedMachines.map(machine => machine.id),
       order_no: workOrderForm.value.workOrderNo,
       site_id:workOrderForm.value.site_id,
+      group_id: String(authStore.activeGroupId) || ''
       // site_id: workOrderForm.value.selectedMachines[0]?.Site?.id || 0 // 假设第一个机器的场地ID
     };
 
