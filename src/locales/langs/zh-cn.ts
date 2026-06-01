@@ -668,6 +668,7 @@ const local: App.I18n.Schema = {
       site: '场地',
       orderNo: '工单号',
       repairStation: '维修站点',
+      repairStationGroup: '组织',
       machineModel: '机型',
       repairComponent: '损坏部件',
       defectReason: '初测不良原因',
@@ -761,6 +762,7 @@ const local: App.I18n.Schema = {
     },
     repairStation: {
       companyName: '公司名称',
+      repairStationGroup: '组织',
       legalRepresentative: '法人代表',
       kycStatus: '白名单认证',
       address: '详细地址',
@@ -1032,7 +1034,10 @@ const local: App.I18n.Schema = {
       operationAluminum: '贴铝片'
     },
     scrapFlagsModal: {
-      componentMark: '部件标记',
+      batchImport: '批量导入',
+      importData: '导入数据',
+      repairStationGroup: '组织',
+      componentMark: '报废件标注',
       repairImage: '维修部位图片',
       uploadImage: '上传图',
       uploadImageButton: '上传图片',

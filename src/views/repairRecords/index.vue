@@ -45,6 +45,7 @@ interface Faults {
     name?: string;
   };
   site_name?: string;
+  group_name?: string;
 }
 
 const message = useMessage();
@@ -282,6 +283,9 @@ const columns: DataTableColumns<any> = [
   { title: () => renderHeaderTitle(t('page.repairRecords.repairStation')), key: 'RepairStationName', width: 180,
     render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.RepairStationName || '-')
     // ⚠️ 如果需要显示名称，就在 fetchData 里转换
+  },
+  { title: () => renderHeaderTitle(t('page.repairRecords.repairStationGroup')), key: 'group_name', width: 150,
+    render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.group_name || '-')
   },
   { title: () => renderHeaderTitle(t('page.repairRecords.machineModel')), key: 'MachineModel', width: 200, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.MachineModel || '-') },
   { title: () => renderHeaderTitle(t('page.repairRecords.repairComponent')), key: 'RepairComponent', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.RepairComponent || '-') },

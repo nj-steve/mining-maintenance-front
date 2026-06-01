@@ -901,6 +901,7 @@ declare namespace App {
           site: string;
           orderNo: string;
           repairStation: string;
+          repairStationGroup: string;
           machineModel: string;
           repairComponent: string;
           defectReason: string;
@@ -993,6 +994,9 @@ declare namespace App {
       noData: string;
     };
     scrapFlagsModal: {
+      batchImport: string;
+      importData: string;
+      repairStationGroup: string;
       componentMark: string;
       repairImage: string;
       uploadImage: string;
@@ -1024,6 +1028,7 @@ declare namespace App {
     };
     repairStation: {
       companyName: string;
+      repairStationGroup: string;
       legalRepresentative: string;
       kycStatus: string;
       address: string;

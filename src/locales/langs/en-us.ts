@@ -691,6 +691,7 @@ const local: App.I18n.Schema = {
     },
     repairStation: {
       companyName: 'Company Name',
+      repairStationGroup: 'Group',
       legalRepresentative: 'Legal Rep',
       kycStatus: 'KYC Status',
       address: 'Address',
@@ -825,6 +826,7 @@ const local: App.I18n.Schema = {
       site: 'Site',
       orderNo: 'Order No.',
       repairStation: 'Repair Station',
+      repairStationGroup: 'Group',
       machineModel: 'Model',
       repairComponent: 'Defective Component',
       defectReason: 'Initial Defect Reason',
@@ -951,6 +953,9 @@ const local: App.I18n.Schema = {
       operationAluminum: 'Apply Aluminum Paste'
     },
     scrapFlagsModal: {
+      batchImport: 'Batch Import',
+      importData: 'Import Data',
+      repairStationGroup: 'Group',
       componentMark: 'Component Mark',
       repairImage: 'Repair Image',
       uploadImage: 'Upload Image',
