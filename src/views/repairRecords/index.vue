@@ -75,7 +75,7 @@ const handleImportSelect = (key: string) => {
   if (key === 'machine') {
     uploadRef.value?.open({
       uploadUrl: '/api/repair_stations/import_repair_details',
-      templateUrl: '/template/repair-detail-V3.xlsm',
+      templateUrl: '/template/repair-detail.xlsm',
       templateName: '矿机维修明细导入模板.xlsm',
       title: t('page.repairRecords.importMachineTitle')
     })
@@ -455,18 +455,6 @@ watch(() => [work_order_no.value, sn.value, repair_result.value, site_id.value, 
 const role = JSON.parse(localStorage.getItem('userInfo') ?? '{}')?.role;
 const isRepairStation = role === 4;
 
-
-// 下载模板
-// const downloadTemplate = () => {
-//   // 创建一个临时链接来下载模板文件
-//   const link = document.createElement('a');
-//   link.href = '/template/repair-detail-V002.xlsx'; // 模板文件路径
-//   link.download = '维修明细导入模板.xlsx';
-//   document.body.appendChild(link);
-//   link.click();
-//   document.body.removeChild(link);
-//   message.success('模板下载已开始');
-// };
 const exportCsv = async () => {
   loading.value = true;
   try {
@@ -611,6 +599,7 @@ const handleFail = () => {
     <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-200px)]">
        <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 6px">
       <div  style="display: flex; gap: 8px; align-items: center;">
+
         <NDropdown :options="importOptions" @select="handleImportSelect" v-if="isRepairStation">
           <NButton size="small" ghost type="primary">
             <template #icon>
@@ -621,6 +610,7 @@ const handleFail = () => {
             {{ t('page.repairRecords.import') }}
           </NButton>
         </NDropdown>
+
         <UploadRepairDetailsExcel
           ref="uploadRef"
           :show-trigger="false"
@@ -651,7 +641,7 @@ const handleFail = () => {
         :loading="loading"
         remote
         :row-key="(row: any) => row.ID"
-        :scroll-x="1800"
+        :scroll-x="2000"
         striped
         class="sm:h-full"
       />

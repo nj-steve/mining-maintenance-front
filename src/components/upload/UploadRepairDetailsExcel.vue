@@ -121,7 +121,7 @@ const props = withDefaults(defineProps<Props>(), {
   uploadUrl: '/api/repair_stations/import_repair_details',
   params: () => ({}),
   buttonText: '',
-  templateUrl: '/template/repair-detail-V002.xlsx',
+  templateUrl: '/template/repair-detail.xlsm',
   templateName: '',
   title: '',
   showTrigger: true
@@ -241,7 +241,7 @@ const handleCloseResult = () => {
 
 const downloadTemplate = () => {
   const link = document.createElement('a')
-  link.href = currentConfig.value.templateUrl || '/template/repair-detail-V002.xlsx'
+  link.href = currentConfig.value.templateUrl || '/template/repair-detail.xlsm'
   link.download = currentConfig.value.templateName || t('page.faults.uploadBindWorkOrder.repairDetailTemplateName')
   document.body.appendChild(link)
   link.click()
