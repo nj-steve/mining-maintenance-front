@@ -1172,6 +1172,8 @@ declare namespace App {
       totalHostedMachines: string;
       fault24hCount: string;
       fault24hCountTooltip: string;
+      abnormalCount: string;
+      todayShelfCount: string;
           inLogistics: string;
           inLogisticsTooltip: string;
           pendingShelf: string;

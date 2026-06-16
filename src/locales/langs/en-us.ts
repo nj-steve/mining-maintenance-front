@@ -764,6 +764,8 @@ const local: App.I18n.Schema = {
       totalHostedMachines: 'Total hosted machines',
       fault24hCount: '24H Fault Count',
       fault24hCountTooltip: 'Imported fault machines in the last 24 hours',
+      abnormalCount: 'Abnormal Count',
+      todayShelfCount: 'Today Shelved',
       inLogistics: 'In Logistics',
       inLogisticsTooltip: 'Status: "Logistics In + Logistics Out" machine count',
       pendingShelf: 'Pending Shelving',

@@ -33,7 +33,9 @@ interface Site {
   repairing: number;
   repairing_rate: number;
   fault_count: number;
+  abnormal_count?: number;
   scrapped_count: number;
+  today_shelf_count?: number;
   wait_repair_count: number;
   wait_repair_rate: number;
   is_onsite_default?: number;
@@ -384,29 +386,52 @@ const columns: DataTableColumns<Site> = [
         ]
       ), width: 120, key: 'repairing', sorter: (row1: Site, row2: Site) => (row1.repairing || 0) - (row2.repairing || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.repairing.toLocaleString() || 0) },
   // { title: '在修数', width: 120, key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
-  { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:4px;width:180px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.onShelfWaitRepairCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.onShelfWaitRepairCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 215, key: 'on_shelf_wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.on_shelf_wait_repair_count || 0) - (row2.on_shelf_wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.on_shelf_wait_repair_count.toLocaleString() || 0) },
+  // { title: () =>
+  //     h(
+  //       'div',
+  //       { style: 'display:flex; align-items:center; gap:4px;width:180px;' },
+  //       [
+  //         h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.onShelfWaitRepairCount')),
+  //         h(
+  //           NTooltip,
+  //           { placement: 'top' },
+  //           {
+  //             default: () => t('page.miningSite.onShelfWaitRepairCountTooltip'),
+  //             trigger: () =>
+  //               h(Icon, {
+  //                 icon: 'ant-design:question-circle-outlined',
+  //                 width: 14,
+  //                 height: 14,
+  //                 color: '#999',
+  //                 style: 'cursor:pointer;'
+  //               })
+  //           }
+  //         )
+  //       ]
+  //     ), width: 215, key: 'on_shelf_wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.on_shelf_wait_repair_count || 0) - (row2.on_shelf_wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.on_shelf_wait_repair_count.toLocaleString() || 0) },
+// 异常机器数
+  {
+    title: () => renderHeaderTitle(t('page.miningSite.abnormalCount')),
+    width: 140,
+    key: 'abnormal_count',
+    sorter: (row1: Site, row2: Site) => (row1.abnormal_count || 0) - (row2.abnormal_count || 0),
+    render: (row: Site) => {
+      const v = row.abnormal_count ?? 0;
+      const className = v < 0 ? 'text-sm text-red-500 font-medium' : 'text-sm text-gray-500';
+      return h('span', { class: className }, Number(v).toLocaleString());
+    }
+  },
+  {
+    title: () => renderHeaderTitle(t('page.miningSite.todayShelfCount')),
+    width: 140,
+    key: 'today_shelf_count',
+    sorter: (row1: Site, row2: Site) => (row1.today_shelf_count || 0) - (row2.today_shelf_count || 0),
+    render: (row: Site) => {
+      const v = row.today_shelf_count ?? 0;
+      const className = v < 0 ? 'text-sm text-red-500 font-medium' : 'text-sm text-gray-500';
+      return h('span', { class: className }, Number(v).toLocaleString());
+    }
+  },
   { title: () =>
       h(
         'div',

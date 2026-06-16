@@ -912,6 +912,8 @@ const local: App.I18n.Schema = {
       totalHostedMachines: '总托管机器数',
       fault24hCount: '24H故障数',
       fault24hCountTooltip: '近24小时导入故障机数',
+      abnormalCount: '异常机器数',
+      todayShelfCount: '今日上架数',
       inLogistics: '物流中',
       inLogisticsTooltip: '状态：“物流进+物流出” 机器数',
       pendingShelf: '待上架',
