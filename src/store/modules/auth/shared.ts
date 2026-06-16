@@ -1,26 +1,76 @@
 import { localStg } from '@/utils/storage';
 
+const COOKIE_DOMAIN = import.meta.env.DEV ? 'localhost' : (import.meta.env.VITE_COOKIE_DOMAIN || '.datastring.cc');
+const COOKIE_PATH = '/';
+
+function getCookie(name: string) {
+  if (typeof document === 'undefined') return '';
+
+  const cookies = document.cookie ? document.cookie.split(';') : [];
+  const prefix = `${encodeURIComponent(name)}=`;
+
+  for (const raw of cookies) {
+    const cookie = raw.trim();
+    if (cookie.startsWith(prefix)) {
+      return decodeURIComponent(cookie.slice(prefix.length));
+    }
+  }
+
+  return '';
+}
+
+function setCookie(name: string, value: string, maxAgeSeconds = 60 * 60 * 24 * 7) {
+  if (typeof document === 'undefined') return;
+
+  const encodedName = encodeURIComponent(name);
+  const encodedValue = encodeURIComponent(value);
+  const domainPart = COOKIE_DOMAIN && COOKIE_DOMAIN !== 'localhost' ? `domain=${COOKIE_DOMAIN}; ` : '';
+
+  document.cookie = `${encodedName}=${encodedValue}; ${domainPart}path=${COOKIE_PATH}; max-age=${maxAgeSeconds};`;
+}
+
+function removeCookie(name: string) {
+  if (typeof document === 'undefined') return;
+
+  const encodedName = encodeURIComponent(name);
+  const domainPart = COOKIE_DOMAIN && COOKIE_DOMAIN !== 'localhost' ? `domain=${COOKIE_DOMAIN}; ` : '';
+  document.cookie = `${encodedName}=; ${domainPart}path=${COOKIE_PATH}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+}
+
 /** Get token */
 export function getToken() {
-  return localStg.get('token') || '';
+  return (
+    getCookie('access_token') ||
+    getCookie('token') ||
+    localStg.get('token') ||
+    localStorage.getItem('access_token') ||
+    ''
+  );
 }
 
 /** Set token to cookie with specific domain */
-export function setTokenCookie(token: string) {
-  const domain = '.datasting.cc';
-  document.cookie = `token=${token}; domain=${domain}; path=/; max-age=${60 * 60 * 24 * 7};`;
+export function setTokenCookie(token: string, refreshToken?: string) {
+  setCookie('access_token', token);
+  setCookie('token', token);
+  if (refreshToken) {
+    setCookie('refresh_token', refreshToken);
+  }
 }
 
 /** Remove token cookie from specific domain */
 export function removeTokenCookie() {
-  const domain = '.datasting.cc';
-  document.cookie = `token=; domain=${domain}; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+  removeCookie('access_token');
+  removeCookie('refresh_token');
+  removeCookie('token');
 }
 
 /** Clear auth storage */
 export function clearAuthStorage() {
   localStg.remove('token');
   localStg.remove('refreshToken');
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('userInfo');
   removeTokenCookie();
   // 清除所有token
   // 1. 清除 cookie

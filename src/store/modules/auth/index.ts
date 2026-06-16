@@ -213,16 +213,32 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   }
 
   async function initUserInfo() {
+    if (userInfo.user_id) {
+      const hasToken = getToken();
+      token.value = hasToken;
+      return Boolean(hasToken);
+    }
 
     const hasToken = getToken();
+    token.value = hasToken;
 
-    if (hasToken) {
-      const pass = await getUserInfo();
-
-      if (!pass) {
-        resetStore();
-      }
+    if (!hasToken) {
+      return false;
     }
+
+    if (!localStg.get('token')) {
+      localStg.set('token', hasToken);
+    }
+
+    const pass = await getUserInfo();
+
+    if (pass) {
+      return true;
+    }
+
+    token.value = '';
+    clearAuthStorage();
+    return false;
   }
 
   return {
