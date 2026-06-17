@@ -42,6 +42,15 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   /** Is login */
   const isLogin = computed(() => Boolean(token.value));
 
+  function getCurrentGroupId() {
+    return activeGroupId.value || localStg.get('activeGroupId') || 1;
+  }
+
+  function setActiveGroup(val: string | number) {
+    activeGroupId.value = val;
+    localStg.set('activeGroupId', val);
+  }
+
   /** Reset auth store */
   async function resetStore() {
     recordUserId();
@@ -115,9 +124,14 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       return;
     }
 
-    localStg.set('token', data?.token??"");
-    localStg.set('refreshToken', data?.token??"");
-    setTokenCookie(data?.token??"");
+    const accessToken = data?.access_token || data?.token || '';
+    const refreshToken = data?.refresh_token || data?.refreshToken || '';
+
+    localStg.set('token', accessToken);
+    localStg.set('refreshToken', refreshToken);
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('refresh_token', refreshToken);
+    setTokenCookie(accessToken, refreshToken);
     localStorage.setItem('userInfo', JSON.stringify(data));
 
     Object.assign(userInfo, data);
@@ -126,13 +140,12 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     const loginData = data as any;
     if (loginData?.groups && loginData.groups.length > 0) {
       if (!activeGroupId.value || !loginData.groups.find((g: any) => g.id == activeGroupId.value)) {
-        activeGroupId.value = loginData.groups[0].id;
-        localStg.set('activeGroupId', activeGroupId.value);
+        setActiveGroup(loginData.groups[0].id);
       }
     }
 
     if (!error) {
-      const pass = await loginByToken(data?.token??"");
+      const pass = await loginByToken(accessToken, refreshToken);
 
       if (pass) {
         // Check if the tab needs to be cleared
@@ -173,11 +186,13 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     endLoading();
   }
 
-  async function loginByToken(loginToken: string) {
+  async function loginByToken(loginToken: string, refreshToken = '') {
     // 1. stored in the localStorage, the later requests need it in headers
     localStg.set('token', loginToken);
-    localStg.set('refreshToken', loginToken);
-    setTokenCookie(loginToken);
+    localStg.set('refreshToken', refreshToken);
+    localStorage.setItem('access_token', loginToken);
+    localStorage.setItem('refresh_token', refreshToken);
+    setTokenCookie(loginToken, refreshToken);
 
     // 2. get user info
     const pass = await getUserInfo();
@@ -192,7 +207,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   }
 
   async function getUserInfo() {
-    const { data: info, error } = await fetchGetUserInfo();
+    const { data: info, error } = await fetchGetUserInfo({ group_id: getCurrentGroupId() });
     console.log("getUserInfo", info, error);
 
     if (!error) {
@@ -201,8 +216,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
       if (info?.groups && info.groups.length > 0) {
         if (!activeGroupId.value || !info.groups.find((g: any) => g.id == activeGroupId.value)) {
-          activeGroupId.value = info.groups[0].id;
-          localStg.set('activeGroupId', activeGroupId.value);
+          setActiveGroup(info.groups[0].id);
         }
       }
 
@@ -213,12 +227,6 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   }
 
   async function initUserInfo() {
-    if (userInfo.user_id) {
-      const hasToken = getToken();
-      token.value = hasToken;
-      return Boolean(hasToken);
-    }
-
     const hasToken = getToken();
     token.value = hasToken;
 
@@ -228,6 +236,18 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
     if (!localStg.get('token')) {
       localStg.set('token', hasToken);
+    }
+
+    const storedGroupId = localStg.get('activeGroupId');
+    if (!activeGroupId.value && storedGroupId !== null && storedGroupId !== undefined && storedGroupId !== '') {
+      activeGroupId.value = storedGroupId as string | number;
+    }
+
+    if (!localStg.get('refreshToken')) {
+      const refreshToken = localStorage.getItem('refresh_token') || '';
+      if (refreshToken) {
+        localStg.set('refreshToken', refreshToken);
+      }
     }
 
     const pass = await getUserInfo();
@@ -250,6 +270,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     loginLoading,
     resetStore,
     login,
-    initUserInfo
+    initUserInfo,
+    setActiveGroup
   };
 });

@@ -1,6 +1,8 @@
 import { localStg } from '@/utils/storage';
 
-const COOKIE_DOMAIN = import.meta.env.DEV ? 'localhost' : (import.meta.env.VITE_COOKIE_DOMAIN || '.datastring.cc');
+const COOKIE_DOMAIN = import.meta.env.DEV
+  ? (import.meta.env.VITE_COOKIE_DOMAIN_DEV || '.test.com')
+  : (import.meta.env.VITE_COOKIE_DOMAIN || '.datastring.cc');
 const COOKIE_PATH = '/';
 
 function getCookie(name: string) {
@@ -24,7 +26,7 @@ function setCookie(name: string, value: string, maxAgeSeconds = 60 * 60 * 24 * 7
 
   const encodedName = encodeURIComponent(name);
   const encodedValue = encodeURIComponent(value);
-  const domainPart = COOKIE_DOMAIN && COOKIE_DOMAIN !== 'localhost' ? `domain=${COOKIE_DOMAIN}; ` : '';
+  const domainPart = COOKIE_DOMAIN ? `domain=${COOKIE_DOMAIN}; ` : '';
 
   document.cookie = `${encodedName}=${encodedValue}; ${domainPart}path=${COOKIE_PATH}; max-age=${maxAgeSeconds};`;
 }
@@ -33,7 +35,7 @@ function removeCookie(name: string) {
   if (typeof document === 'undefined') return;
 
   const encodedName = encodeURIComponent(name);
-  const domainPart = COOKIE_DOMAIN && COOKIE_DOMAIN !== 'localhost' ? `domain=${COOKIE_DOMAIN}; ` : '';
+  const domainPart = COOKIE_DOMAIN ? `domain=${COOKIE_DOMAIN}; ` : '';
   document.cookie = `${encodedName}=; ${domainPart}path=${COOKIE_PATH}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
 }
 

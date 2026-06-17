@@ -15,12 +15,17 @@ export function getAuthorization() {
 async function handleRefreshToken() {
   const { resetStore } = useAuthStore();
 
-  const rToken = localStg.get('refreshToken') || '';
+  const rToken = localStg.get('refreshToken') || localStorage.getItem('refresh_token') || '';
   const { error, data } = await fetchRefreshToken(rToken);
   if (!error) {
-    localStg.set('token', data.token);
-    localStg.set('refreshToken', data.refreshToken);
-    setTokenCookie(data.token, data.refreshToken);
+    const accessToken = data.access_token || data.token || '';
+    const refreshToken = data.refresh_token || data.refreshToken || '';
+
+    localStg.set('token', accessToken);
+    localStg.set('refreshToken', refreshToken);
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('refresh_token', refreshToken);
+    setTokenCookie(accessToken, refreshToken);
     return true;
   }
 

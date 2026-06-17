@@ -92,12 +92,13 @@ export function fetchLogin(userName: string, password: string) {
  * 获取角色，token
  * 验证角色，token
 */
-export function fetchGetUserInfo() {
+export function fetchGetUserInfo(params?: { group_id?: string | number }) {
   return request<Api.Auth.UserInfo>(
     {
       // url: '/auth/getUserInfo'
       url: '/api/getUserInfo',
       method: 'get',
+      params
     });
 }
 

@@ -57,6 +57,8 @@ declare namespace Api {
     interface LoginToken {
       token: string;
       refreshToken: string;
+      access_token?: string;
+      refresh_token?: string;
       username: string;
       roles: string[];
     }

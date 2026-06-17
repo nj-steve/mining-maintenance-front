@@ -1173,7 +1173,9 @@ declare namespace App {
       fault24hCount: string;
       fault24hCountTooltip: string;
       abnormalCount: string;
+      abnormalCountTooltip: string;
       todayShelfCount: string;
+      todayShelfCountTooltip: string;
           inLogistics: string;
           inLogisticsTooltip: string;
           pendingShelf: string;

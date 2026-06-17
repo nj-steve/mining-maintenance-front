@@ -411,8 +411,30 @@ const columns: DataTableColumns<Site> = [
   //     ), width: 215, key: 'on_shelf_wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.on_shelf_wait_repair_count || 0) - (row2.on_shelf_wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.on_shelf_wait_repair_count.toLocaleString() || 0) },
 // 异常机器数
   {
-    title: () => renderHeaderTitle(t('page.miningSite.abnormalCount')),
-    width: 140,
+    title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:140px;' },
+        [
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.abnormalCount')),
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => t('page.miningSite.abnormalCountTooltip'),
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:exclamation-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
+    width: 160,
     key: 'abnormal_count',
     sorter: (row1: Site, row2: Site) => (row1.abnormal_count || 0) - (row2.abnormal_count || 0),
     render: (row: Site) => {
@@ -422,7 +444,29 @@ const columns: DataTableColumns<Site> = [
     }
   },
   {
-    title: () => renderHeaderTitle(t('page.miningSite.todayShelfCount')),
+    title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:140px;' },
+        [
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.todayShelfCount')),
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => t('page.miningSite.todayShelfCountTooltip'),
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:exclamation-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ),
     width: 140,
     key: 'today_shelf_count',
     sorter: (row1: Site, row2: Site) => (row1.today_shelf_count || 0) - (row2.today_shelf_count || 0),
@@ -843,7 +887,7 @@ const borderBindTypeOptions = [
     <!-- 表格 -->
     <NDataTable
     flex-height
-    :scroll-x="1400"
+    :scroll-x="1800"
     :columns="columns"
     :data="tableData"
     :pagination="pagination"
