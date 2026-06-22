@@ -349,6 +349,7 @@ const local: App.I18n.Schema = {
       unrepaired: 'Unrepaired',
       pending: 'Pending',
       newOffShelf: 'New Off Shelf',
+      removedSite: 'Removed',
       repairStatus: 'Repair Status',
       repaired: 'Repaired',
       waitRepair: 'Wait Repair',

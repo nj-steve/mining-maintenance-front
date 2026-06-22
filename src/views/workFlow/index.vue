@@ -393,7 +393,7 @@ const columns: DataTableColumns<Order> = [
   },
   { title: () => renderHeaderTitle(t('page.workflow.faultCount')), key: 'FaultCount', width: 200, render: (row: any ) => {
     const total = Number(row.FaultCount ?? 0)
-    const repaired = Number(row.RepairedCount ?? 0)
+    const repaired = Number(row.RepairedCount ?? 0)+Number(row.evacuated_count ?? 0)
     const safeTotal = total > 0 ? total : 0
     const safeRepaired = repaired > 0 ? Math.min(repaired, safeTotal || repaired) : 0
     const percent = safeTotal > 0 ? Math.round((safeRepaired / safeTotal) * 100) : 0

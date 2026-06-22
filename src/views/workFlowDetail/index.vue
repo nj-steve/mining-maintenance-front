@@ -211,6 +211,7 @@ const id = ref(route.params.id as string);
   const getTranslatedFaultStatus = (name: string | undefined) => {
     if (!name) return '';
     const map: Record<string, string> = {
+      '11': t('page.faults.removedSite'),
    '8': t('page.faults.onShelf'),
     '已上架': t('page.faults.onShelf'),
     '10': t('page.faults.inStock'),

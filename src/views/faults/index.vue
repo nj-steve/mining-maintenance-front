@@ -307,6 +307,7 @@ const fetchSiteData = async () => {
 const getTranslatedStatus = (name: string) => {
   const map: Record<string, string> = {
     // Flow Status (Numeric IDs and Text)
+    '11': t('page.faults.removedSite'),
     '8': t('page.faults.onShelf'),
     '已上架': t('page.faults.onShelf'),
     '10': t('page.faults.inStock'),
@@ -341,6 +342,8 @@ const getTranslatedStatus = (name: string) => {
     '过保': t('business.warrantyStatus.outOfWarranty'),
     '无': t('business.warrantyStatus.noWarranty'),
     '已过期': t('business.warrantyStatus.expired'),
+
+
 
   };
   return map[name] || name;

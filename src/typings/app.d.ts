@@ -589,6 +589,7 @@ declare namespace App {
         unrepaired: string;
         pending: string;
         newOffShelf: string;
+        removedSite: string;
         repairStatus: string;
         repaired: string;
         waitRepair: string;

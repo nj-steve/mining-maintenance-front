@@ -353,6 +353,7 @@ const local: App.I18n.Schema = {
       unrepaired: '未修复',
       pending: '待处理',
       newOffShelf: '新下架',
+      removedSite: '已撤离',
       repairStatus: '维修状态',
       repaired: '已修复',
       waitRepair: '待修复',
