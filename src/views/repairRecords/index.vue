@@ -75,7 +75,7 @@ const handleImportSelect = (key: string) => {
   if (key === 'machine') {
     uploadRef.value?.open({
       uploadUrl: '/api/repair_stations/import_repair_details',
-      templateUrl: '/template/repair-detail.xlsm',
+      templateUrl: '/template/repair-detail-2026.xlsm',
       templateName: '矿机维修明细导入模板.xlsm',
       title: t('page.repairRecords.importMachineTitle')
     })
