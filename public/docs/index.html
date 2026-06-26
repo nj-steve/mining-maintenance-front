@@ -509,14 +509,83 @@
 
             <section class="content-section" id="workorder">
                 <h2>工单列表</h2>
-                <p>工单列表是维修工单的管理中心，用于跟踪和管理所有维修工单。</p>
-                <h3>主要功能</h3>
-                <ul>
-                    <li>按工单编号、场地、维修站、工单状态筛选</li>
-                    <li>支持批量派单操作</li>
-                    <li>查看工单操作日志和历史日志</li>
-                    <li>支持撤销工单</li>
-                </ul>
+                <p>工单列表是维修工单的管理中心，用于创建、派单、跟踪和管理所有维修工单。共135条工单数据。</p>
+
+                <h3>工单列表</h3>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">工单列表 - 派单弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/Bdwj1wfZ77" alt="工单派单" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">勾选工单后点击「批量派单」，选择维修站和填写备注后确认派单</div>
+                </div>
+
+                <h4>筛选条件</h4>
+                <table class="data-table">
+                    <thead><tr><th>筛选项</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>工单编号</td><td>输入工单编号精确搜索</td></tr>
+                        <tr><td>场地筛选</td><td>按场地筛选工单</td></tr>
+                        <tr><td>选择维修站</td><td>按维修站筛选工单</td></tr>
+                        <tr><td>工单状态</td><td>按工单状态筛选</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>列表字段</h4>
+                <table class="data-table">
+                    <thead><tr><th>字段</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>工单编号</td><td>工单唯一编号</td></tr>
+                        <tr><td>故障机数量</td><td>工单包含的故障机数量</td></tr>
+                        <tr><td>维修方式</td><td>驻场/送修/未知</td></tr>
+                        <tr><td>工单状态</td><td>待处理/处理中/已完成/已撤销</td></tr>
+                        <tr><td>创建日期</td><td>工单创建时间</td></tr>
+                        <tr><td>场地</td><td>所属场地</td></tr>
+                        <tr><td>维修站</td><td>派往的维修站</td></tr>
+                        <tr><td>操作</td><td>日志、历史日志、撤销、派单</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>派单操作</h3>
+                <p>在工单列表中勾选需要派单的工单，点击「批量派单」或单个工单的「派单」按钮：</p>
+                <h4>派单字段说明</h4>
+                <table class="data-table">
+                    <thead><tr><th>字段</th><th>是否必填</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>选择故障机数量</td><td>-</td><td>显示选中的故障机数量</td></tr>
+                        <tr><td>维修方式</td><td>-</td><td>选择维修方式</td></tr>
+                        <tr><td>选择维修站</td><td><span class="tag tag-red">必填</span></td><td>选择要派往的维修站（仅显示已认证的维修站）</td></tr>
+                        <tr><td>备注</td><td>-</td><td>填写派单备注信息</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>修改工单信息</h3>
+                <p>在工单操作中点击修改按钮，可以修改工单信息：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">修改工单信息弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/bdem1wfZ77" alt="修改工单信息" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">可修改维修方式、场地、维修站、付款状态、工单状态等</div>
+                </div>
+
+                <h3>工单操作日志</h3>
+                <p>点击工单操作列的「日志」按钮，查看工单操作日志：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">工单操作日志</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/LGeN1wfZ77" alt="工单操作日志" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">记录工单的所有操作历史，包括新建工单、派单、状态变更等，显示操作人和操作时间</div>
+                </div>
+
+                <h3>添加工单操作日志</h3>
+                <p>点击「历史日志」可以手动添加工单操作记录：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">添加工单操作日志</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/4UDP1wfZ77" alt="添加工单操作日志" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">选择工单状态、填写操作时间和操作描述，点击「确认添加」</div>
+                </div>
+
+                <h3>撤销工单</h3>
+                <p>如果工单派错了或者不需要继续处理，可以点击「撤销」按钮撤销工单。</p>
+                <div class="tip-box warning">
+                    <p><strong>⚠️ 注意：</strong>撤销工单后，工单关联的故障机会自动解绑，可以重新绑定到其他工单。</p>
+                </div>
             </section>
 
             <section class="content-section" id="fault">
@@ -694,7 +763,7 @@
                 <p>修改单台故障机的详细信息，包括SN、型号、场地、状态、描述、位置、下架时间、上架时间等。</p>
                 <div class="screenshot-wrapper">
                     <div class="screenshot-title">修改故障机弹窗</div>
-                    <img class="screenshot-img" src="./fault-edit.png" alt="编辑故障机" onclick="openImageModal(this.src)">
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/5eH41wfEnu" alt="编辑故障机" onclick="openImageModal(this.src)">
                     <div class="screenshot-desc">在故障机列表操作列点击「编辑」图标，弹出修改对话框，修改完成后点击「保存」</div>
                 </div>
                 <h4>可编辑字段</h4>
@@ -715,7 +784,95 @@
 
             <section class="content-section" id="detail">
                 <h2>维修明细</h2>
-                <p>维修明细模块记录每台设备的详细维修信息。可按工单号、机器SN、场地、维修类型、维修结果等条件筛选，支持导出数据。</p>
+                <p>维修明细模块记录每台设备的详细维修信息，可查看每台设备的维修详情和报废件标注。支持按工单号、机器SN、场地、维修类型、维修结果等条件筛选，支持导出数据。</p>
+
+                <h3>维修明细列表</h3>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">维修明细 - 列表页</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/PAyu1wfXli" alt="维修明细列表" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">列表展示所有维修记录，支持多条件筛选和分页浏览，共10665条数据</div>
+                </div>
+
+                <h4>筛选条件</h4>
+                <table class="data-table">
+                    <thead><tr><th>筛选项</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>工单号</td><td>输入工单号精确搜索</td></tr>
+                        <tr><td>机器SN</td><td>输入设备SN码搜索</td></tr>
+                        <tr><td>场地</td><td>按场地筛选</td></tr>
+                        <tr><td>维修类型</td><td>按维修类型筛选</td></tr>
+                        <tr><td>维修结果</td><td>按维修结果筛选</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>列表字段</h4>
+                <table class="data-table">
+                    <thead><tr><th>字段</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>SN码</td><td>设备序列号，点击可查看详情</td></tr>
+                        <tr><td>类型</td><td>整机/算力板</td></tr>
+                        <tr><td>场地</td><td>所属场地</td></tr>
+                        <tr><td>工单号</td><td>关联的维修工单</td></tr>
+                        <tr><td>维修站点</td><td>负责维修的站点</td></tr>
+                        <tr><td>组织</td><td>所属组织</td></tr>
+                        <tr><td>机型</td><td>设备型号（如 S19 XP Hyd、S19j XP 等）</td></tr>
+                        <tr><td>损坏部件</td><td>损坏的部件（板1、板2、板3等）</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>维修详情页</h3>
+                <p>点击列表中的SN码，进入维修详情页：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">维修详情页</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/dCFn1wfXli" alt="维修详情页" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">详情页包含基础信息、设备信息、维修详情、维修进程四个部分，点击右上角「编辑」可修改</div>
+                </div>
+
+                <h4>详情页内容</h4>
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <div class="feature-card-icon">📋</div>
+                        <h4>基础信息</h4>
+                        <p>日期、工单编号、维修类型、维修站点</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon">💻</div>
+                        <h4>设备信息</h4>
+                        <p>整机SN、控制板SN、电源SN、板1/板2/板3 SN</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon">🔧</div>
+                        <h4>维修详情</h4>
+                        <p>维修部件、额外操作、不良原因、不良代码、位号信息、维修部位图片</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon">⏱️</div>
+                        <h4>维修进程</h4>
+                        <p>开始时间、结束时间、维修状态、维修人员</p>
+                    </div>
+                </div>
+
+                <h3>报废件标注</h3>
+                <p>在维修过程中，如果有部件需要报废，可以进行报废件标注：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">报废件标注弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/3ZVc1wfXli" alt="报废件标注弹窗" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">标注各部件状态（正常/损坏/全不透），可上传维修部位图片，标注完成后点击「保存」</div>
+                </div>
+                <h4>可标注部件</h4>
+                <table class="data-table">
+                    <thead><tr><th>部件</th><th>状态选项</th></tr></thead>
+                    <tbody>
+                        <tr><td>控制板SN</td><td>正常 / 损坏 / 全不透</td></tr>
+                        <tr><td>电源SN</td><td>正常 / 损坏 / 全不透</td></tr>
+                        <tr><td>板1 SN</td><td>正常 / 损坏 / 全不透</td></tr>
+                        <tr><td>板2 SN</td><td>正常 / 损坏 / 全不透</td></tr>
+                        <tr><td>板3 SN</td><td>正常 / 损坏 / 全不透</td></tr>
+                    </tbody>
+                </table>
+                <div class="tip-box">
+                    <p><strong>💡 小提示：</strong>支持将维修明细数据导出为 Excel 文件，方便进行数据分析和存档。</p>
+                </div>
             </section>
 
             <section class="content-section" id="scrap">
@@ -725,20 +882,152 @@
 
             <section class="content-section" id="station">
                 <h2>维修站</h2>
-                <p>维修站模块用于管理所有合作的维修站点信息。支持添加、修改、删除维修站，每个维修站包含公司名称、法人代表、白名单认证状态、详细地址、联系人、联系电话等信息。</p>
+                <p>维修站模块用于管理所有合作的维修站点信息，支持添加、修改、删除维修站。共12条维修站数据。</p>
+
+                <h3>维修站列表</h3>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">维修站列表</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/Gw3U1wfZ77" alt="维修站列表" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">列表展示所有维修站信息，包含公司名称、法人代表、白名单认证、地址、联系人、电话等</div>
+                </div>
+
+                <h4>列表字段</h4>
+                <table class="data-table">
+                    <thead><tr><th>字段</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>公司名称</td><td>维修站的公司名称/站点名称</td></tr>
+                        <tr><td>法人代表</td><td>维修站法人代表</td></tr>
+                        <tr><td>白名单认证</td><td><span class="tag tag-green">已认证</span> / <span class="tag tag-orange">未认证</span></td></tr>
+                        <tr><td>详细地址</td><td>维修站详细地址</td></tr>
+                        <tr><td>联系人</td><td>联系人姓名</td></tr>
+                        <tr><td>联系电话</td><td>联系电话</td></tr>
+                        <tr><td>操作</td><td>修改、删除</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>添加维修站</h3>
+                <p>点击「添加维修站」按钮，弹出添加对话框：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">添加维修站弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/GGUV1wfZ77" alt="添加维修站" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">填写维修站基本信息，带*号为必填项，填写完成后点击「提交」</div>
+                </div>
+                <h4>必填字段说明</h4>
+                <table class="data-table">
+                    <thead><tr><th>字段</th><th>是否必填</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>维修站名称</td><td><span class="tag tag-red">必填</span></td><td>维修站的名称/公司名称</td></tr>
+                        <tr><td>详细地址</td><td><span class="tag tag-red">必填</span></td><td>维修站的详细地址</td></tr>
+                        <tr><td>法人代表</td><td><span class="tag tag-red">必填</span></td><td>法人代表姓名</td></tr>
+                        <tr><td>联系人</td><td><span class="tag tag-red">必填</span></td><td>联系人姓名</td></tr>
+                        <tr><td>联系电话</td><td><span class="tag tag-red">必填</span></td><td>联系电话</td></tr>
+                        <tr><td>白名单认证</td><td>-</td><td>选择认证状态（未认证/已认证）</td></tr>
+                        <tr><td>评分</td><td>-</td><td>维修站评分</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>修改维修站</h3>
+                <p>在维修站列表操作列点击「修改」按钮，弹出修改对话框：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">修改维修站弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/FhOt1wfZ77" alt="修改维修站" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">可修改字段与添加时相同，修改完成后点击「保存」</div>
+                </div>
+
+                <div class="tip-box">
+                    <p><strong>💡 小提示：</strong>添加维修站后，需要将白名单认证设置为「已认证」，才能在派单时选择该维修站。</p>
+                </div>
             </section>
 
             <section class="content-section" id="permission">
                 <h2>权限管理</h2>
-                <p>权限管理模块用于管理系统用户和权限分配。支持授权用户、新增人员、编辑用户信息等操作。</p>
-                <h4>角色类型</h4>
+                <p>权限管理模块用于管理系统用户和权限分配。支持新增人员、授权用户、编辑用户信息等操作。</p>
+
+                <h3>用户列表主界面</h3>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">权限管理 - 用户列表</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/GEPF1wfXeM" alt="用户列表主界面" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">列表展示所有系统用户信息，支持按角色筛选和姓名搜索，共17条用户数据</div>
+                </div>
+
+                <h4>列表字段说明</h4>
+                <table class="data-table">
+                    <thead><tr><th>字段</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>昵称</td><td>用户登录账号</td></tr>
+                        <tr><td>真实姓名</td><td>用户真实姓名</td></tr>
+                        <tr><td>角色类型</td><td>用户角色，不同角色拥有不同权限</td></tr>
+                        <tr><td>联系电话</td><td>用户联系电话</td></tr>
+                        <tr><td>邮箱</td><td>用户邮箱</td></tr>
+                        <tr><td>所属公司</td><td>用户所属公司/场地</td></tr>
+                        <tr><td>入职时间</td><td>用户入职时间</td></tr>
+                        <tr><td>状态</td><td>在职/离职状态</td></tr>
+                        <tr><td>操作</td><td>编辑用户信息</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>新增人员</h3>
+                <p>点击「新增人员」按钮，弹出添加用户对话框：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">新增人员 - 添加用户弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/0UOr1wfXeM" alt="新增人员弹窗" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">填写用户基本信息，带*号为必填项，填写完成后点击「保存」创建用户</div>
+                </div>
+                <h4>必填字段说明</h4>
+                <table class="data-table">
+                    <thead><tr><th>字段</th><th>是否必填</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>昵称（登录账号）</td><td><span class="tag tag-red">必填</span></td><td>用户登录系统的账号</td></tr>
+                        <tr><td>真实姓名</td><td><span class="tag tag-red">必填</span></td><td>用户真实姓名</td></tr>
+                        <tr><td>密码</td><td><span class="tag tag-red">必填</span></td><td>登录密码</td></tr>
+                        <tr><td>角色类型</td><td><span class="tag tag-red">必填</span></td><td>选择用户角色</td></tr>
+                        <tr><td>联系电话</td><td><span class="tag tag-red">必填</span></td><td>用户联系电话</td></tr>
+                        <tr><td>邮箱</td><td><span class="tag tag-red">必填</span></td><td>用户邮箱</td></tr>
+                        <tr><td>用户状态</td><td><span class="tag tag-red">必填</span></td><td>在职/离职</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>授权用户</h3>
+                <p>点击「授权用户」按钮，弹出授权对话框：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">授权用户弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/Dfgs1wfXeM" alt="授权用户弹窗" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">选择需要授权的用户和对应的角色类型，点击保存完成授权</div>
+                </div>
+                <h4>操作步骤</h4>
+                <div class="steps">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>选择用户</h4>
+                            <p>在「授权用户」下拉框中选择需要授权的用户</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>选择角色</h4>
+                            <p>在「角色类型」下拉框中选择要授予的角色（管理员、售后管理、运维人员、维修人员、只读用户）</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>保存授权</h4>
+                            <p>点击保存完成用户授权</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>角色类型说明</h3>
                 <table class="data-table">
                     <thead><tr><th>角色</th><th>权限说明</th></tr></thead>
                     <tbody>
-                        <tr><td>管理员</td><td>拥有系统所有权限，可管理用户和配置</td></tr>
-                        <tr><td>只读用户</td><td>只能查看数据，不能进行任何修改操作</td></tr>
-                        <tr><td>运维人员</td><td>负责运维相关操作，如设备状态更新等</td></tr>
-                        <tr><td>售后管理</td><td>负责售后相关管理，如工单处理、维修站管理等</td></tr>
+                        <tr><td><span class="tag tag-blue">管理员</span></td><td>拥有系统所有权限，可管理用户和配置</td></tr>
+                        <tr><td><span class="tag tag-orange">售后管理</span></td><td>负责售后相关管理，如工单处理、维修站管理等</td></tr>
+                        <tr><td><span class="tag tag-green">运维人员</span></td><td>负责运维相关操作，如设备状态更新等</td></tr>
+                        <tr><td><span class="tag tag-red">维修人员</span></td><td>负责维修站的维修操作</td></tr>
+                        <tr><td><span class="tag">只读用户</span></td><td>只能查看数据，不能进行任何修改操作</td></tr>
                     </tbody>
                 </table>
             </section>
