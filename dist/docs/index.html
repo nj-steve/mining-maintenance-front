@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>维修管理系统 - 用户文档</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 260px;
+            background: #fff;
+            border-right: 1px solid #e4e7ed;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #e4e7ed;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+        .sidebar-header h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+        .sidebar-header p { font-size: 12px; opacity: 0.85; }
+        .nav-menu { padding: 16px 0; }
+        .nav-section { margin-bottom: 8px; }
+        .nav-section-title {
+            padding: 8px 20px;
+            font-size: 12px;
+            color: #909399;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .nav-item {
+            display: block;
+            padding: 10px 20px 10px 32px;
+            color: #606266;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+        .nav-item:hover { background-color: #f5f7fa; color: #409eff; }
+        .nav-item.active {
+            background-color: #ecf5ff;
+            color: #409eff;
+            border-left-color: #409eff;
+            font-weight: 500;
+        }
+        .nav-submenu { display: none; background-color: #fafafa; }
+        .nav-submenu.show { display: block; }
+        .nav-subitem {
+            display: block;
+            padding: 8px 20px 8px 48px;
+            color: #606266;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .nav-subitem:hover { color: #409eff; background-color: #f5f7fa; }
+        .nav-subitem.active { color: #409eff; font-weight: 500; }
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px 60px;
+            max-width: calc(100% - 260px);
+        }
+        .content-section {
+            margin-bottom: 60px;
+            scroll-margin-top: 20px;
+        }
+        .content-section h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e4e7ed;
+        }
+        .content-section h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #303133;
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+        .content-section h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #606266;
+            margin-top: 24px;
+            margin-bottom: 8px;
+        }
+        .content-section p {
+            margin-bottom: 12px;
+            color: #606266;
+            font-size: 14px;
+        }
+        .content-section ul, .content-section ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+            color: #606266;
+            font-size: 14px;
+        }
+        .content-section li { margin-bottom: 6px; }
+        .tip-box {
+            background-color: #ecf5ff;
+            border-left: 4px solid #409eff;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .tip-box.warning { background-color: #fdf6ec; border-left-color: #e6a23c; }
+        .tip-box.success { background-color: #f0f9eb; border-left-color: #67c23a; }
+        .tip-box p { margin: 0; color: #606266; font-size: 14px; }
+        .tip-box strong { color: #303133; }
+        .screenshot-wrapper {
+            margin: 24px 0;
+            background: #fff;
+            border: 1px solid #e4e7ed;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        .screenshot-title {
+            padding: 12px 20px;
+            background: #f5f7fa;
+            border-bottom: 1px solid #e4e7ed;
+            font-size: 14px;
+            font-weight: 500;
+            color: #303133;
+        }
+        .screenshot-img {
+            width: 100%;
+            display: block;
+            cursor: zoom-in;
+            transition: transform 0.3s;
+        }
+        .screenshot-desc {
+            padding: 12px 20px;
+            font-size: 13px;
+            color: #909399;
+            background: #fafafa;
+            border-top: 1px solid #e4e7ed;
+        }
+        .feature-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .feature-card {
+            background: #fff;
+            border: 1px solid #e4e7ed;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .feature-card-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+        .feature-card h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 8px;
+            margin-top: 0;
+        }
+        .feature-card p {
+            font-size: 13px;
+            color: #909399;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .steps { margin: 24px 0; }
+        .step-item {
+            display: flex;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background: #409eff;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 16px;
+            margin-top: 2px;
+        }
+        .step-content { flex: 1; }
+        .step-content h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 6px;
+            margin-top: 0;
+        }
+        .step-content p {
+            font-size: 14px;
+            color: #606266;
+            margin: 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        }
+        .data-table th {
+            background: #f5f7fa;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #606266;
+            border-bottom: 1px solid #e4e7ed;
+        }
+        .data-table td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #606266;
+            border-bottom: 1px solid #ebeef5;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f5f7fa; }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
+        .tag-blue { background: #ecf5ff; color: #409eff; border: 1px solid #d9ecff; }
+        .tag-green { background: #f0f9eb; color: #67c23a; border: 1px solid #e1f3d8; }
+        .tag-orange { background: #fdf6ec; color: #e6a23c; border: 1px solid #faecd8; }
+        .tag-red { background: #fef0f0; color: #f56c6c; border: 1px solid #fde2e2; }
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+        .image-modal.show { display: flex; }
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .image-modal-close:hover { opacity: 1; }
+        .back-to-top {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 44px;
+            height: 44px;
+            background: #fff;
+            border: 1px solid #e4e7ed;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 99;
+        }
+        .back-to-top.show { opacity: 1; visibility: visible; }
+        .back-to-top:hover {
+            background: #409eff;
+            border-color: #409eff;
+            color: #fff;
+        }
+        code {
+            background: #f5f7fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 13px;
+            color: #e96900;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #e4e7ed;
+            margin: 40px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #909399;
+            font-size: 13px;
+            border-top: 1px solid #e4e7ed;
+            margin-top: 60px;
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; max-width: 100%; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1>维修管理系统</h1>
+                <p>用户操作文档 v1.0</p>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">快速入门</div>
+                    <a class="nav-item active" href="#intro" onclick="scrollToSection('intro')">产品简介</a>
+                    <a class="nav-item" href="#quickstart" onclick="scrollToSection('quickstart')">快速开始</a>
+                    <a class="nav-item" href="#interface" onclick="scrollToSection('interface')">界面概览</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">功能模块</div>
+                    <a class="nav-item" href="#home" onclick="scrollToSection('home')">首页</a>
+                    <a class="nav-item" href="#report" onclick="scrollToSection('report')">维修报表</a>
+                    <a class="nav-item" href="#daily" onclick="scrollToSection('daily')">矿场日报</a>
+                    <a class="nav-item" href="#workorder" onclick="scrollToSection('workorder')">工单列表</a>
+                    <a class="nav-item active" href="#fault" onclick="scrollToSection('fault'); toggleSubmenu('fault-submenu')">故障机管理 ▾</a>
+                    <div class="nav-submenu show" id="fault-submenu">
+                        <a class="nav-subitem" href="#fault-list" onclick="scrollToSection('fault-list')">列表与筛选</a>
+                        <a class="nav-subitem" href="#fault-import" onclick="scrollToSection('fault-import')">导入故障机</a>
+                        <a class="nav-subitem" href="#fault-create" onclick="scrollToSection('fault-create')">创建工单</a>
+                        <a class="nav-subitem" href="#fault-bind" onclick="scrollToSection('fault-bind')">绑定工单</a>
+                        <a class="nav-subitem" href="#fault-status" onclick="scrollToSection('fault-status')">修改状态</a>
+                        <a class="nav-subitem" href="#fault-unbind" onclick="scrollToSection('fault-unbind')">解绑工单</a>
+                        <a class="nav-subitem" href="#fault-edit" onclick="scrollToSection('fault-edit')">编辑故障机</a>
+                    </div>
+                    <a class="nav-item" href="#detail" onclick="scrollToSection('detail')">维修明细</a>
+                    <a class="nav-item" href="#scrap" onclick="scrollToSection('scrap')">报废机管理</a>
+                    <a class="nav-item" href="#station" onclick="scrollToSection('station')">维修站</a>
+                    <a class="nav-item" href="#permission" onclick="scrollToSection('permission')">权限管理</a>
+                    <a class="nav-item" href="#log" onclick="scrollToSection('log')">操作日志</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">更多</div>
+                    <a class="nav-item" href="#faq" onclick="scrollToSection('faq')">常见问题</a>
+                    <a class="nav-item" href="#glossary" onclick="scrollToSection('glossary')">术语表</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section class="content-section" id="intro">
+                <h2>产品简介</h2>
+                <p>维修管理系统是一款专为矿机设备维修打造的全流程管理平台，覆盖故障报修、工单派单、维修跟踪、报废管理、数据统计等完整业务链路，帮助您高效管理设备维修全生命周期。</p>
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <div class="feature-card-icon">📊</div>
+                        <h4>数据可视化</h4>
+                        <p>多维度数据报表，实时掌握维修进度和设备状态分布</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon">📋</div>
+                        <h4>工单全流程</h4>
+                        <p>从故障登记到维修完成，完整工单生命周期管理</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon">📦</div>
+                        <h4>批量操作</h4>
+                        <p>支持批量导入、批量派单、批量改状态，提升工作效率</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon">🔐</div>
+                        <h4>权限管理</h4>
+                        <p>多角色权限体系，保障数据安全和操作规范</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section" id="quickstart">
+                <h2>快速开始</h2>
+                <p>第一次使用系统？跟着下面 3 步快速上手：</p>
+                <div class="steps">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>登录系统</h4>
+                            <p>打开系统网址，输入用户名和密码登录。如忘记密码请联系管理员重置。</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>了解首页</h4>
+                            <p>登录后先查看首页数据概览，了解整体维修情况和关键指标。</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>开始使用</h4>
+                            <p>根据您的角色，进入对应功能模块开始工作。左侧导航栏可快速切换。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section" id="interface">
+                <h2>界面概览</h2>
+                <p>系统界面主要分为三个区域：</p>
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <div class="feature-card-icon">📑</div>
+                        <h4>左侧导航栏</h4>
+                        <p>所有功能模块的入口，点击即可切换到对应模块</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon">🔧</div>
+                        <h4>顶部操作栏</h4>
+                        <p>搜索、刷新、全屏、主题切换、用户信息等快捷操作</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-card-icon">📄</div>
+                        <h4>主内容区</h4>
+                        <p>展示当前模块的具体内容，包含列表、表单、图表等</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section" id="home">
+                <h2>首页</h2>
+                <p>首页是系统的数据概览中心，让您一眼掌握全局维修状况。</p>
+                <h3>数据卡片</h3>
+                <p>首页顶部展示 8 个关键指标卡片：</p>
+                <table class="data-table">
+                    <thead><tr><th>指标名称</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>待修数</td><td>等待维修的设备数量</td></tr>
+                        <tr><td>今日下架</td><td>今日下架的故障设备数量</td></tr>
+                        <tr><td>待处理</td><td>待处理的工单/设备数量</td></tr>
+                        <tr><td>物流中</td><td>正在运输途中的设备数量</td></tr>
+                        <tr><td>在修设备</td><td>正在维修中的设备数量</td></tr>
+                        <tr><td>今日维修</td><td>今日完成维修的设备数量</td></tr>
+                        <tr><td>待上架</td><td>维修完成等待上架的设备数量</td></tr>
+                        <tr><td>报废数</td><td>已报废的设备数量</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="content-section" id="report">
+                <h2>维修报表</h2>
+                <p>维修报表模块提供多维度的维修数据分析，帮助您掌握维修业务的整体情况。</p>
+                <h3>统计周期</h3>
+                <p>支持多种统计周期选择：自定义、快捷、近 30 天、近 60 天、近 90 天、全部</p>
+                <h3>分析维度</h3>
+                <ul>
+                    <li><strong>场地维度分析</strong>：按矿场/场地维度统计维修数据</li>
+                    <li><strong>网点维度分析</strong>：按维修网点维度统计维修数据</li>
+                </ul>
+            </section>
+
+            <section class="content-section" id="daily">
+                <h2>矿场日报</h2>
+                <p>矿场日报模块按场地维度展示每日设备运行和维修情况。支持按日期、场地名称、售后专员、站点状态等条件筛选，可查看每个场地的资产数、24H 故障数、物流中、待上架、在修数等关键指标。</p>
+            </section>
+
+            <section class="content-section" id="workorder">
+                <h2>工单列表</h2>
+                <p>工单列表是维修工单的管理中心，用于跟踪和管理所有维修工单。</p>
+                <h3>主要功能</h3>
+                <ul>
+                    <li>按工单编号、场地、维修站、工单状态筛选</li>
+                    <li>支持批量派单操作</li>
+                    <li>查看工单操作日志和历史日志</li>
+                    <li>支持撤销工单</li>
+                </ul>
+            </section>
+
+            <section class="content-section" id="fault">
+                <h2>故障机管理</h2>
+                <p>故障机管理模块用于管理所有故障设备的信息和状态，是系统的核心功能模块。支持批量导入、创建工单、绑定工单、修改状态等多种操作。</p>
+                <div class="tip-box">
+                    <p><strong>💡 小提示：</strong>故障机管理是维修流程的起点，所有故障设备都需要先在此模块登记，然后才能创建工单进入维修流程。</p>
+                </div>
+
+                <h3 id="fault-list">1. 列表与筛选</h3>
+                <p>故障机列表展示所有故障设备的详细信息，支持多维度筛选和搜索。</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">故障机管理 - 列表主界面</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/LBf01wfEnu" alt="故障机管理列表" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">列表字段包括：SN码、类型、场地、型号、工单编号、维修方式、流转状态、维修状态、维修次数、短缺、问题描述、下架日期、导入时间、上架入库时间等</div>
+                </div>
+                <h4>筛选条件</h4>
+                <table class="data-table">
+                    <thead><tr><th>筛选项</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>场地筛选</td><td>按所属场地筛选故障机</td></tr>
+                        <tr><td>工单编号</td><td>输入工单编号精确搜索</td></tr>
+                        <tr><td>流转状态</td><td>按设备流转状态筛选（新下架、待上架、维修中、已上架等）</td></tr>
+                        <tr><td>维修状态</td><td>按维修状态筛选（待修复、已修复、待报废等）</td></tr>
+                        <tr><td>类型</td><td>按设备类型筛选（整机、算力板等）</td></tr>
+                        <tr><td>机器SN</td><td>输入设备SN码搜索</td></tr>
+                        <tr><td>售后专员</td><td>按负责的售后专员筛选</td></tr>
+                        <tr><td>开始/结束时间</td><td>按时间范围筛选</td></tr>
+                    </tbody>
+                </table>
+                <h4>列表状态标签说明</h4>
+                <p>
+                    <span class="tag tag-blue">新下架</span>
+                    <span class="tag tag-orange">待上架</span>
+                    <span class="tag tag-blue">维修中</span>
+                    <span class="tag tag-green">已上架</span>
+                    <span class="tag tag-green">已修复</span>
+                    <span class="tag tag-red">待修复</span>
+                    <span class="tag tag-orange">已过期</span>
+                    <span class="tag tag-orange">在保</span>
+                </p>
+
+                <h3 id="fault-import">2. 导入故障机</h3>
+                <p>当有大量故障设备需要录入时，使用批量导入功能可以大大提高效率。支持矿机导入和算力板导入两种类型。</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">导入功能 - 下拉菜单</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/q9bq1wfEnu" alt="导入下拉菜单" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">点击「导入」按钮展开下拉菜单，可选择「矿机导入」或「算力板导入」</div>
+                </div>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">导入 Excel 弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/p40c1wfEnu" alt="导入Excel弹窗" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">选择导入类型后，弹出导入对话框。可下载模板，按照模板格式填写后上传文件</div>
+                </div>
+                <h4>操作步骤</h4>
+                <div class="steps">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>选择导入类型</h4>
+                            <p>点击「导入」按钮，选择「矿机导入」或「算力板导入」</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>下载模板</h4>
+                            <p>在弹出的对话框中点击「下载模板」，获取Excel模板文件</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>填写数据</h4>
+                            <p>按照模板格式填写故障设备信息，确保SN码、型号等信息准确</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>上传文件</h4>
+                            <p>点击「选择文件」上传填写好的Excel，然后点击「确定导入」</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tip-box warning">
+                    <p><strong>⚠️ 注意：</strong>导入前请仔细核对模板格式，确保 SN 码、型号等信息准确无误，避免导入失败或数据错误。</p>
+                </div>
+
+                <h3 id="fault-create">3. 创建工单</h3>
+                <p>为选中的故障机创建维修工单，支持批量创建和导入创建两种方式。</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">创建工单 - 下拉菜单</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/NUul1wfEnu" alt="创建工单下拉菜单" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">点击「创建工单」按钮展开下拉菜单，可选择「批量创建」或「导入创建」</div>
+                </div>
+                <h4>方式一：批量创建工单</h4>
+                <p>在列表中勾选需要创建工单的故障机，选择「批量创建」：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">批量创建工单弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/4Rpf1wfEnu" alt="创建工单弹窗" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">系统自动生成工单编号和工单日期，显示选中的故障机列表，确认后点击「创建」</div>
+                </div>
+                <h4>方式二：导入创建工单</h4>
+                <p>通过导入Excel文件批量创建工单：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">导入创建工单弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/qcJ81wfEnu" alt="导入创建工单" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">输入工单编号前缀，选择工单创建时间，上传Excel文件后点击「确定导入」</div>
+                </div>
+
+                <h3 id="fault-bind">4. 绑定工单</h3>
+                <p>将已有的故障机绑定到指定工单，支持批量绑定和导入绑定两种方式。</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">绑定工单 - 下拉菜单</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/008i1wfEnu" alt="绑定工单下拉菜单" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">点击「绑定工单」按钮展开下拉菜单，可选择「批量绑定」或「导入绑定」</div>
+                </div>
+                <h4>方式一：批量绑定</h4>
+                <p>在列表中勾选需要绑定的故障机，选择「批量绑定」：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">批量绑定工单弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/jlj31wfEnu" alt="绑定工单弹窗" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">选择目标工单号，系统自动显示故障机台数和列表，确认后点击「绑定」</div>
+                </div>
+                <h4>方式二：导入绑定</h4>
+                <p>通过导入Excel文件批量绑定工单：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">导入绑定工单弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/nJtJ1wfEnu" alt="导入绑定工单" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">输入工单号，上传包含SN码的Excel文件，点击「确定导入」完成批量绑定</div>
+                </div>
+
+                <h3 id="fault-status">5. 修改状态</h3>
+                <p>批量修改故障机的流转状态和维修状态，支持手动选择和导入更新两种方式。</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">批量修改状态弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/LkDA1wfEnu" alt="批量修改状态" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">选择目标状态（新下架、待处理、物流出、维修中、维修完成、物流进、待上架等），点击「提交」</div>
+                </div>
+                <h4>导入更新状态</h4>
+                <p>通过导入Excel文件批量更新故障机状态：</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">导入更新状态弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/dkFR1wfEnu" alt="导入更新状态" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">输入工单号，选择状态，上传Excel文件，可选择是否上传CSV文件（文件中包含工单号）</div>
+                </div>
+                <h4>可选状态列表</h4>
+                <table class="data-table">
+                    <thead><tr><th>状态</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>新下架</td><td>设备刚从机架上拆下，等待处理</td></tr>
+                        <tr><td>待处理</td><td>设备已登记，等待创建工单</td></tr>
+                        <tr><td>物流出</td><td>设备已发出，运往维修站</td></tr>
+                        <tr><td>维修中</td><td>设备正在维修站进行维修</td></tr>
+                        <tr><td>维修完成</td><td>设备维修完成，等待运回</td></tr>
+                        <tr><td>物流进</td><td>设备正在运回场地途中</td></tr>
+                        <tr><td>待上架</td><td>设备已到达，等待上架运行</td></tr>
+                        <tr><td>已上架</td><td>设备已上架运行，维修完成</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 id="fault-unbind">6. 解绑工单</h3>
+                <p>解除故障机与工单的绑定关系。解绑后故障机恢复为未绑定工单状态，可以重新绑定到其他工单。</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">解绑工单确认弹窗</div>
+                    <img class="screenshot-img" src="https://aka.doubaocdn.com/s/T6zQ1wfEnu" alt="解绑工单" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">解绑前会显示待解绑台数和待解绑列表，确认后点击「解绑」。仅对已绑定工单的故障机进行解绑，其它未绑定工单的机器不会受影响。</div>
+                </div>
+                <div class="tip-box warning">
+                    <p><strong>⚠️ 注意：</strong>解绑操作不可逆，请确认后再执行。如果只是派错了维修站，建议直接在工单列表中撤销工单后重新派单。</p>
+                </div>
+
+                <h3 id="fault-edit">7. 编辑故障机</h3>
+                <p>修改单台故障机的详细信息，包括SN、型号、场地、状态、描述、位置、下架时间、上架时间等。</p>
+                <div class="screenshot-wrapper">
+                    <div class="screenshot-title">修改故障机弹窗</div>
+                    <img class="screenshot-img" src="./fault-edit.png" alt="编辑故障机" onclick="openImageModal(this.src)">
+                    <div class="screenshot-desc">在故障机列表操作列点击「编辑」图标，弹出修改对话框，修改完成后点击「保存」</div>
+                </div>
+                <h4>可编辑字段</h4>
+                <table class="data-table">
+                    <thead><tr><th>字段</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>SN</td><td>设备序列号（唯一标识）</td></tr>
+                        <tr><td>型号</td><td>设备型号，如 S19 XP Hyd、T21 等</td></tr>
+                        <tr><td>所属场地</td><td>设备所属的矿场/场地</td></tr>
+                        <tr><td>状态</td><td>设备的流转状态</td></tr>
+                        <tr><td>描述</td><td>故障描述或备注信息</td></tr>
+                        <tr><td>位置</td><td>设备所在位置</td></tr>
+                        <tr><td>下架时间</td><td>设备下架的日期</td></tr>
+                        <tr><td>上架时间</td><td>设备上架的日期</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="content-section" id="detail">
+                <h2>维修明细</h2>
+                <p>维修明细模块记录每台设备的详细维修信息。可按工单号、机器SN、场地、维修类型、维修结果等条件筛选，支持导出数据。</p>
+            </section>
+
+            <section class="content-section" id="scrap">
+                <h2>报废机管理</h2>
+                <p>报废机管理模块用于管理无法修复、需要报废的设备。包含总报废数、待处理、已审批、待审核、已修复等统计数据，支持确认报废和标记已修复操作。</p>
+            </section>
+
+            <section class="content-section" id="station">
+                <h2>维修站</h2>
+                <p>维修站模块用于管理所有合作的维修站点信息。支持添加、修改、删除维修站，每个维修站包含公司名称、法人代表、白名单认证状态、详细地址、联系人、联系电话等信息。</p>
+            </section>
+
+            <section class="content-section" id="permission">
+                <h2>权限管理</h2>
+                <p>权限管理模块用于管理系统用户和权限分配。支持授权用户、新增人员、编辑用户信息等操作。</p>
+                <h4>角色类型</h4>
+                <table class="data-table">
+                    <thead><tr><th>角色</th><th>权限说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>管理员</td><td>拥有系统所有权限，可管理用户和配置</td></tr>
+                        <tr><td>只读用户</td><td>只能查看数据，不能进行任何修改操作</td></tr>
+                        <tr><td>运维人员</td><td>负责运维相关操作，如设备状态更新等</td></tr>
+                        <tr><td>售后管理</td><td>负责售后相关管理，如工单处理、维修站管理等</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="content-section" id="log">
+                <h2>操作日志</h2>
+                <p>操作日志模块记录系统所有用户的操作记录，便于审计和问题排查。可按用户、状态、模块、操作类型等条件筛选。</p>
+            </section>
+
+            <section class="content-section" id="faq">
+                <h2>常见问题 FAQ</h2>
+                <h3>故障机相关</h3>
+                <h4>Q：SN 码录入错误怎么办？</h4>
+                <p>A：在故障机管理列表中，找到对应设备，点击「编辑」按钮修改 SN 码。如果是批量导入的错误，可以删除后重新导入。</p>
+                <h4>Q：故障机如何绑定到工单？</h4>
+                <p>A：在故障机管理中，选中需要绑定的设备，点击「绑定工单」按钮，选择目标工单即可。也可以在创建工单时直接选择故障机。</p>
+                <h4>Q：导入失败怎么办？</h4>
+                <p>A：请检查以下几点：
+                <ul>
+                    <li>Excel 格式是否与模板一致</li>
+                    <li>必填字段是否都已填写</li>
+                    <li>SN 码是否有重复</li>
+                    <li>型号、场地名称是否与系统中一致</li>
+                </ul>
+                </p>
+                <h4>Q：如何批量修改故障机状态？</h4>
+                <p>A：在故障机列表中勾选需要修改的设备，点击「修改状态」按钮，选择目标状态后提交即可。也可以通过「导入更新状态」功能批量修改。</p>
+                <h3>工单相关</h3>
+                <h4>Q：工单派错了维修站怎么办？</h4>
+                <p>A：可以在工单列表中找到该工单，点击「撤销」按钮撤销工单，然后重新派单给正确的维修站。</p>
+                <h4>Q：如何批量派单？</h4>
+                <p>A：在工单列表中，勾选需要派单的多个工单，然后点击「批量派单」按钮，选择目标维修站即可。</p>
+                <h3>账号与登录</h3>
+                <h4>Q：忘记密码怎么办？</h4>
+                <p>A：请联系系统管理员重置密码。出于安全考虑，用户无法自行找回密码。</p>
+                <h4>Q：登录后看不到某些功能模块？</h4>
+                <p>A：这是权限问题。不同角色的用户拥有不同的功能权限。请联系管理员确认您的角色权限是否正确。</p>
+            </section>
+
+            <section class="content-section" id="glossary">
+                <h2>术语表</h2>
+                <table class="data-table">
+                    <thead><tr><th>术语</th><th>说明</th></tr></thead>
+                    <tbody>
+                        <tr><td>SN 码</td><td>设备的唯一序列号，用于标识每台设备</td></tr>
+                        <tr><td>工单</td><td>维修任务的单据，包含一个或多个故障设备</td></tr>
+                        <tr><td>驻场维修</td><td>维修人员到现场进行维修的方式</td></tr>
+                        <tr><td>送修</td><td>将设备送到维修站进行维修的方式</td></tr>
+                        <tr><td>算力板</td><td>矿机的核心计算部件</td></tr>
+                        <tr><td>控制板</td><td>矿机的控制管理部件</td></tr>
+                        <tr><td>修复率</td><td>成功修复的设备占总维修设备的比例</td></tr>
+                        <tr><td>报废率</td><td>报废设备占总维修设备的比例</td></tr>
+                        <tr><td>流转状态</td><td>设备在维修流程中的位置状态（新下架→待处理→物流出→维修中→维修完成→物流进→待上架→已上架）</td></tr>
+                        <tr><td>白名单认证</td><td>维修站的认证状态，通过认证后才能正常接单</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <div class="footer">
+                <p>维修管理系统 · 用户操作文档</p>
+                <p style="margin-top: 8px;">如有问题请联系系统管理员</p>
+            </div>
+        </main>
+    </div>
+
+    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+        <span class="image-modal-close">×</span>
+        <img id="modalImage" src="" alt="放大查看">
+    </div>
+
+    <div class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</div>
+
+    <script>
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) { element.scrollIntoView({ behavior: 'smooth' }); }
+            updateActiveNav(id);
+        }
+        function updateActiveNav(activeId) {
+            document.querySelectorAll('.nav-item, .nav-subitem').forEach(item => {
+                item.classList.remove('active');
+            });
+            const currentItem = document.querySelector('a[href="#' + activeId + '"]');
+            if (currentItem) { currentItem.classList.add('active'); }
+            const submenu = document.getElementById('fault-submenu');
+            const faultNav = document.querySelector('a[href="#fault"]');
+            if (activeId.startsWith('fault-')) {
+                if (submenu) submenu.classList.add('show');
+                if (faultNav) faultNav.classList.add('active');
+            }
+        }
+        function toggleSubmenu(id) {
+            const submenu = document.getElementById(id);
+            if (submenu) { submenu.classList.toggle('show'); }
+        }
+        function openImageModal(src) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modalImg.src = src;
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') { closeImageModal(); }
+        });
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.scrollY > 300) { backToTop.classList.add('show'); }
+            else { backToTop.classList.remove('show'); }
+            updateNavOnScroll();
+        });
+        function updateNavOnScroll() {
+            const sections = document.querySelectorAll('.content-section');
+            let currentSection = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (window.scrollY >= sectionTop) { currentSection = section.id; }
+            });
+            if (currentSection) { updateActiveNav(currentSection); }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            updateActiveNav('intro');
+        });
+    </script>
+</body>
+</html>
