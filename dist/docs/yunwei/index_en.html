@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Management System - Operations Staff Guide</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff; padding: 40px; border-radius: 12px; margin-bottom: 30px; text-align: center; position: relative; }
+        .header h1 { font-size: 26px; margin-bottom: 8px; }
+        .lang-switch { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 6px; overflow: hidden; display: flex; }
+        .lang-switch a { display: inline-block; padding: 6px 14px; color: #fff; text-decoration: none; font-size: 13px; transition: all 0.2s; }
+        .lang-switch a.active { background: #fff; color: #11998e; font-weight: 500; }
+        .lang-switch a:hover:not(.active) { background: rgba(255,255,255,0.15); }
+        .info-card { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .info-card h2 { font-size: 20px; color: #303133; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid #e4e7ed; }
+        .info-card h3 { font-size: 17px; color: #11998e; margin: 24px 0 12px; }
+        .info-card h4 { font-size: 15px; color: #606266; margin: 16px 0 8px; }
+        .info-card p, .info-card li { color: #606266; font-size: 14px; }
+        .info-card ul, .info-card ol { padding-left: 24px; margin-bottom: 14px; }
+        .info-card li { margin-bottom: 5px; }
+        .login-box { background: #f0f9eb; border: 1px solid #e1f3d8; border-radius: 8px; padding: 18px; margin: 14px 0; }
+        .login-box .row { display: flex; margin: 6px 0; font-size: 15px; }
+        .login-box .label { width: 100px; font-weight: 500; color: #303133; }
+        .login-box .val { font-family: monospace; background: #fff; padding: 3px 10px; border-radius: 4px; border: 1px solid #c2e7b0; }
+        .tip-box { border-left: 4px solid #67c23a; background: #f0f9eb; padding: 14px 18px; margin: 18px 0; border-radius: 4px; }
+        .tip-box.warn { border-left-color: #e6a23c; background: #fdf6ec; }
+        .tip-box.info { border-left-color: #409eff; background: #ecf5ff; }
+        .tip-box p { margin: 0; font-size: 14px; }
+        .data-table { width: 100%; border-collapse: collapse; margin: 14px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+        .data-table th { background: #f5f7fa; padding: 10px 14px; text-align: left; font-size: 13px; color: #606266; border-bottom: 1px solid #e4e7ed; }
+        .data-table td { padding: 10px 14px; font-size: 14px; color: #606266; border-bottom: 1px solid #ebeef5; }
+        .tag { display: inline-block; padding: 2px 7px; font-size: 12px; border-radius: 4px; }
+        .tag-blue { background: #ecf5ff; color: #409eff; }
+        .tag-green { background: #f0f9eb; color: #67c23a; }
+        .tag-orange { background: #fdf6ec; color: #e6a23c; }
+        .screenshot { margin: 18px 0; border-radius: 8px; overflow: hidden; border: 1px solid #e4e7ed; }
+        .screenshot img { width: 100%; display: block; }
+        .screenshot .cap { background: #f5f7fa; padding: 8px 14px; font-size: 13px; color: #606266; text-align: center; border-top: 1px solid #e4e7ed; }
+        .steps { margin: 20px 0; }
+        .step { display: flex; margin-bottom: 16px; }
+        .step-num { flex-shrink: 0; width: 28px; height: 28px; background: #11998e; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; margin-right: 14px; margin-top: 2px; }
+        .step-body h4 { font-size: 14px; font-weight: 600; color: #303133; margin: 0 0 4px; }
+        .step-body p { font-size: 14px; margin: 0; }
+        .footer { text-align: center; padding: 24px 0; color: #909399; font-size: 13px; border-top: 1px solid #e4e7ed; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="lang-switch">
+                <a href="index.html">中文</a>
+                <a href="index_en.html" class="active">EN</a>
+            </div>
+            <h1>Maintenance Management System - Operations Staff Guide</h1>
+            <p>Mining Site Operations Account Manual</p>
+        </div>
+
+        <div class="info-card">
+            <h2>System Login</h2>
+            <div class="login-box">
+                <div class="row"><span class="label">URL:</span><span class="val">https://repair.datastring.cc</span></div>
+                <div class="row"><span class="label">Account:</span><span class="val">Request from admin</span></div>
+                <div class="row"><span class="label">Password:</span><span class="val">Request from admin</span></div>
+            </div>
+            <div class="tip-box">
+                <p><strong>Permissions:</strong>Operations accounts only display the "Mining Site Daily Report" and "Fault Machine Management" menus, responsible for mining site fault reporting, status updates, and daily report maintenance.</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>1. Mining Site Daily Report</h2>
+            <p>View the daily operational data of responsible mining sites and maintain the on-shelf pending repair count.</p>
+            <div class="screenshot">
+                <img src="images/ribao.png" alt="Mining Site Daily Report">
+                <div class="cap">Mining Site Daily Report List - Real-time data for each site</div>
+            </div>
+            <h3>Field Description</h3>
+            <table class="data-table">
+                <tr><th>Field</th><th>Description</th></tr>
+                <tr><td>Asset Count</td><td>Total hash boards / miners at the site</td></tr>
+                <tr><td>24H Fault Count</td><td>Faulty equipment taken off-shelf in the last 24 hours</td></tr>
+                <tr><td>In Logistics</td><td>Equipment in transit to repair station</td></tr>
+                <tr><td>Pending Shelf</td><td>Repaired equipment pending on-shelf</td></tr>
+                <tr><td>Under Repair</td><td>Equipment currently being repaired at the station</td></tr>
+                <tr><td>Pending Repair / Rate</td><td>Count and ratio of on-shelf equipment pending repair</td></tr>
+            </table>
+            <h3>Update On-shelf Pending Repair Count</h3>
+            <div class="screenshot">
+                <img src="images/ribao_edit.png" alt="Edit Pending Repair Count">
+                <div class="cap">Edit On-shelf Pending Repair Count Dialog</div>
+            </div>
+            <ol>
+                <li>Click "Edit Daily Report" on the right side of the corresponding mining site</li>
+                <li>Enter the latest on-shelf pending repair count</li>
+                <li>Click "Save" to complete the update</li>
+            </ol>
+            <div class="tip-box info">
+                <p>It is recommended to update once during the morning shift handover to ensure data accuracy.</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>2. Fault Machine Management</h2>
+            <p>Core working module: faulty equipment entry, status updates, and fault description maintenance.</p>
+            <div class="screenshot">
+                <img src="images/fault_lists.png" alt="Fault Machine List">
+                <div class="cap">Fault Machine Management List</div>
+            </div>
+
+            <h3>Filter & Search</h3>
+            <p>Click "Expand" to show full filter options: Work Order No, Flow Status, Repair Status, Type, Machine SN, Time Range. Click "Query" after setting.</p>
+
+            <h3>Batch Import Fault Machines</h3>
+            <p>Supports "Miner Import" and "Hash Board Import" types:</p>
+            <div class="screenshot">
+                <img src="images/fault_import.png" alt="Import Excel">
+                <div class="cap">Import Excel Dialog</div>
+            </div>
+            <div class="steps">
+                <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Select Import Type</h4><p>Click "Import", select Miner or Hash Board import</p></div></div>
+                <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Download Template</h4><p>Click "Download Template" to get the Excel template</p></div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Fill Data</h4><p>Fill in SN, Model, Fault Description, Off-shelf Time per template</p></div></div>
+                <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Upload Import</h4><p>Select file and click "Confirm Import"</p></div></div>
+            </div>
+            <div class="tip-box warn">
+                <p><strong>Note:</strong>SN code is the unique identifier of the equipment, make sure it is filled in accurately; fault description should clearly state specific symptoms (such as which board is not working, error codes) to facilitate repair.</p>
+            </div>
+
+            <h3>Modify Fault Description</h3>
+            <div class="screenshot">
+                <img src="images/fault_edit.png" alt="Modify Fault Description">
+                <div class="cap">Modify Fault Description Dialog</div>
+            </div>
+            <p>When a single device description needs to be supplemented, click "Modify Description" on the right, edit the content and save.</p>
+
+            <h3>Batch Modify Status</h3>
+            <div class="screenshot">
+                <img src="images/fault_update_status.png" alt="Batch Modify Status">
+                <div class="cap">Batch Modify Status Dialog</div>
+            </div>
+            <h4>Common Status Changes:</h4>
+            <table class="data-table">
+                <tr><th>Scenario</th><th>Target Status</th></tr>
+                <tr><td>Faulty equipment packed and sent to repair station</td><td><span class="tag tag-blue">Logistics Out</span></td></tr>
+                <tr><td>Received equipment sent back from repair station</td><td><span class="tag tag-green">Logistics In</span></td></tr>
+                <tr><td>Equipment inspection complete, confirmed for scrap</td><td><span class="tag tag-orange">Pending Warehousing</span></td></tr>
+                <tr><td>Scrap equipment confirmed and warehoused</td><td><span class="tag tag-green">Warehoused</span></td></tr>
+                <tr><td>Equipment inspection complete, ready for on-shelf</td><td><span class="tag tag-orange">Pending Shelf</span></td></tr>
+                <tr><td>Equipment re-shelved and running normally</td><td><span class="tag tag-green">On Shelf</span></td></tr>
+            </table>
+            <p>Operation: Select equipment → Click "Modify Status" → Select target status → Click "Submit". For large quantities, you can also use "Import Update Status" for batch processing.</p>
+
+            <h3>Export List</h3>
+            <p>Click the download icon in the upper right corner to export the current filtered results as an Excel file for local inventory.</p>
+        </div>
+
+        <div class="info-card">
+            <h2>FAQ</h2>
+            <h4>Q: Why can't I see other menus?</h4>
+            <p>A: Operations accounts only have access to Mining Site Daily Report and Fault Machine Management; other features require the corresponding role.</p>
+            <h4>Q: What should I do if import fails?</h4>
+            <p>A: Check if the Excel format matches the template, if SN is duplicated/wrong, and if all required fields are filled.</p>
+            <h4>Q: How to change status after equipment is sent out?</h4>
+            <p>A: Select equipment → Modify Status → Select "Logistics Out" and submit.</p>
+            <h4>Q: Can I delete if I made a mistake?</h4>
+            <p>A: Operations accounts do not have delete permission, contact the administrator, or modify the description to mark as voided.</p>
+        </div>
+
+        <div class="footer">
+            <p>Maintenance Management System · Operations Staff Guide</p>
+            <p style="margin-top: 6px;">Contact the system administrator for any issues</p>
+        </div>
+    </div>
+</body>
+</html>
