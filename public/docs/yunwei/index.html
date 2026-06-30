@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>维修管理系统 - 运维人员操作指引</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+        .header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff; padding: 40px; border-radius: 12px; margin-bottom: 30px; text-align: center; }
+        .header h1 { font-size: 26px; margin-bottom: 8px; }
+        .info-card { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .info-card h2 { font-size: 20px; color: #303133; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid #e4e7ed; }
+        .info-card h3 { font-size: 17px; color: #11998e; margin: 24px 0 12px; }
+        .info-card h4 { font-size: 15px; color: #606266; margin: 16px 0 8px; }
+        .info-card p, .info-card li { color: #606266; font-size: 14px; }
+        .info-card ul, .info-card ol { padding-left: 24px; margin-bottom: 14px; }
+        .info-card li { margin-bottom: 5px; }
+        .login-box { background: #f0f9eb; border: 1px solid #e1f3d8; border-radius: 8px; padding: 18px; margin: 14px 0; }
+        .login-box .row { display: flex; margin: 6px 0; font-size: 15px; }
+        .login-box .label { width: 70px; font-weight: 500; color: #303133; }
+        .login-box .val { font-family: monospace; background: #fff; padding: 3px 10px; border-radius: 4px; border: 1px solid #c2e7b0; }
+        .tip-box { border-left: 4px solid #67c23a; background: #f0f9eb; padding: 14px 18px; margin: 18px 0; border-radius: 4px; }
+        .tip-box.warn { border-left-color: #e6a23c; background: #fdf6ec; }
+        .tip-box.info { border-left-color: #409eff; background: #ecf5ff; }
+        .tip-box p { margin: 0; font-size: 14px; }
+        .data-table { width: 100%; border-collapse: collapse; margin: 14px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+        .data-table th { background: #f5f7fa; padding: 10px 14px; text-align: left; font-size: 13px; color: #606266; border-bottom: 1px solid #e4e7ed; }
+        .data-table td { padding: 10px 14px; font-size: 14px; color: #606266; border-bottom: 1px solid #ebeef5; }
+        .tag { display: inline-block; padding: 2px 7px; font-size: 12px; border-radius: 4px; }
+        .tag-blue { background: #ecf5ff; color: #409eff; }
+        .tag-green { background: #f0f9eb; color: #67c23a; }
+        .tag-orange { background: #fdf6ec; color: #e6a23c; }
+        .screenshot { margin: 18px 0; border-radius: 8px; overflow: hidden; border: 1px solid #e4e7ed; }
+        .screenshot img { width: 100%; display: block; }
+        .screenshot .cap { background: #f5f7fa; padding: 8px 14px; font-size: 13px; color: #606266; text-align: center; border-top: 1px solid #e4e7ed; }
+        .steps { margin: 20px 0; }
+        .step { display: flex; margin-bottom: 16px; }
+        .step-num { flex-shrink: 0; width: 28px; height: 28px; background: #11998e; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; margin-right: 14px; margin-top: 2px; }
+        .step-body h4 { font-size: 14px; font-weight: 600; color: #303133; margin: 0 0 4px; }
+        .step-body p { font-size: 14px; margin: 0; }
+        .footer { text-align: center; padding: 24px 0; color: #909399; font-size: 13px; border-top: 1px solid #e4e7ed; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏭 维修管理系统 - 运维人员操作指引</h1>
+            <p>矿场运维账号使用手册</p>
+        </div>
+
+        <div class="info-card">
+            <h2>📋 系统登录</h2>
+            <div class="login-box">
+                <div class="row"><span class="label">地址：</span><span class="val">https://repair.datastring.cc</span></div>
+                <div class="row"><span class="label">账号：</span><span class="val">管理员申请</span></div>
+                <div class="row"><span class="label">密码：</span><span class="val">管理员申请</span></div>
+            </div>
+            <div class="tip-box">
+                <p><strong>权限说明：</strong>运维账号仅显示「矿场日报」「故障机管理」两个菜单，负责矿场故障机上报、状态更新、日报维护。</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>一、矿场日报</h2>
+            <p>查看负责矿场的每日运行数据，维护在架待修数量。</p>
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/V5FS1wgirp" alt="矿场日报">
+                <div class="cap">矿场日报列表 - 各矿场实时数据</div>
+            </div>
+            <h3>字段说明</h3>
+            <table class="data-table">
+                <tr><th>字段</th><th>说明</th></tr>
+                <tr><td>资产数</td><td>矿场总算力板/矿机总数</td></tr>
+                <tr><td>24H故障数</td><td>近24小时新下架故障设备</td></tr>
+                <tr><td>物流中</td><td>发往维修站途中的设备</td></tr>
+                <tr><td>待上架</td><td>修回待上架设备</td></tr>
+                <tr><td>在修数</td><td>维修站正在维修的设备</td></tr>
+                <tr><td>待修数/待修率</td><td>当前在架待修设备数量及占比</td></tr>
+            </table>
+            <h3>更新在架待修数</h3>
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/jOVV1wgirp" alt="修改待修数">
+                <div class="cap">修改在架待修数弹窗</div>
+            </div>
+            <ol>
+                <li>点击对应矿场右侧「编辑日报」</li>
+                <li>输入最新的在架待修数</li>
+                <li>点击「保存」完成更新</li>
+            </ol>
+            <div class="tip-box info">
+                <p>建议每日早班交接时更新一次，保证数据准确。</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>二、故障机管理</h2>
+            <p>核心工作模块：故障机录入、状态更新、故障描述维护。</p>
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/Q1Dd1wgirp" alt="故障机列表">
+                <div class="cap">故障机管理列表</div>
+            </div>
+
+            <h3>筛选查询</h3>
+            <p>点击「展开」显示完整筛选项：工单号、流转状态、维修状态、类型、机器SN、时间范围。设置后点「查询」。</p>
+
+            <h3>批量导入故障机</h3>
+            <p>支持「矿机导入」和「算力板导入」两种类型：</p>
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/EQkk1wgirp" alt="导入Excel">
+                <div class="cap">导入Excel弹窗</div>
+            </div>
+            <div class="steps">
+                <div class="step"><div class="step-num">1</div><div class="step-body"><h4>选择导入类型</h4><p>点击「导入」，选择矿机或算力板导入</p></div></div>
+                <div class="step"><div class="step-num">2</div><div class="step-body"><h4>下载模板</h4><p>点击「下载模板」获取Excel模板</p></div></div>
+                <div class="step"><div class="step-num">3</div><div class="step-body"><h4>填写数据</h4><p>按模板填写SN、型号、故障描述、下架时间</p></div></div>
+                <div class="step"><div class="step-num">4</div><div class="step-body"><h4>上传导入</h4><p>选择文件后点「确定导入」</p></div></div>
+            </div>
+            <div class="tip-box warn">
+                <p><strong>注意：</strong>SN码是设备唯一标识，务必填写准确；故障描述尽量写清具体现象（如哪块板不工作、报错代码），方便维修。</p>
+            </div>
+
+            <h3>修改故障描述</h3>
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/pjIo1wgirp" alt="修改故障描述">
+                <div class="cap">修改故障描述弹窗</div>
+            </div>
+            <p>单台设备描述需要补充时，点击右侧「修改描述」，编辑内容后保存即可。</p>
+
+            <h3>批量修改状态</h3>
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/3v4V1wgirp" alt="批量改状态">
+                <div class="cap">批量修改状态弹窗</div>
+            </div>
+            <h4>常用状态变更：</h4>
+            <table class="data-table">
+                <tr><th>场景</th><th>目标状态</th></tr>
+                <tr><td>故障机打包发往维修站</td><td><span class="tag tag-blue">物流出</span></td></tr>
+                <tr><td>收到维修站发回的设备</td><td><span class="tag tag-green">物流进</span></td></tr>
+                <tr><td>设备检测完成确认报废</td><td><span class="tag tag-orange">待入库</span></td></tr>
+                <tr><td>设备检测报废收纳入库</td><td><span class="tag tag-green">已入库</span></td></tr>
+                <tr><td>设备检测完成准备上架</td><td><span class="tag tag-orange">待上架</span></td></tr>
+                <tr><td>设备重新上架正常运行</td><td><span class="tag tag-green">已上架</span></td></tr>
+            </table>
+            <p>操作：勾选设备 → 点「修改状态」→ 选择目标状态 → 点「提交」。大量设备也可用「导入更新状态」批量处理。</p>
+
+            <h3>导出列表</h3>
+            <p>点击右上角下载图标，可导出当前筛选结果的Excel，用于本地盘点。</p>
+        </div>
+
+        <div class="info-card">
+            <h2>❓ 常见问题</h2>
+            <h4>Q：为什么看不到其他菜单？</h4>
+            <p>A：运维账号只有矿场日报和故障机管理权限，其他功能需要对应角色。</p>
+            <h4>Q：导入失败怎么办？</h4>
+            <p>A：检查Excel格式是否和模板一致、SN是否重复/错误、必填项是否都填了。</p>
+            <h4>Q：设备发走了怎么改状态？</h4>
+            <p>A：勾选设备 → 修改状态 → 选择「物流出」提交。</p>
+            <h4>Q：录错了可以删除吗？</h4>
+            <p>A：运维账号没有删除权限，联系管理员处理，或修改描述标注作废。</p>
+        </div>
+
+        <div class="footer">
+            <p>维修管理系统 · 运维人员操作指引</p>
+            <p style="margin-top: 6px;">如有问题请联系系统管理员</p>
+        </div>
+    </div>
+</body>
+</html>

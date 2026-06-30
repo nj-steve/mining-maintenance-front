@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>维修管理系统 - 维修人员操作指引</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 16px; opacity: 0.9; }
+        .info-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .info-card h2 {
+            font-size: 22px;
+            color: #303133;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e4e7ed;
+        }
+        .info-card h3 {
+            font-size: 18px;
+            color: #409eff;
+            margin: 28px 0 14px;
+        }
+        .info-card h4 {
+            font-size: 15px;
+            color: #606266;
+            margin: 18px 0 10px;
+        }
+        .info-card p { color: #606266; margin-bottom: 12px; font-size: 14px; }
+        .info-card ul, .info-card ol { padding-left: 24px; color: #606266; font-size: 14px; margin-bottom: 16px; }
+        .info-card li { margin-bottom: 6px; }
+        .login-box {
+            background: #f0f9ff;
+            border: 1px solid #b3d8ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        .login-box .account-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 15px;
+        }
+        .login-box .label { width: 80px; font-weight: 500; color: #303133; }
+        .login-box .value { font-family: 'SF Mono', Monaco, monospace; background: #fff; padding: 4px 12px; border-radius: 4px; border: 1px solid #d9ecff; }
+        .tip-box {
+            background-color: #ecf5ff;
+            border-left: 4px solid #409eff;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .tip-box.warning { background-color: #fdf6ec; border-left-color: #e6a23c; }
+        .tip-box.success { background-color: #f0f9eb; border-left-color: #67c23a; }
+        .tip-box p { margin: 0; color: #606266; font-size: 14px; }
+        .tip-box strong { color: #303133; }
+        .steps { margin: 24px 0; }
+        .step-item {
+            display: flex;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background: #409eff;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 16px;
+            margin-top: 2px;
+        }
+        .step-content { flex: 1; }
+        .step-content h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 6px;
+            margin-top: 0;
+        }
+        .step-content p {
+            font-size: 14px;
+            color: #606266;
+            margin: 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .data-table th {
+            background: #f5f7fa;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #606266;
+            border-bottom: 1px solid #e4e7ed;
+        }
+        .data-table td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #606266;
+            border-bottom: 1px solid #ebeef5;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #f5f7fa; }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
+        .tag-blue { background: #ecf5ff; color: #409eff; border: 1px solid #d9ecff; }
+        .tag-green { background: #f0f9eb; color: #67c23a; border: 1px solid #e1f3d8; }
+        .tag-orange { background: #fdf6ec; color: #e6a23c; border: 1px solid #faecd8; }
+        .tag-red { background: #fef0f0; color: #f56c6c; border: 1px solid #fde2e2; }
+        .tag-gray { background: #f4f4f5; color: #909399; border: 1px solid #e9e9eb; }
+        .permission-box {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .permission-item {
+            background: #f0f9eb;
+            border: 1px solid #e1f3d8;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .permission-item .icon { font-size: 24px; margin-bottom: 8px; }
+        .permission-item .name { font-weight: 600; color: #67c23a; margin-bottom: 4px; font-size: 14px; }
+        .permission-item .desc { font-size: 12px; color: #909399; }
+        .workflow-box {
+            background: #fff;
+            border: 1px solid #e4e7ed;
+            border-radius: 8px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+        .workflow-title {
+            text-align: center;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .workflow-step {
+            text-align: center;
+            flex: 1;
+        }
+        .workflow-step .circle {
+            width: 40px;
+            height: 40px;
+            background: #409eff;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-weight: 600;
+        }
+        .workflow-step .text { font-size: 13px; color: #606266; }
+        .workflow-arrow { color: #c0c4cc; font-size: 20px; }
+        .screenshot {
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e4e7ed;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .screenshot img {
+            width: 100%;
+            display: block;
+        }
+        .screenshot .caption {
+            background: #f5f7fa;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: #606266;
+            text-align: center;
+            border-top: 1px solid #e4e7ed;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .checkbox-item {
+            background: #f5f7fa;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #606266;
+            border: 1px solid #e4e7ed;
+        }
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #909399;
+            font-size: 13px;
+            border-top: 1px solid #e4e7ed;
+            margin-top: 40px;
+        }
+        @media (max-width: 768px) {
+            .permission-box { grid-template-columns: repeat(2, 1fr); }
+            .workflow-steps { flex-wrap: wrap; gap: 10px; }
+            .workflow-arrow { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 维修管理系统 - 维修人员操作指引</h1>
+            <p>适用于维修站账号使用</p>
+        </div>
+
+        <div class="info-card">
+            <h2>📋 系统登录</h2>
+            <div class="login-box">
+                <div class="account-item">
+                    <span class="label">系统地址：</span>
+                    <span class="value">https://repair.datastring.cc/repairrecords</span>
+                </div>
+            </div>
+            <div class="tip-box">
+                <p><strong>💡 账号权限说明：</strong>维修人员账号仅能看到「工单列表」和「维修明细」两个菜单，没有其他管理功能权限。</p>
+            </div>
+            <div class="permission-box">
+                <div class="permission-item">
+                    <div class="icon">📋</div>
+                    <div class="name">工单列表</div>
+                    <div class="desc">查看派给本站的工单、查看设备列表</div>
+                </div>
+                <div class="permission-item">
+                    <div class="icon">🔍</div>
+                    <div class="name">查找筛选</div>
+                    <div class="desc">按工单号、SN、场地、状态筛选</div>
+                </div>
+                <div class="permission-item">
+                    <div class="icon">📥</div>
+                    <div class="name">批量导入</div>
+                    <div class="desc">导入矿机/板子维修明细</div>
+                </div>
+                <div class="permission-item">
+                    <div class="icon">✏️</div>
+                    <div class="name">修改标注</div>
+                    <div class="desc">编辑维修详情、标注报废件状态</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>📝 维修工作流程</h2>
+            <div class="workflow-box">
+                <div class="workflow-title">标准维修操作流程</div>
+                <div class="workflow-steps">
+                    <div class="workflow-step">
+                        <div class="circle">1</div>
+                        <div class="text">查看工单<br>接收故障机</div>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="circle">2</div>
+                        <div class="text">检测故障<br>标注坏件</div>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="circle">3</div>
+                        <div class="text">进行维修<br>记录详情</div>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="circle">4</div>
+                        <div class="text">录入结果<br>上传图片</div>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="circle">5</div>
+                        <div class="text">保存提交<br>完成维修</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>一、工单列表使用说明</h2>
+            <p>工单列表展示所有派给您所在维修站的工单，您可以在这里查看需要维修的工单和进度。</p>
+
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/kVNd1wge1F" alt="工单列表主界面">
+                <div class="caption">工单列表主界面 - 显示所有派给本站的工单</div>
+            </div>
+
+            <h3>1.1 筛选查找工单</h3>
+            <p>点击「展开」按钮可以显示完整筛选条件：</p>
+            <table class="data-table">
+                <thead><tr><th>筛选项</th><th>说明</th></tr></thead>
+                <tbody>
+                    <tr><td>工单编号</td><td>输入工单编号精确查找</td></tr>
+                    <tr><td>场地筛选</td><td>按矿场/场地筛选工单</td></tr>
+                    <tr><td>工单状态</td><td>按状态筛选：处理中/已完成</td></tr>
+                    <tr><td>开始/结束时间</td><td>按工单创建时间范围筛选</td></tr>
+                </tbody>
+            </table>
+
+            <h3>1.2 工单列表字段说明</h3>
+            <table class="data-table">
+                <thead><tr><th>字段</th><th>说明</th></tr></thead>
+                <tbody>
+                    <tr><td>工单编号</td><td>工单唯一编号，点击可进入工单详情页；旁边的复制图标可复制工单号</td></tr>
+                    <tr><td>故障机数量</td><td>该工单包含的故障机总数</td></tr>
+                    <tr><td>进度条</td><td>显示维修完成进度（如 32/32 表示全部完成）</td></tr>
+                    <tr><td>维修方式</td><td><span class="tag tag-green">驻场</span> 或其他方式</td></tr>
+                    <tr><td>创建日期</td><td>工单创建时间</td></tr>
+                    <tr><td>场地</td><td>故障机所属矿场</td></tr>
+                    <tr><td>维修站</td><td>派往的维修站（您所在的站点）</td></tr>
+                    <tr><td>工单状态</td><td><span class="tag tag-orange">处理中</span> / <span class="tag tag-green">已完成</span></td></tr>
+                </tbody>
+            </table>
+
+            <h3>1.3 查看工单详情</h3>
+            <p>点击工单编号，可以进入工单详情页，查看该工单下所有故障设备：</p>
+
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/UXg41wge1F" alt="工单详情 - 故障设备列表">
+                <div class="caption">工单详情页 - 故障设备列表，可看到该工单下所有设备</div>
+            </div>
+
+            <h4>故障设备列表字段：</h4>
+            <table class="data-table">
+                <thead><tr><th>字段</th><th>说明</th></tr></thead>
+                <tbody>
+                    <tr><td>序号</td><td>设备序号</td></tr>
+                    <tr><td>设备SN</td><td>设备序列号</td></tr>
+                    <tr><td>机型</td><td>设备型号（如 T21）</td></tr>
+                    <tr><td>场地</td><td>所属矿场</td></tr>
+                    <tr><td>流转状态</td><td><span class="tag tag-green">已入库</span> 等物流状态</td></tr>
+                    <tr><td>维修状态</td><td><span class="tag tag-red">报废</span> / 维修中 / 已完成</td></tr>
+                    <tr><td>可操作</td><td>点击「维修明细」按钮直接打开该设备的维修编辑页面</td></tr>
+                </tbody>
+            </table>
+
+            <h4>操作日志标签页：</h4>
+            <p>切换到「操作日志」标签，可以查看工单的所有操作记录：</p>
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/enkc1wge1F" alt="工单操作日志">
+                <div class="caption">工单操作日志 - 记录工单状态变更、创建等历史</div>
+            </div>
+            <ul>
+                <li>操作时间</li>
+                <li>操作类型（新建工单、更改工单状态等）</li>
+                <li>操作人</li>
+                <li>操作说明</li>
+            </ul>
+
+            <h3>1.4 查看工单历史日志弹窗</h3>
+            <p>在工单列表点击操作列的「历史日志」按钮，也可以快速查看工单操作记录：</p>
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/zuVA1wge1F" alt="历史日志弹窗">
+                <div class="caption">历史日志弹窗 - 快速查看工单操作历史</div>
+            </div>
+
+            <div class="tip-box warning">
+                <p><strong>⚠️ 注意：</strong>维修账号不能派单、撤销工单或删除工单，这些操作需要管理员权限。如果工单信息有误，请联系管理员处理。</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>二、维修明细使用说明</h2>
+            <p>维修明细是您日常工作的主要页面，所有设备的维修记录都在这里管理，支持导入、查看、编辑、标注报废件等操作。</p>
+
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/M32c1wge1F" alt="维修明细列表">
+                <div class="caption">维修明细列表页 - 所有维修记录的管理中心</div>
+            </div>
+
+            <h3>2.1 筛选查找维修记录</h3>
+            <table class="data-table">
+                <thead><tr><th>筛选项</th><th>说明</th></tr></thead>
+                <tbody>
+                    <tr><td>工单号</td><td>输入工单号查找该工单下所有设备</td></tr>
+                    <tr><td>机器SN</td><td>输入设备SN码精确查找单台设备</td></tr>
+                    <tr><td>选择场地</td><td>按矿场筛选</td></tr>
+                    <tr><td>维修类型</td><td>整机维修/板子维修</td></tr>
+                    <tr><td>维修结果</td><td>按维修结果筛选</td></tr>
+                </tbody>
+            </table>
+
+            <h3>2.2 两种录入维修结果的方式</h3>
+            <div class="tip-box success">
+                <p><strong>💡 推荐：</strong>单台/少量设备维修 → 点击「维修明细」或「详情」直接编辑；大量设备维修完成 → 使用「导入」功能批量录入。</p>
+            </div>
+
+            <h4>方式一：单台编辑（推荐少量设备使用）</h4>
+            <p>有两个入口可以打开维修编辑页面：</p>
+            <ol>
+                <li><strong>从工单详情进入：</strong>在工单详情的故障设备列表中，点击对应设备的「维修明细」按钮，右侧会滑出编辑面板</li>
+                <li><strong>从维修明细列表进入：</strong>在维修明细列表中，点击对应设备的「详情」按钮，进入全屏编辑页面</li>
+            </ol>
+
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/zMaw1wge1F" alt="右侧滑出编辑面板">
+                <div class="caption">从工单详情点击「维修明细」- 右侧滑出快速编辑面板</div>
+            </div>
+
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/oDLY1wge1F" alt="全屏编辑页面">
+                <div class="caption">从维修明细点击「详情」- 全屏编辑页面</div>
+            </div>
+
+            <h4>维修详情填写说明：</h4>
+            <p>编辑页面分为4个部分，请按实际维修情况填写：</p>
+
+            <h4>📋 基础信息</h4>
+            <ul>
+                <li>日期：维修日期</li>
+                <li>工单编号：自动填充，无需修改</li>
+                <li>维修类型：整机/板子（下拉选择）</li>
+                <li>维修站点：自动填充为您所在的站点</li>
+            </ul>
+
+            <h4>💻 设备信息</h4>
+            <p>请填写各部件的序列号：</p>
+            <ul>
+                <li>整机SN</li>
+                <li>控制板SN</li>
+                <li>电源SN</li>
+                <li>板1 SN、板2 SN、板3 SN（三块算力板的序列号）</li>
+            </ul>
+
+            <h4>🔧 维修详情（核心部分）</h4>
+            <p><strong>维修部件（多选）：</strong>勾选本次维修的部件</p>
+            <div class="checkbox-group">
+                <span class="checkbox-item">☑️ 板1</span>
+                <span class="checkbox-item">☑️ 板2</span>
+                <span class="checkbox-item">☑️ 板3</span>
+                <span class="checkbox-item">☑️ 电源</span>
+                <span class="checkbox-item">☑️ 控制板</span>
+                <span class="checkbox-item">☑️ 其他</span>
+            </div>
+
+            <p><strong>额外操作（多选）：</strong>勾选维修过程中做的额外处理</p>
+            <div class="checkbox-group">
+                <span class="checkbox-item">☑️ 换硅脂</span>
+                <span class="checkbox-item">☑️ 涂三防漆</span>
+                <span class="checkbox-item">☑️ 换升压模块</span>
+                <span class="checkbox-item">☑️ 清灰</span>
+                <span class="checkbox-item">☑️ 贴铝片</span>
+            </div>
+
+            <table class="data-table">
+                <thead><tr><th>字段</th><th>说明</th></tr></thead>
+                <tbody>
+                    <tr><td>初测不良原因</td><td>初步检测发现的问题描述</td></tr>
+                    <tr><td>不良代码L2</td><td>L2级不良代码</td></tr>
+                    <tr><td>不良代码L3</td><td>L3级不良代码</td></tr>
+                    <tr><td>位号信息</td><td>故障芯片具体位号</td></tr>
+                    <tr><td>查证缺陷</td><td>缺陷确认信息</td></tr>
+                    <tr><td>维修部位图片</td><td>点击「+」号上传维修部位的照片</td></tr>
+                </tbody>
+            </table>
+
+            <h4>⏱️ 维修进程</h4>
+            <ul>
+                <li>开始时间：开始维修的时间</li>
+                <li>结束时间：维修完成的时间</li>
+                <li>维修状态：选择 <span class="tag tag-green">维修入库</span> / <span class="tag tag-red">报废</span> 等状态</li>
+                <li>维修人员：填写您的姓名</li>
+            </ul>
+
+            <p>所有信息填写完成后，点击右下角的「保存」按钮提交。</p>
+
+            <h4>查看模式：</h4>
+            <p>保存后再次进入详情页是只读查看模式，需要修改时点击右上角的「编辑」按钮即可：</p>
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/rCOo1wge1F" alt="维修详情查看模式">
+                <div class="caption">维修详情查看模式 - 点击右上角「编辑」可修改</div>
+            </div>
+
+            <h4>方式二：批量导入（推荐大量设备使用）</h4>
+            <p>多台设备维修完成后，可以通过导入功能批量录入维修结果：</p>
+            <div class="steps">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>点击「导入」按钮</h4>
+                        <p>选择导入类型：<strong>矿机维修</strong>（整机）或 <strong>板子维修</strong>（算力板）</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>下载导入模板</h4>
+                        <p>在弹出的导入窗口中点击「下载模板」，获取Excel模板文件</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>填写维修数据</h4>
+                        <p>按照模板格式填写每台设备的维修结果、损坏部件、不良代码等信息</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>上传文件导入</h4>
+                        <p>点击「选择文件」上传填写好的Excel，然后点击「确定导入」</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>2.3 报废件标注</h3>
+            <p>维修过程中发现有部件损坏无法修复需要报废时，使用「部件标记」功能：</p>
+
+            <div class="screenshot">
+                <img src="https://aka.doubaocdn.com/s/olZI1wge1F" alt="报废件标注">
+                <div class="caption">报废件标注弹窗 - 标记各部件状态</div>
+            </div>
+
+            <ol>
+                <li>在维修明细列表中，找到对应设备，点击右侧红色的「部件标记」按钮</li>
+                <li>在弹出的「报废件标注」窗口中，标注每个部件的状态：
+                    <ul>
+                        <li><span class="tag tag-green">正常</span>：部件完好，可以正常使用</li>
+                        <li><span class="tag tag-red">损坏</span>：部件损坏，需要报废</li>
+                        <li><span class="tag tag-orange">全不透</span>：算力板全不通，无法修复</li>
+                    </ul>
+                </li>
+                <li>点击每个部件旁边的编辑图标（铅笔图标），可以填写/修改部件序列号</li>
+                <li>点击「上传图片」可以上传维修部位的照片</li>
+                <li>确认无误后点击「保存」按钮完成标注</li>
+            </ol>
+
+            <div class="tip-box warning">
+                <p><strong>⚠️ 重要：</strong>报废件标注一定要准确，这关系到后续的坏件统计和成本核算，请仔细核对每个部件的状态后再保存。</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h2>❓ 常见问题</h2>
+
+            <h4>Q：为什么我看不到其他菜单（首页、报表、故障机管理等）？</h4>
+            <p>A：维修人员账号权限有限制，只能看到工单列表和维修明细两个菜单，其他功能需要管理员权限。</p>
+
+            <h4>Q：导入失败怎么办？</h4>
+            <p>A：请检查：
+                <ul>
+                    <li>Excel格式是否与模板一致</li>
+                    <li>SN码是否填写正确</li>
+                    <li>工单号是否存在</li>
+                    <li>必填字段是否都已填写</li>
+                </ul>
+            </p>
+
+            <h4>Q：工单信息不对/派错了怎么办？</h4>
+            <p>A：维修账号不能修改工单信息，请联系管理员处理。</p>
+
+            <h4>Q：维修完成后怎么标记工单已完成？</h4>
+            <p>A：当工单下所有设备都录入维修结果并标注完成后，系统会自动更新工单进度和状态，不需要手动标记。</p>
+
+            <h4>Q：可以删除录错的维修记录吗？</h4>
+            <p>A：维修账号没有删除权限，如果录错了，可以点击「详情」进入编辑页面修改，或者联系管理员处理。</p>
+
+            <h4>Q：从工单详情点「维修明细」和从维修明细列表点「详情」有什么区别？</h4>
+            <p>A：功能是一样的，只是入口不同。从工单详情进入是右侧滑出面板，适合快速连续录入多台设备；从维修明细列表进入是全屏页面，适合仔细填写单台设备信息。</p>
+        </div>
+
+        <div class="footer">
+            <p>维修管理系统 · 维修人员操作指引</p>
+            <p style="margin-top: 8px;">如有问题请联系系统管理员</p>
+        </div>
+    </div>
+</body>
+</html>
