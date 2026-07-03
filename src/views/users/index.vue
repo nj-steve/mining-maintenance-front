@@ -10,7 +10,7 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
-const isAdmin = authStore.userInfo?.roles?.includes('1') ?? false;
+const isAdmin = Boolean(authStore.userInfo?.roles?.includes('1') || authStore.userInfo?.roles?.includes('2'));
 
 interface Company {
   id: number;
