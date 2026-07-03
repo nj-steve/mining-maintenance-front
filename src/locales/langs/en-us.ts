@@ -1256,6 +1256,7 @@ const local: App.I18n.Schema = {
 
       validation: {
         requireCompany: 'Please select an affiliated company',
+        requireGroup: 'Please select organization(s)',
         requireUsername: 'Please enter a nickname (login account)',
         requireRealName: 'Please enter real name',
         requirePassword: 'Please enter a password',
@@ -1302,6 +1303,8 @@ const local: App.I18n.Schema = {
         passwordPlaceholder: 'Please enter a password',
         roleLabel: 'Role Type',
         rolePlaceholder: 'Please select a role type',
+        groupLabel: 'Organizations',
+        groupPlaceholder: 'Please select organizations (multiple)',
         phoneLabel: 'Contact Phone',
         phonePlaceholder: 'Please enter a contact phone number',
         emailLabel: 'Email',

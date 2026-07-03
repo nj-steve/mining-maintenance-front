@@ -1080,6 +1080,7 @@ declare namespace App {
       fetchCompanyFailed: string;
       validation: {
         requireCompany: string;
+        requireGroup: string;
         requireUsername: string;
         requireRealName: string;
         requirePassword: string;
@@ -1122,6 +1123,8 @@ declare namespace App {
         passwordPlaceholder: string;
         roleLabel: string;
         rolePlaceholder: string;
+        groupLabel: string;
+        groupPlaceholder: string;
         phoneLabel: string;
         phonePlaceholder: string;
         emailLabel: string;

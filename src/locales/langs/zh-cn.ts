@@ -815,6 +815,7 @@ const local: App.I18n.Schema = {
 
       validation: {
         requireCompany: '请选择所属公司',
+        requireGroup: '请选择所属组织',
         requireUsername: '请输入昵称(登陆账号)',
         requireRealName: '请输入真实姓名',
         requirePassword: '请输入密码',
@@ -861,6 +862,8 @@ const local: App.I18n.Schema = {
         passwordPlaceholder: '请输入密码',
         roleLabel: '角色类型',
         rolePlaceholder: '请选择角色类型',
+        groupLabel: '所属组织',
+        groupPlaceholder: '请选择组织（可多选）',
         phoneLabel: '联系电话',
         phonePlaceholder: '请输入联系电话',
         emailLabel: '邮箱',

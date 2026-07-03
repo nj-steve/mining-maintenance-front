@@ -28,12 +28,20 @@ export const request = createFlatRequest<App.Service.Response, RequestInstanceSt
 
         // Add group_id to URL params for GET requests, or body data for others
         if (config.method?.toUpperCase() === 'GET') {
-          config.params = { ...config.params, group_id: authStore.activeGroupId };
+          const hasGroupId = config.params && Object.prototype.hasOwnProperty.call(config.params, 'group_id');
+          if (!hasGroupId) {
+            config.params = { ...config.params, group_id: authStore.activeGroupId };
+          }
         } else if (config.method?.toUpperCase() === 'POST' || config.method?.toUpperCase() === 'PUT' || config.method?.toUpperCase() === 'PATCH') {
           if (config.data instanceof FormData) {
-            config.data.append('group_id', String(authStore.activeGroupId));
+            if (!config.data.has('group_id')) {
+              config.data.append('group_id', String(authStore.activeGroupId));
+            }
           } else {
-            config.data = { ...config.data, group_id: String(authStore.activeGroupId) };
+            const hasGroupId = config.data && Object.prototype.hasOwnProperty.call(config.data, 'group_id');
+            if (!hasGroupId) {
+              config.data = { ...config.data, group_id: String(authStore.activeGroupId) };
+            }
           }
         }
       }

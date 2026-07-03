@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, h } from 'vue';
+import { onMounted, ref, watch, h, computed } from 'vue';
 import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchUser, updateUser, createUser, fetchCompanies, fetchExternalUsers, bindExternalUser } from '@/service/api/auth';
@@ -11,6 +11,14 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 const authStore = useAuthStore();
 const isAdmin = Boolean(authStore.userInfo?.roles?.includes('1') || authStore.userInfo?.roles?.includes('2'));
+const groupOptions = computed(() => {
+  const groups = authStore.userInfo?.groups || [];
+  return groups.map(g => ({ label: g.name, value: String(g.id) }));
+});
+const defaultGroupIds = () => {
+  const id = authStore.activeGroupId || 1;
+  return [String(id)];
+};
 
 interface Company {
   id: number;
@@ -27,10 +35,12 @@ interface User {
   email: string;                 // 邮箱
   start_date: string;            // 入职日期 (YYYY-MM-DD)
   status?: number;               // 状态：1-在职，0-离职（可选）
+  group_ids?: string;
 }
 
 interface EditUser {
   id:number,
+  group_ids: string[];
   assigned_company_id: string[];
   company: string;
   password: string;
@@ -92,6 +102,7 @@ const dialogMode = ref<'add' | 'edit'>('add');
 
 const editForm = ref<EditUser>({
   id: 0,
+  group_ids: defaultGroupIds(),
   assigned_company_id: [],
   password: "",
   company: "",
@@ -109,6 +120,7 @@ const handleOpenAdd = () => {
   dialogMode.value = 'add';
   editForm.value = {
     id: 0,
+    group_ids: defaultGroupIds(),
     assigned_company_id: [],
     password: "",
     company: "",
@@ -131,9 +143,15 @@ const handleOpenAdd = () => {
 };
 
 function userToEditUser(user: User): EditUser {
+  const groupIds =
+    typeof user.group_ids === 'string' && user.group_ids.trim()
+      ? user.group_ids.split(',').map(s => s.trim()).filter(Boolean)
+      : defaultGroupIds();
+
   return {
     id: user.id || 0,
     real_name: user.real_name || "",
+    group_ids: groupIds,
     assigned_company_id: user.company_info?.map(item => item.id.toString()) || [],
     company: user.company_info?.[0]?.name || "",
     password: "",
@@ -176,6 +194,11 @@ const handleSave = async () => {
     // 验证表单数据
      // 如果没有传入角色，使用当前表单中的角色
   const currentRole = editForm.value.role;
+
+  if (!editForm.value.group_ids || editForm.value.group_ids.length === 0) {
+    message.error(t('page.users.validation.requireGroup'));
+    return;
+  }
 
   // 管理员(1)和售后管理(2)不需要选择公司
   if (!currentRole || currentRole === 1 || currentRole === 2 || currentRole === 5) {
@@ -222,6 +245,7 @@ const handleSave = async () => {
     // 转换 assigned_company_id 为逗号分隔字符串
     const submitData: any = {
       ...editForm.value,
+      group_id: Array.isArray(editForm.value.group_ids) ? editForm.value.group_ids.join(',') : editForm.value.group_ids,
       assigned_company_id: Array.isArray(editForm.value.assigned_company_id)
         ? editForm.value.assigned_company_id.join(',')
         : editForm.value.assigned_company_id
@@ -229,7 +253,7 @@ const handleSave = async () => {
 
     if (dialogMode.value === 'add') {
       const res = await createUser(submitData);
-      console.log("addUser",res)
+      // console.log("addUser",res)
       if (res.response?.data?.msg === "Operation successful") {
         message.success(t('page.users.addSuccess'));
         showModal.value = false;
@@ -604,6 +628,17 @@ const handleBindSave = async () => {
           :options="modelOptions"
           :placeholder="t('page.users.modal.rolePlaceholder')"
           @update:value="getCompanys"
+          clearable
+        />
+      </NFormItem>
+
+      <NFormItem :label="t('page.users.modal.groupLabel')" required>
+        <NSelect
+          v-model:value="editForm.group_ids"
+          :options="groupOptions"
+          :placeholder="t('page.users.modal.groupPlaceholder')"
+          multiple
+          filterable
           clearable
         />
       </NFormItem>
