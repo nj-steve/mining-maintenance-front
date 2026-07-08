@@ -7,7 +7,8 @@ const local: App.I18n.Schema = {
     updateCancel: '稍后再说'
   },
   common: {
-    action: '操作',
+      helpDoc: '帮助文档',
+      action: '操作',
     add: '新增',
     addSuccess: '添加成功',
     backToHome: '返回首页',

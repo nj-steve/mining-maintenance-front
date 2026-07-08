@@ -241,7 +241,7 @@ const handleCloseResult = () => {
 
 const downloadTemplate = () => {
   const link = document.createElement('a')
-  link.href = currentConfig.value.templateUrl || '/template/repair-detail-2026.xlsm'
+  link.href = currentConfig.value.templateUrl || "/template/repair-detail-2026.xlsm"
   link.download = currentConfig.value.templateName || t('page.faults.uploadBindWorkOrder.repairDetailTemplateName')
   document.body.appendChild(link)
   link.click()

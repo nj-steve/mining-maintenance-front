@@ -49,6 +49,18 @@ function handleGroupChange(val: string | number) {
     window.location.reload();
   }, 300);
 }
+
+function handleHelpDoc() {
+  const roles = authStore.userInfo.roles || [];
+  const origin = window.location.origin;
+  if (roles.includes('3')) {
+    window.open(`${origin}/docs/yunwei/index.html`, '_blank');
+  } else if (roles.includes('4')) {
+    window.open(`${origin}/docs/repair/index.html`, '_blank');
+  } else {
+    window.open(`${origin}/docs/index.html`, '_blank');
+  }
+}
 </script>
 
 <template>
@@ -74,6 +86,11 @@ function handleGroupChange(val: string | number) {
         @switch="themeStore.toggleThemeScheme"
       />
       <ThemeButton />
+      <ButtonIcon
+        icon="carbon:help"
+        :tooltip-content="$t('common.helpDoc')"
+        @click="handleHelpDoc"
+      />
       <NSelect
         v-if="groupOptions.length > 1"
         :value="authStore.activeGroupId"

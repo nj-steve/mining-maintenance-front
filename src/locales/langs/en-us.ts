@@ -7,7 +7,8 @@ const local: App.I18n.Schema = {
     updateCancel: 'Later'
   },
   common: {
-    action: 'Action',
+      helpDoc: 'Help Document',
+      action: 'Action',
     add: 'Add',
     addSuccess: 'Add Success',
     backToHome: 'Back to home',

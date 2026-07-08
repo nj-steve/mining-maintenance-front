@@ -315,7 +315,7 @@ const columns: DataTableColumns<any> = [
       }
     },
   { title: () => renderHeaderTitle(t('page.repairRecords.verifyDefect')), key: 'VerifyDefect', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.VerifyDefect || '-') },
-  { title: () => renderHeaderTitle(t('page.repairRecords.repairStatus')), key: 'RepairResult',
+  { title: () => renderHeaderTitle(t('page.repairRecords.repairStatus')), key: 'RepairResult', width: 120,
     render: (row) => {
       const label = repairResultMap[row.RepairResult] || t('page.repairRecords.unknown')
        const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
