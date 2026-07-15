@@ -35,12 +35,13 @@ interface User {
   email: string;                 // 邮箱
   start_date: string;            // 入职日期 (YYYY-MM-DD)
   status?: number;               // 状态：1-在职，0-离职（可选）
-  group_ids?: string;
+  group_id?: string;
+
 }
 
 interface EditUser {
   id:number,
-  group_ids: string[];
+  group_id: string[];
   assigned_company_id: string[];
   company: string;
   password: string;
@@ -102,7 +103,7 @@ const dialogMode = ref<'add' | 'edit'>('add');
 
 const editForm = ref<EditUser>({
   id: 0,
-  group_ids: defaultGroupIds(),
+  group_id: defaultGroupIds(),
   assigned_company_id: [],
   password: "",
   company: "",
@@ -120,7 +121,7 @@ const handleOpenAdd = () => {
   dialogMode.value = 'add';
   editForm.value = {
     id: 0,
-    group_ids: defaultGroupIds(),
+    group_id: defaultGroupIds(),
     assigned_company_id: [],
     password: "",
     company: "",
@@ -143,15 +144,24 @@ const handleOpenAdd = () => {
 };
 
 function userToEditUser(user: User): EditUser {
-  const groupIds =
-    typeof user.group_ids === 'string' && user.group_ids.trim()
-      ? user.group_ids.split(',').map(s => s.trim()).filter(Boolean)
-      : defaultGroupIds();
+  let groupIds: string[] = [];
+  if (user.group_id) {
+    if (typeof user.group_id === 'string') {
+      groupIds = user.group_id.split(',');
+    } else if (Array.isArray(user.group_id)) {
+      groupIds = (user.group_id as any[]).map(String);
+    }
+  } else {
+    const defaults = defaultGroupIds();
+    if (defaults && Array.isArray(defaults)) {
+      groupIds = defaults.map(String);
+    }
+  }
 
   return {
     id: user.id || 0,
     real_name: user.real_name || "",
-    group_ids: groupIds,
+    group_id: groupIds,
     assigned_company_id: user.company_info?.map(item => item.id.toString()) || [],
     company: user.company_info?.[0]?.name || "",
     password: "",
@@ -167,10 +177,8 @@ function userToEditUser(user: User): EditUser {
 // 打开编辑弹框
 const handleOpenEdit = async(row: User) => {
   dialogMode.value = 'edit';
-  editForm.value =userToEditUser(row)
-
-  // editForm.value = { ...row }; // 拷贝一份
-  // console.log("editForm.value",editForm.value)
+  console.log("row",row)
+  editForm.value = userToEditUser(row);
 
   // 根据角色加载对应的公司选项
   if (row.role) {
@@ -195,7 +203,7 @@ const handleSave = async () => {
      // 如果没有传入角色，使用当前表单中的角色
   const currentRole = editForm.value.role;
 
-  if (!editForm.value.group_ids || editForm.value.group_ids.length === 0) {
+  if (!editForm.value.group_id || editForm.value.group_id.length === 0) {
     message.error(t('page.users.validation.requireGroup'));
     return;
   }
@@ -245,7 +253,7 @@ const handleSave = async () => {
     // 转换 assigned_company_id 为逗号分隔字符串
     const submitData: any = {
       ...editForm.value,
-      group_id: Array.isArray(editForm.value.group_ids) ? editForm.value.group_ids.join(',') : editForm.value.group_ids,
+      group_id: Array.isArray(editForm.value.group_id) ? editForm.value.group_id.join(',') : editForm.value.group_id,
       assigned_company_id: Array.isArray(editForm.value.assigned_company_id)
         ? editForm.value.assigned_company_id.join(',')
         : editForm.value.assigned_company_id
@@ -634,7 +642,7 @@ const handleBindSave = async () => {
 
       <NFormItem :label="t('page.users.modal.groupLabel')" required>
         <NSelect
-          v-model:value="editForm.group_ids"
+          v-model:value="editForm.group_id"
           :options="groupOptions"
           :placeholder="t('page.users.modal.groupPlaceholder')"
           multiple

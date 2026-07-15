@@ -1131,6 +1131,7 @@ const local: App.I18n.Schema = {
     },
     workflow: {
       title: 'Workflow',
+      groupName: 'Group',
       totalItems: 'Total {count} items',
       pleaseSelectOrderToDispatch: 'Please select an order to dispatch first',
       pleaseSelectUnDispatchedOrder: 'Please select undispatched orders',

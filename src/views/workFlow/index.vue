@@ -45,6 +45,7 @@ interface Order {
   UpdatedAt: string;              // 更新时间
   RepairMethod: number;           // 维修方式
   RepairedCount: number;            // 维修次数
+  group_name?: string;            // 维修站组名
 }
 
 const message = useMessage();
@@ -393,10 +394,15 @@ const columns: DataTableColumns<Order> = [
   },
   { title: () => renderHeaderTitle(t('page.workflow.faultCount')), key: 'FaultCount', width: 200, render: (row: any ) => {
     const total = Number(row.FaultCount ?? 0)
+    console.log('total', total);
     const repaired = Number(row.RepairedCount ?? 0)+Number(row.evacuated_count ?? 0)
+    console.log('repaired', repaired);
     const safeTotal = total > 0 ? total : 0
     const safeRepaired = repaired > 0 ? Math.min(repaired, safeTotal || repaired) : 0
-    const percent = safeTotal > 0 ? Math.round((safeRepaired / safeTotal) * 100) : 0
+    console.log('safeRepaired', safeRepaired);
+    console.log('safeTotal', safeTotal);
+    const percent = safeTotal > 0 ? Math.round((safeRepaired / safeTotal) * 100) : 0;
+    console.log('percent', percent);
     return h(
       'div',
       { style: 'display:flex; align-items:center; gap:10px; min-width:180px;' },
@@ -428,10 +434,16 @@ const columns: DataTableColumns<Order> = [
         2: 'primary',
         3: 'primary',
       };
-      // const label = row.Onsite === 1 ? '是' : row.Onsite === 0 ? '否' : '未知';
-      return h(NTag, { class: 'text-xs', type: tagMap[row.RepairMethod || '-'],size:'small', round:true }, () => getTranslatedRepairMethod(row.RepairMethod) || t('page.workflow.unknown'))
+
+      const methodLabel = getTranslatedRepairMethod(row.RepairMethod) || t('page.workflow.unknown');
+      // const groupLabel = row.group_name ? ` - ${row.group_name}` : '';
+
+      return h(NTag, { class: 'text-xs', type: tagMap[row.RepairMethod || '-'],size:'small', round:true }, () => methodLabel)
     }
   },
+  { title: () => renderHeaderTitle(t('page.workflow.groupName')), key: 'group_name', width: 200, render: (row: any ) => {
+    return row.group_name || '-';
+  }},
   { title: () => renderHeaderTitle(t('page.workflow.orderStatus')), key: 'OrderStatusText',
       render: (row: any) => {
         const getTranslatedOrderStatus = (name: string | undefined | null) => {

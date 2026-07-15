@@ -1441,8 +1441,9 @@ declare namespace App {
       };
     };
         workflow: {
-          title: string;
-          totalItems: string;
+        title: string;
+        groupName: string;
+        totalItems: string;
           pleaseSelectOrderToDispatch: string;
           pleaseSelectUnDispatchedOrder: string;
           batchDispatchRemark: string;

@@ -76,14 +76,29 @@
         <option :value="6">6{{ t('page.scrapMachine.times') }}</option>
       </select>
     </div>
+
+    <!-- 我的场地 -->
+    <div class="relative flex items-center h-[38px] px-2" v-if="hasRole">
+      <NCheckbox v-model:checked="isOnlyMySite" @update:checked="handleMySiteChange">
+        {{ t('page.workflow.mySite') }}
+      </NCheckbox>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useI18n } from 'vue-i18n'
+import { NCheckbox } from 'naive-ui'
+import { useAuthStore } from '@/store/modules/auth'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
+const hasRole = !authStore.userInfo.roles.includes('3')
+
+const isOnlyMySite = ref(localStorage.getItem('onlyMySite') === 'true')
+
 interface SiteOption {
   label: string
   value: number | string | null
@@ -134,6 +149,12 @@ function onScrapCountChange(e: Event) {
   const raw = (e.target as HTMLSelectElement).value
   const v = raw === '' ? null : Number(raw)
   emit('update:scrap_count', isNaN(v as number) ? null : (v as number))
+  emit('change')
+}
+
+function handleMySiteChange(val: boolean) {
+  localStorage.setItem('onlyMySite', String(val))
+  isOnlyMySite.value = val
   emit('change')
 }
 </script>

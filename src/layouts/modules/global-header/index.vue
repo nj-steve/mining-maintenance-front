@@ -92,7 +92,7 @@ function handleHelpDoc() {
         @click="handleHelpDoc"
       />
       <NSelect
-        v-if="groupOptions.length > 1"
+        v-if="groupOptions.length > 1 && !authStore.userInfo.roles.includes('4')"
         :value="authStore.activeGroupId"
         :options="groupOptions"
         @update:value="handleGroupChange"

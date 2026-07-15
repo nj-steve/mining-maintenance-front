@@ -1215,6 +1215,7 @@ const local: App.I18n.Schema = {
     },
     workflow: {
       title: '工作流',
+      groupName: '组织',
       totalItems: '共 {count} 条',
       pleaseSelectOrderToDispatch: '请先选择要派单的工单',
       pleaseSelectUnDispatchedOrder: '请选择未派单的工单',

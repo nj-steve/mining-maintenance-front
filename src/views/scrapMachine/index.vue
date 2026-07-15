@@ -409,6 +409,12 @@ async function fetchData() {
   if (filters.order_fields != null) params.order_fields = filters.order_fields
   if (filters.order_type != null) params.order_type = filters.order_type
 
+  if (!(authStore.userInfo.roles.includes('3'))) {
+    params.enable_all = localStorage.getItem("onlyMySite") === 'true' ? 1 : 0;
+  } else {
+    params.enable_all = 0;
+  }
+
   const { data, error } = await fetchScrapLists(params)
   if (error == null && data) {
     filteredData.value = Array.isArray(data.list) ? data.list : []
