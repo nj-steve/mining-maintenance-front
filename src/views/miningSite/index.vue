@@ -288,8 +288,36 @@ const columns: DataTableColumns<Site> = [
       ), width: 130,
     key: 'asset_count',
     sorter: (row1: Site, row2: Site) => (row1.asset_count || 0) - (row2.asset_count || 0),
-    render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.asset_count.toLocaleString() || 0)
+    render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.asset_count?.toLocaleString() || 0)
   },
+  {
+    title: () => renderHeaderTitle(t('page.miningSite.expectedAssetCount')),
+    key: 'yuqi_asset_count',
+    width: 130,
+    sorter: (row1: any, row2: any) => (row1.yuqi_asset_count || 0) - (row2.yuqi_asset_count || 0),
+    render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.yuqi_asset_count?.toLocaleString() || 0)
+  },
+  {
+    title: () => renderHeaderTitle(t('page.miningSite.expectedHashrate')),
+    key: 'yuqi_hashrate_th',
+    width: 130,
+    sorter: (row1: any, row2: any) => (row1.yuqi_hashrate_th || 0) - (row2.yuqi_hashrate_th || 0),
+    render: (row: any) => {
+      let val = Number(row.yuqi_hashrate_th || 0);
+      let unit = 'TH/s';
+      if (val >= 1000000) {
+        val = val / 1000000;
+        unit = 'EH/s';
+      } else if (val >= 1000) {
+        val = val / 1000;
+        unit = 'PH/s';
+      }
+      // 保留两位小数并去掉末尾无用的 0
+      const formattedVal = Number(val.toFixed(2)).toLocaleString();
+      return h('span', { class: 'text-sm text-gray-500' }, `${formattedVal} ${unit}`);
+    }
+  },
+
   {
     title: () =>
       h(

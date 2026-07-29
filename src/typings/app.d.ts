@@ -1149,6 +1149,8 @@ declare namespace App {
           siteName: string;
           siteAddress: string;
           assetCount: string;
+          expectedAssetCount: string;
+          expectedHashrate: string;
           siteStatus: string;
           resident: string;
           mailRepair: string;

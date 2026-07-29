@@ -889,6 +889,8 @@ const local: App.I18n.Schema = {
       siteName: '场地名称',
       siteAddress: '场地地址',
       assetCount: '资产数',
+      expectedAssetCount: '预期资产数',
+      expectedHashrate: '预期算力',
       siteStatus: '场地状态',
       resident: '驻场',
       mailRepair: '寄修',

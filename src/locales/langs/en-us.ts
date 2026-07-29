@@ -738,6 +738,8 @@ const local: App.I18n.Schema = {
       siteName: 'Site Name',
       siteAddress: 'Site Address',
       assetCount: 'Asset Count',
+      expectedAssetCount: 'Expected Asset Count',
+      expectedHashrate: 'Expected Hashrate',
       siteStatus: 'Site Status',
       resident: 'Resident',
       mailRepair: 'Mail Repair',
