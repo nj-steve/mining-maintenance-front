@@ -225,7 +225,8 @@ const local: App.I18n.Schema = {
     workflow:"工单列表",
     miningsite:"矿场日报",
     users:"权限管理",
-    repairrecordsdetail:"维修明细",
+    repairrecordsdetail: '维修明细',
+    synctask: '同步任务',
     workflowdetail:"工单详情",
     sitedetail:"矿场详情",
     'user-center': '个人中心',
@@ -1328,10 +1329,14 @@ const local: App.I18n.Schema = {
       "operation": "操作",
       "dailyReport": "日报",
       "edit": "编辑",
-      "view": "查看" },
-
-
-
+      "view": "查看"
+    },
+    synctask: {
+      title: '同步任务',
+      syncAssetSites: '同步资产场地',
+      syncDesc: '手动触发同步资产与场地数据，此操作将在后台异步执行。',
+      syncSuccess: '同步任务已触发'
+    }
   },
   form: {
 

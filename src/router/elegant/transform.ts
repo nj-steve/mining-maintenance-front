@@ -178,6 +178,7 @@ const routeMap: RouteMap = {
   "repairstation": "/repairstation",
   "scrapmachine": "/scrapmachine",
   "sitedetail": "/miningsite/:id/info",
+  "synctask": "/synctask",
   "user-center": "/user-center",
   "users": "/users",
   "workflow": "/workflow",

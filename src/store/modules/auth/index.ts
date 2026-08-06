@@ -1,8 +1,12 @@
 import { computed, reactive, ref } from 'vue';
+// @ts-ignore
+import CryptoJS from 'crypto-js';
+
 import { useRoute } from 'vue-router';
 import { defineStore } from 'pinia';
 import { useLoading } from '@sa/hooks';
 import { fetchGetUserInfo, fetchLogin } from '@/service/api';
+
 import { useRouterPush } from '@/hooks/common/router';
 import { localStg } from '@/utils/storage';
 import { SetupStoreId } from '@/enum';
@@ -112,7 +116,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   async function login(userName: string, password: string, redirect = true) {
     startLoading();
 
-    const { data, error } = await fetchLogin(userName, password);
+    const { data, error } = await fetchLogin(userName, CryptoJS.MD5(password).toString());
     // console.log("login", data, error);
     if (error) {
       window.$notification?.error({

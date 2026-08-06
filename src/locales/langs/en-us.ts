@@ -226,6 +226,7 @@ const local: App.I18n.Schema = {
     miningsite:"Site Daily Report",
     users:"Permission",
     repairrecordsdetail:"Repair Records Detail",
+    synctask: 'Sync Tasks',
     workflowdetail:"Work Flow Detail",
     sitedetail:"Site Detail",
    'user-center': 'User Center',
@@ -1326,6 +1327,12 @@ const local: App.I18n.Schema = {
 
       unknown: 'Unknown',
       paginationPrefix: 'Total {count} items'
+    },
+    synctask: {
+      title: 'Sync Tasks',
+      syncAssetSites: 'Sync Asset Sites',
+      syncDesc: 'Manually trigger synchronization of asset and site data. This operation runs asynchronously in the background.',
+      syncSuccess: 'Sync task has been triggered successfully',
     }
   },
   form: {

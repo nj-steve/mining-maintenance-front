@@ -1143,6 +1143,12 @@ declare namespace App {
       unknown: string;
       paginationPrefix: string;
     };
+    synctask: {
+      title: string;
+      syncAssetSites: string;
+      syncDesc: string;
+      syncSuccess: string;
+    };
     miningSite: {
           title: string;
           editSiteInfo: string;

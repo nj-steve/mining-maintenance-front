@@ -192,6 +192,18 @@ export const generatedRoutes: GeneratedRoute[] = [
     props: true
   },
   {
+    name: 'synctask',
+    path: '/synctask',
+    component: 'layout.base$view.synctask',
+    meta: {
+      title: 'synctask',
+      i18nKey: 'route.synctask',
+      icon: 'mdi:sync-circle',
+      order: 100,
+      roles: ['1']
+    }
+  },
+  {
     name: 'user-center',
     path: '/user-center',
     component: 'layout.base$view.user-center',

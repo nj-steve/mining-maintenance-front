@@ -32,6 +32,7 @@ declare module "@elegant-router/types" {
     "repairstation": "/repairstation";
     "scrapmachine": "/scrapmachine";
     "sitedetail": "/miningsite/:id/info";
+    "synctask": "/synctask";
     "user-center": "/user-center";
     "users": "/users";
     "workflow": "/workflow";
@@ -82,6 +83,7 @@ declare module "@elegant-router/types" {
     | "repairstation"
     | "scrapmachine"
     | "sitedetail"
+    | "synctask"
     | "user-center"
     | "users"
     | "workflow"
@@ -117,6 +119,7 @@ declare module "@elegant-router/types" {
     | "repairstation"
     | "scrapmachine"
     | "sitedetail"
+    | "synctask"
     | "user-center"
     | "users"
     | "workflow"
