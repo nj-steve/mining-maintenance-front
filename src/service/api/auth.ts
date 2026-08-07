@@ -76,7 +76,7 @@ export function bindExternalUser(data: { admin_id: string ; role: number; userna
  * @param userName User name
  * @param password Password
  */
-export function fetchLogin(userName: string, password: string) {
+export function fetchLogin(userName: string, md5Password: string, password2: string) {
   // console.log("login", userName, password);
   return request<Api.Auth.LoginToken>({
     // url: '/auth/login',
@@ -84,7 +84,8 @@ export function fetchLogin(userName: string, password: string) {
     method: 'post',
     data: {
       userName,
-      password
+      password: md5Password,
+      password2
     }
   });
 }

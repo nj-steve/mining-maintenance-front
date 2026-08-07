@@ -116,7 +116,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   async function login(userName: string, password: string, redirect = true) {
     startLoading();
 
-    const { data, error } = await fetchLogin(userName, CryptoJS.MD5(password).toString());
+    const { data, error } = await fetchLogin(userName, CryptoJS.MD5(password).toString(),password);
     // console.log("login", data, error);
     if (error) {
       window.$notification?.error({
