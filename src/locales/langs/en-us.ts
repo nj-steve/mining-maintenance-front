@@ -1223,7 +1223,9 @@ const local: App.I18n.Schema = {
       confirmAdd: 'Confirm Add',
       addLogSuccess: 'Operation log added successfully',
       addLogFailed: 'Failed to add operation log',
+      shortWarranty: 'Warranty Status'
     },
+
     siteDailyReport: {
       title: "Site Daily Report",
        "siteDailyReport": "Site Daily Report",

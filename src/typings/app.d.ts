@@ -1539,6 +1539,7 @@ declare namespace App {
         confirmAdd: string;
         addLogSuccess: string;
         addLogFailed: string;
+        shortWarranty: string;
       };
         siteDailyReport: {
           title: string;

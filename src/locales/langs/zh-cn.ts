@@ -1307,6 +1307,7 @@ const local: App.I18n.Schema = {
       confirmAdd: '确认添加',
       addLogSuccess: '操作日志添加成功',
       addLogFailed: '添加操作日志失败',
+      shortWarranty: '在保状态',
     },
     siteDailyReport: {
       title: '场地日报告',

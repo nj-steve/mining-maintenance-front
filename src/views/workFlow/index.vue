@@ -46,6 +46,7 @@ interface Order {
   RepairMethod: number;           // 维修方式
   RepairedCount: number;            // 维修次数
   group_name?: string;            // 维修站组名
+  short_warranty: number;         // 在保状态（0/1）
 }
 
 const message = useMessage();
@@ -91,6 +92,7 @@ const editForm = ref({
   id:0,
   order_no:"",
   repair_method:0,
+  short_warranty:0,
   "logistics_cost": 0,
   "onsite": 0,
   "order_status": 1,
@@ -132,12 +134,28 @@ const searchEndDate = ref<number | null>(null);  // 结束时间
 const siteOptions = ref<{ label: string; value: number }[]>([]);
 const stationOptions = ref<{ label: string; value: number }[]>([]);
 
+// 计算属性：勾选状态派生自 short_warranty
+const isWarrantyChecked = computed({
+  get: () => Number(editForm.value.short_warranty) === 1,
+  set: (val: boolean) => {
+    editForm.value.short_warranty = val ? 1 : 0;
+  }
+});
+
+const isDispatchWarrantyChecked = computed({
+  get: () => Number(dispatchForm.value.short_warranty) === 1,
+  set: (val: boolean) => {
+    dispatchForm.value.short_warranty = val ? 1 : 0;
+  }
+});
+
 // 打开修改弹框
 const handleOpenEdit = (row: Order) => {
   editForm.value = {
     id:row.ID,
     order_no:row.OrderNo,
     repair_method:row.RepairMethod||0,
+    short_warranty: Number(row.short_warranty) || 0,
     "logistics_cost": row.LogisticsCost||0,
     "onsite": row.Onsite||0,
     "order_status": row.OrderStatus||0,
@@ -157,6 +175,7 @@ const dispatchForm = ref({
   fault_count: 1,
   repair_method: null as null | number,
   repair_station_id: null as null | number,
+  short_warranty: 0,
   // logisticsCompany: null as null | number,
   // logisticsInfo: '',
   order_ids: [] as number[],
@@ -178,6 +197,7 @@ const handleOpenDispatch = (row: Order) => {
     repair_method: row.RepairMethod || null as null | number,
     repair_station_id: row.StationID || null as null | number,
     order_ids: [row.ID],
+    short_warranty: row.short_warranty || 0,
     // logisticsCompany: row.LogisticsCompanyId || null as null | number,
     // logisticsInfo: '',
     remark: ''
@@ -208,6 +228,7 @@ const handleBatchDispatch = () => {
     repair_method: null as null | number,
     repair_station_id: null as null | number,
     order_ids: selectedOrders.value.map(order => order.ID),
+    short_warranty: currentOrder.value.short_warranty || 0,
     remark: t('page.workflow.batchDispatchRemark', { count: selectedOrders.value.length })
   };
 
@@ -235,7 +256,8 @@ const handleSubmitDispatch = async () => {
       fault_count: dispatchForm.value.fault_count,
       repair_method: dispatchForm.value.repair_method,
       repair_station_id: dispatchForm.value.repair_station_id,
-      remark: dispatchForm.value.remark
+      remark: dispatchForm.value.remark,
+      short_warranty: dispatchForm.value.short_warranty || 0
     };
 
     // 判断是批量派单还是单个派单
@@ -319,7 +341,7 @@ const handleSaveEdit = async () => {
     //   }
 
  // 调用创建工单API
-    const { error, response: { data } } = await updateOrders(editForm.value.id, editForm.value);
+    const { error, response: { data } } = await updateOrders(editForm.value.id, {...editForm.value, short_warranty: editForm.value.short_warranty || 0});
     // console.log('创建工单响应:', data, error);
     // console.log('data.code', data?.code);
     if (error == null) {
@@ -417,6 +439,30 @@ const columns: DataTableColumns<Order> = [
       ]
     )
   }},
+//   {
+//   title: () => renderHeaderTitle(t('page.workflow.shortWarranty')),
+//   key: 'short_warranty_text',
+//   width: 100,
+//   render: (row: any) => {
+//     return h('span', { class: 'text-sm text-gray-500' }, row.short_warranty_text || '-');
+//   }
+// },
+{
+  title: () => renderHeaderTitle(t('page.workflow.shortWarranty')),
+  key: 'short_warranty_text',
+  width: 100,
+  render: (row: any) => {
+    // 根据文本内容判断是否为"在保"，如果是则使用绿色 success 标签，否则使用灰色 default 标签
+    const text = row.short_warranty_text || '-';
+    const isWarranty = text.includes('在保');
+    return h(NTag, {
+      type: isWarranty ? 'success' : 'default',
+      size: 'small',
+      round: true,
+      class: 'text-xs'
+    }, () => text);
+  }
+},
   { title: () => renderHeaderTitle(t('page.workflow.repairMethod')), key: 'RepairMethod',
     render: (row: any) => {
       const getTranslatedRepairMethod = (method: number | undefined | null) => {
@@ -814,6 +860,13 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
     <NFormItem :label="t('page.workflow.orderNo')">
       <NInput size="medium" v-model:value="editForm.order_no" disabled />
     </NFormItem>
+    <!-- 在保状态 -->
+    <NFormItem :label="t('page.workflow.shortWarranty')">
+      <!-- <NCheckbox v-model:value="editForm.short_warranty" /> -->
+      <n-checkbox v-model:checked="isWarrantyChecked">
+        {{ t('page.workflow.shortWarranty') }}
+      </n-checkbox>
+    </NFormItem>
 
       <NFormItem :label="t('page.workflow.repairMethod')" required>
           <NSelect
@@ -888,6 +941,13 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
         <!-- 选择故障机数量 -->
         <NFormItem :label="t('page.workflow.selectFaultCount')">
           <NInputNumber disabled v-model:value="dispatchForm.fault_count" :min="1" />
+        </NFormItem>
+        <!-- 在保状态 -->
+        <NFormItem :label="t('page.workflow.shortWarranty')">
+          <!-- <NCheckbox v-model:value="dispatchForm.short_warranty" /> -->
+             <n-checkbox v-model:checked="isDispatchWarrantyChecked">
+              {{ t('page.workflow.shortWarranty') }}
+            </n-checkbox>
         </NFormItem>
 
         <!-- 是否驻场 -->
