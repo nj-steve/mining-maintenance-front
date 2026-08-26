@@ -233,9 +233,43 @@ const columns: DataTableColumns<any> = [
       return h(NTag, { class: 'text-sm', type: tagType, size: 'small', round: true, bordered: false }, () => label);
     }
    },
-   { title: () => renderHeaderTitle(t('page.repairRecords.site')), key: 'site_name', width: 180,
-    render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.site_name || '-')
-   },
+   {
+  title: () => renderHeaderTitle(t('page.repairRecords.macAddress')),
+  key: 'MacAddress',
+  width: 160,
+  render: (row: any) => {
+    if (!row.MacAddress) {
+      return h('span', { class: 'text-sm text-gray-400' }, '-');
+    }
+    return h('span', { class: 'text-sm text-gray-500 font-mono' }, row.MacAddress);
+  }
+},
+{
+  title: () => renderHeaderTitle(t('page.repairRecords.site')),
+  key: 'site_name',
+  width: 180,
+  render: (row: any) => {
+    const text = row.site_name || '-';
+    return h(
+      NTooltip,
+      { placement: 'top' },
+      {
+        trigger: () => h(
+          'div',
+          {
+            class: 'text-sm text-gray-500',
+            style: 'max-width:180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+          },
+          text
+        ),
+        default: () => text
+      }
+    );
+  }
+},
+  //  { title: () => renderHeaderTitle(t('page.repairRecords.site')), key: 'site_name', width: 180,
+  //   render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.site_name || '-')
+  //  },
   { title: () => renderHeaderTitle(t('page.repairRecords.orderNo')), key: 'WorkOrderNo', width: 150,  render: (row: Faults) => {
       // const full = row.order_no || '';
       const full = (row as any).WorkOrderNo || '';

@@ -882,6 +882,7 @@ declare namespace App {
         };
         repairRecords: {
         title: string;
+        macAddress: string;
         pleaseEnterWorkOrderNo: string;
         pleaseEnterMachineSn: string;
         pleaseSelectSite: string;

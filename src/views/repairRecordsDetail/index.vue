@@ -39,7 +39,14 @@
 
       <!-- 设备信息 -->
       <n-card :title="t('page.repairRecordsDetail.deviceInfo')" v-if="form.repair_type == '整机'">
+
         <n-descriptions :column="1" label-placement="left" bordered size="small" class="text-sm">
+          <n-descriptions-item>
+            <template #label><span class="text-sm text-gray-500">{{ t("page.repairRecords.macAddress") }}</span></template>
+            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.mac_address }}</span></template>
+            <n-input v-else size="small" class="text-sm" v-model:value="form.mac_address" />
+          </n-descriptions-item>
+
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">{{ t("page.repairRecordsDetail.wholeMachineSN") }}</span></template>
             <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.device_sn }}</span></template>
@@ -327,6 +334,7 @@
     verify_defect: "",
     images: [] as string[],
     repair_image_urls: "",
+    mac_address: "",
     start_time: dayjs().format('YYYY-MM-DD HH:mm'),
     end_time: dayjs().format('YYYY-MM-DD HH:mm'),
     repair_result: 0,
@@ -435,6 +443,7 @@
         form.value = {
           date: detail.Date ? dayjs(detail.Date).format('YYYY-MM-DD') : dayjs(detail.CreatedAt).format('YYYY-MM-DD HH:mm'),
           work_order_no: detail.WorkOrderNo || '',
+          mac_address: detail.MacAddress || '',
           machine_model: detail.MachineModel || '',
           repair_type: detail.repair_type || 0,
           repairStation: detail.RepairStationName || '',

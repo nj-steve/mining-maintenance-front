@@ -650,6 +650,7 @@ const local: App.I18n.Schema = {
     },
     repairRecords: {
       title: '维修明细',
+      macAddress: 'MAC 地址',
       pleaseEnterWorkOrderNo: '请输入工单号',
       pleaseEnterMachineSn: '请输入机器SN',
       pleaseSelectSite: '请选择场地',

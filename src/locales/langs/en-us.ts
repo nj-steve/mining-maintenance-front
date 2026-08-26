@@ -814,6 +814,7 @@ const local: App.I18n.Schema = {
     },
     repairRecords: {
       title: 'Repair Records',
+      macAddress: 'MAC Address',
       pleaseEnterWorkOrderNo: 'Please enter work order no',
       pleaseEnterMachineSn: 'Please enter machine SN',
       pleaseSelectSite: 'Please select site',
