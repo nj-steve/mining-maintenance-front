@@ -1194,6 +1194,8 @@ declare namespace App {
           inLogisticsTooltip: string;
           pendingShelf: string;
           pendingShelfTooltip: string;
+          waitWarehouseCount: string;
+          waitWarehouseCountTooltip: string;
           repairingCount: string;
           repairingCountTooltip: string;
           onShelfWaitRepairCountTooltip: string;

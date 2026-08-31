@@ -777,6 +777,8 @@ const local: App.I18n.Schema = {
       inLogisticsTooltip: 'Status: "Logistics In + Logistics Out" machine count',
       pendingShelf: 'Pending Shelving',
       pendingShelfTooltip: 'Status: "Pending Shelving" machine count',
+      waitWarehouseCount: 'Wait Warehouse',
+      waitWarehouseCountTooltip: 'Status: "Wait Warehouse" machine count',
       repairingCount: 'Repairing',
       repairingCountTooltip: 'Status: "Repairing" machine count',
       onShelfWaitRepairCountTooltip: 'Status: "On Shelf" fault machine count',

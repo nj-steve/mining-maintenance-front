@@ -12,6 +12,8 @@ npm-debug.log*
 .pnpm-error.log*
 .pnpm-debug.log
 tests/**/coverage/
+daily_report.json
+mining_sites.json
 
 # Editor directories and files
 .idea

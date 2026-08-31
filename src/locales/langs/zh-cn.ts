@@ -929,6 +929,8 @@ const local: App.I18n.Schema = {
       inLogisticsTooltip: '状态：“物流进+物流出” 机器数',
       pendingShelf: '待上架',
       pendingShelfTooltip: '状态：“待上架” 的机器数',
+      waitWarehouseCount: '待入库',
+      waitWarehouseCountTooltip: '状态：“待入库” 的机器数',
       repairingCount: '在修数',
       repairingCountTooltip: '状态：“维修中” 的机器数',
       onShelfWaitRepairCountTooltip: '状态：“在架” 故障机数',

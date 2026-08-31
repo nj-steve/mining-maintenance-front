@@ -40,6 +40,7 @@ interface Site {
   wait_repair_rate: number;
   is_onsite_default?: number;
   wait_on_shelf_count: number;
+  wait_warehouse_count?: number;
   on_shelf_wait_repair_count: number;
   bind_type?: string;
   order_id?: string | number;
@@ -389,6 +390,29 @@ const columns: DataTableColumns<Site> = [
           )
         ]
       ), width: 160, key: 'wait_on_shelf_count', sorter: (row1: Site, row2: Site) => (row1.wait_on_shelf_count || 0) - (row2.wait_on_shelf_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.wait_on_shelf_count.toLocaleString() || 0) },
+  { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.waitWarehouseCount')),
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => t('page.miningSite.waitWarehouseCountTooltip'),
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), width: 130, key: 'wait_warehouse_count', sorter: (row1: Site, row2: Site) => (row1.wait_warehouse_count || 0) - (row2.wait_warehouse_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.wait_warehouse_count ?? 0).toLocaleString()) },
   // { title: '待上架', width: 120, key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
   { title: () =>
       h(
@@ -791,7 +815,7 @@ const fetchData = async () => {
     bind_type: bindTypeModel.value || undefined,
     border_bind_type: borderBindTypeModel.value || undefined,
     site_status: selectedSiteStatus.value===0 ? 0 : selectedSiteStatus.value || undefined,
-    status: statusModel.value
+    status: statusModel.value || undefined,
   };
 
   if (searchDate.value) {
@@ -809,7 +833,7 @@ const fetchData = async () => {
     params.date_time = `${searchDate.value}`;
   }
 
-  console.log("params",params)
+  // console.log("params",params)
 
   try {
     const {data,error} = await fetchSites(params);
