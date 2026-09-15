@@ -933,6 +933,8 @@ const local: App.I18n.Schema = {
       waitWarehouseCountTooltip: '状态：“待入库” 的机器数',
       repairingCount: '在修数',
       repairingCountTooltip: '状态：“维修中” 的机器数',
+      repairFinishedCount: '维修完成',
+      repairFinishedCountTooltip: '状态：“维修完成” 的机器数',
       onShelfWaitRepairCountTooltip: '状态：“在架” 故障机数',
       waitRepairCount: '待修数',
       waitRepairCountTooltip: '状态：“未下架+已下架+待处理” 故障机器数',

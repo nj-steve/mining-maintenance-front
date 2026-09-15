@@ -32,6 +32,7 @@ interface Site {
   email: string;
   repairing: number;
   repairing_rate: number;
+  repair_finished_count: number;
   fault_count: number;
   abnormal_count?: number;
   scrapped_count: number;
@@ -318,7 +319,6 @@ const columns: DataTableColumns<Site> = [
       return h('span', { class: 'text-sm text-gray-500' }, `${formattedVal} ${unit}`);
     }
   },
-
   {
     title: () =>
       h(
@@ -344,7 +344,8 @@ const columns: DataTableColumns<Site> = [
         ]
       ),
     width: 155, key: 'fault_count', sorter: (row1: Site, row2: Site) => (row1.fault_count || 0) - (row2.fault_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.fault_count)},
-  { title: () =>
+
+    { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
@@ -367,7 +368,54 @@ const columns: DataTableColumns<Site> = [
           )
         ]
       ), width: 130, key: 'in_logistics_count', sorter: (row1: Site, row2: Site) => (row1.in_logistics_count || 0) - (row2.in_logistics_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.in_logistics_count.toLocaleString() || 0) },
-  { title: () =>
+      { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.repairingCount')),
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => t('page.miningSite.repairingCountTooltip'),
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), width: 120, key: 'repairing', sorter: (row1: Site, row2: Site) => (row1.repairing || 0) - (row2.repairing || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.repairing.toLocaleString() || 0) },
+
+      { title: () =>
+      h(
+        'div',
+        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
+        [
+          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.repairFinishedCount')),
+          h(
+            NTooltip,
+            { placement: 'top' },
+            {
+              default: () => t('page.miningSite.repairFinishedCountTooltip'),
+              trigger: () =>
+                h(Icon, {
+                  icon: 'ant-design:question-circle-outlined',
+                  width: 14,
+                  height: 14,
+                  color: '#999',
+                  style: 'cursor:pointer;'
+                })
+            }
+          )
+        ]
+      ), width: 140, key: 'repair_finished_count', sorter: (row1: Site, row2: Site) => (row1.repair_finished_count || 0) - (row2.repair_finished_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.repair_finished_count ?? 0).toLocaleString()) },
+      { title: () =>
       h(
         'div',
         { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
@@ -414,29 +462,7 @@ const columns: DataTableColumns<Site> = [
         ]
       ), width: 130, key: 'wait_warehouse_count', sorter: (row1: Site, row2: Site) => (row1.wait_warehouse_count || 0) - (row2.wait_warehouse_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.wait_warehouse_count ?? 0).toLocaleString()) },
   // { title: '待上架', width: 120, key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
-  { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.repairingCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.repairingCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 120, key: 'repairing', sorter: (row1: Site, row2: Site) => (row1.repairing || 0) - (row2.repairing || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.repairing.toLocaleString() || 0) },
+
   // { title: '在修数', width: 120, key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
   // { title: () =>
   //     h(

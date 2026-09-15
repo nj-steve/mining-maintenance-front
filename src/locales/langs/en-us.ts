@@ -781,6 +781,8 @@ const local: App.I18n.Schema = {
       waitWarehouseCountTooltip: 'Status: "Wait Warehouse" machine count',
       repairingCount: 'Repairing',
       repairingCountTooltip: 'Status: "Repairing" machine count',
+      repairFinishedCount: 'Repair Finished',
+      repairFinishedCountTooltip: 'Status: "Repair Finished" machine count',
       onShelfWaitRepairCountTooltip: 'Status: "On Shelf" fault machine count',
       waitRepairCount: 'Wait Repair',
       waitRepairCountTooltip: 'Status: "Not off shelf + Off shelf + Pending" fault machine count',

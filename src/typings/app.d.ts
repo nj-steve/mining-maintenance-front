@@ -1198,6 +1198,8 @@ declare namespace App {
           waitWarehouseCountTooltip: string;
           repairingCount: string;
           repairingCountTooltip: string;
+          repairFinishedCount: string;
+          repairFinishedCountTooltip: string;
           onShelfWaitRepairCountTooltip: string;
           waitRepairCount: string;
           waitRepairCountTooltip: string;
