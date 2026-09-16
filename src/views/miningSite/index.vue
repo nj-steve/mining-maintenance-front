@@ -698,7 +698,14 @@ const columns: DataTableColumns<Site> = [
       } else if (status === 'remove') {
         type = 'error';
         label = t('page.miningSite.status.remove');
+      }else if (status === 'pendingRemoval') {
+        type = 'warning';
+        label = t('page.miningSite.status.pendingRemoval');
+      }else if (status === 'rental') {
+        type = 'success';
+        label = t('page.miningSite.status.rental');
       }
+
 
       return h(NTag, { class: 'text-sm', type, size: 'small' }, () => label);
     }
@@ -710,8 +717,11 @@ const columns: DataTableColumns<Site> = [
       1: 'success',
       2: 'primary',
       3: 'warning',
+      pendingRemoval: 'warning',
+      rental: 'info',
     };
-    return h(NTag, { class: 'text-sm', type: tagMap[row.site_status] }, () => siteStatusRecord[row.site_status])
+    const key = String(row.site_status);
+    return h(NTag, { class: 'text-sm', type: tagMap[key] }, () => siteStatusRecord[key] ?? String(row.site_status))
   } },
    ...(hasRole ? [{ title: () => renderHeaderTitle(t('page.miningSite.afterSalesSpecialist')), width: 120, key: 'saler_name', render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.saler_name || '') }] : []),
   {

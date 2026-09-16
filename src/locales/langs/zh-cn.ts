@@ -942,7 +942,7 @@ const local: App.I18n.Schema = {
       waitRepairRateTooltip: '未下架+已下架+待处理 故障机器数占比',
       netFaultCount: '净故障数',
       netFaultCountTooltip: '待修数+寄修数+驻场',
-      scrappedCount: '预报废数',
+      scrappedCount: '维修报废数',
       scrappedCountTooltip: '维修状态：“报废” 故障机数',
       machineOrderBind: '整机工单绑定',
       boardOrderBind: '板子工单绑定',
@@ -965,7 +965,9 @@ const local: App.I18n.Schema = {
       status: {
         active: '活跃',
         inactive: '非活跃',
-        remove: '撤场'
+        remove: '撤场',
+        pendingRemoval: '待撤场',
+        rental: '租赁中'
       }
     },
     siteDetail: {

@@ -7,11 +7,11 @@ export const enableStatusRecord:Record<string, string> = {
     'inactive': $t('business.enableStatus.inactive'),
   };
 
-  export const siteStatusRecord:Record<number, string> = {
-    0: $t('business.siteStatus.none'),
-    1: $t('business.siteStatus.onsite'),
-    2: $t('business.siteStatus.sendRepair'),
-    3: $t('business.siteStatus.onsiteAndSendRepair'),
+  export const siteStatusRecord:Record<string, string> = {
+    '0': $t('business.siteStatus.none'),
+    '1': $t('business.siteStatus.onsite'),
+    '2': $t('business.siteStatus.sendRepair'),
+    '3': $t('business.siteStatus.onsiteAndSendRepair'),
   };
 
   // 维修方式

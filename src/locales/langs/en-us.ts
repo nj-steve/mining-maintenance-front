@@ -59,7 +59,7 @@ const local: App.I18n.Schema = {
       none: 'None',
       onsite: 'On-site',
       sendRepair: 'Send Repair',
-      onsiteAndSendRepair: 'On-site + Send Repair'
+      onsiteAndSendRepair: 'On-site + Send Repair',
     },
     repairMethod: {
       onsite: 'On-site',
@@ -813,7 +813,9 @@ const local: App.I18n.Schema = {
       status: {
         active: 'Active',
         inactive: 'Inactive',
-        remove: 'Remove'
+        remove: 'Remove',
+        pendingRemoval: 'Pending Removal',
+        rental: 'Rental'
       }
     },
     repairRecords: {

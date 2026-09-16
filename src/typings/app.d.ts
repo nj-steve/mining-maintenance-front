@@ -1231,6 +1231,8 @@ declare namespace App {
             active: string;
             inactive: string;
             remove: string;
+            pendingRemoval: string;
+            rental: string;
           };
         };
         siteDetail: {
