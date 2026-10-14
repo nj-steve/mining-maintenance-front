@@ -44,6 +44,18 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'fault-import-errors',
+    path: '/fault-import-errors',
+    component: 'layout.base$view.fault-import-errors',
+    meta: {
+      title: 'fault-import-errors',
+      icon: 'mdi:bug',
+      order: 45,
+      roles: ['1', '2', '3', '5'],
+      i18nKey: 'route.fault-import-errors'
+    }
+  },
+  {
     name: 'faults',
     path: '/faults',
     component: 'layout.base$view.faults',

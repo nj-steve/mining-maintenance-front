@@ -233,6 +233,7 @@ const local: App.I18n.Schema = {
     scrapmachine:"报废机管理",
     repairreport:"维修报表",
     operationlogs:"操作日志",
+    'fault-import-errors': '导错记录'
   },
   page: {
     login: {

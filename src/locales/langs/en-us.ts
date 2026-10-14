@@ -233,7 +233,7 @@ const local: App.I18n.Schema = {
     scrapmachine:"Scrap Machines",
     repairreport:"Repair Report",
     operationlogs:"Operation Log",
-
+    'fault-import-errors': ' Error List of Import'
   },
   page: {
     login: {
