@@ -31,24 +31,26 @@ import {
   type FaultImportErrorLog
 } from '@/service/api/faults';
 import { fetchSites } from '@/service/api/site';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const message = useMessage();
 
 // ============== 查询条件 ==============
 const searchForm = ref({
   sn: '',
-  site_id: '' as string,
-  group_id: '1',
+  // site_id: '' as string,
+  // group_id: '1',
   status: null as 0 | 1 | 2 | null,
   start_at: null as string | null,
   end_at: null as string | null
 });
 
-const statusOptions: SelectOption[] = [
-  { label: '待处理', value: 0 },
-  { label: '已处理', value: 1 },
-  { label: '已忽略', value: 2 }
-];
+const statusOptions = computed<SelectOption[]>(() => [
+  { label: t('page.faultImportErrors.statusPending'), value: 0 },
+  { label: t('page.faultImportErrors.statusProcessed'), value: 1 },
+  { label: t('page.faultImportErrors.statusIgnored'), value: 2 }
+]);
 
 // ============== 数据 & 分页 ==============
 const dataList = ref<FaultImportError[]>([]);
@@ -77,8 +79,8 @@ async function loadData() {
       page: pagination.value.page,
       page_size: pagination.value.pageSize,
       sn: searchForm.value.sn || undefined,
-      site_id: searchForm.value.site_id ? Number(searchForm.value.site_id) : undefined,
-      group_id: searchForm.value.group_id || '1',
+      // site_id: searchForm.value.site_id ? Number(searchForm.value.site_id) : undefined,
+      // group_id: searchForm.value.group_id || '1',
       status: searchForm.value.status === null ? undefined : searchForm.value.status,
       start_at: searchForm.value.start_at || undefined,
       end_at: searchForm.value.end_at || undefined
@@ -112,8 +114,8 @@ function onSearch() {
 function onReset() {
   searchForm.value = {
     sn: '',
-    site_id: '',
-    group_id: '1',
+    // site_id: '',
+    // group_id: '1',
     status: null,
     start_at: null,
     end_at: null
@@ -128,11 +130,12 @@ const statusColorMap: Record<number, 'default' | 'warning' | 'success' | 'info'>
   1: 'success',
   2: 'info'
 };
-const statusTextMap: Record<number, string> = {
-  0: '待处理',
-  1: '已处理',
-  2: '已忽略'
-};
+const statusTextMap = computed<Record<number, string>>(() => ({
+  0: t('page.faultImportErrors.statusPending'),
+  1: t('page.faultImportErrors.statusProcessed'),
+  2: t('page.faultImportErrors.statusIgnored')
+}));
+
 
 function renderErrorCodeTag(code?: string) {
   if (!code) return h(NText, { depth: 3 }, { default: () => '-' });
@@ -149,37 +152,38 @@ function renderErrorCodeTag(code?: string) {
 
 // ============== 表格列 ==============
 const columns = computed<DataTableColumns<FaultImportError>>(() => [
-  { title: 'ID', key: 'id', width: 70 },
-  { title: '场地', key: 'site_name', width: 130, ellipsis: { tooltip: true } },
-  { title: 'Excel行', key: 'line_num', width: 80 },
-  { title: '下架时间', key: 'down_time', width: 160 },
-  { title: '规格', key: 'model', width: 100 },
-  { title: 'SN', key: 'sn', width: 180 },
-  { title: '问题描述', key: 'problem_desc', width: 200, ellipsis: { tooltip: true } },
-  { title: '错误原因', key: 'error_msg', minWidth: 240, ellipsis: { tooltip: true } },
+  // { title: t('page.faultImportErrors.colId'), key: 'id', width: 70 },
+  { title: t('page.faultImportErrors.colSn'), key: 'sn', width: 180 },
+  { title: t('page.faultImportErrors.colSiteName'), key: 'site_name', width: 130, ellipsis: { tooltip: true } },
+  // { title: t('page.faultImportErrors.colLineNum'), key: 'line_num', width: 80 },
+  { title: t('page.faultImportErrors.colDownTime'), key: 'down_time', width: 160 },
+  { title: t('page.faultImportErrors.colModel'), key: 'model', width: 100 },
+
+  { title: t('page.faultImportErrors.colProblemDesc'), key: 'problem_desc', width: 200, ellipsis: { tooltip: true } },
+  { title: t('page.faultImportErrors.colErrorMsg'), key: 'error_msg', minWidth: 240, ellipsis: { tooltip: true } },
+  // {
+  //   title: t('page.faultImportErrors.colLastErrorCode'),
+  //   key: 'last_error_code',
+  //   width: 130,
+  //   render: row => renderErrorCodeTag(row.last_error_code)
+  // },
+  { title: t('page.faultImportErrors.colRetryCount'), key: 'retry_count', width: 70 },
+  { title: t('page.faultImportErrors.colImporterName'), key: 'importer_name', width: 100 },
+  // { title: t('page.faultImportErrors.colSourceFile'), key: 'source_file', width: 180, ellipsis: { tooltip: true } },
   {
-    title: '错误码',
-    key: 'last_error_code',
-    width: 130,
-    render: row => renderErrorCodeTag(row.last_error_code)
-  },
-  { title: '重试', key: 'retry_count', width: 70 },
-  { title: '操作人', key: 'importer_name', width: 100 },
-  { title: '源文件', key: 'source_file', width: 180, ellipsis: { tooltip: true } },
-  {
-    title: '状态',
+    title: t('page.faultImportErrors.colStatus'),
     key: 'status',
     width: 100,
     render: row =>
       h(
         NTag,
         { type: statusColorMap[row.status] || 'default', size: 'small' },
-        { default: () => statusTextMap[row.status] || '-' }
+        { default: () => statusTextMap.value[row.status] || '-' }
       )
   },
-  { title: '处理时间', key: 'processed_at', width: 160 },
+  { title: t('page.faultImportErrors.colProcessedAt'), key: 'processed_at', width: 160 },
   {
-    title: '操作',
+    title: t('page.faultImportErrors.colActions'),
     key: 'actions',
     width: 220,
     fixed: 'right',
@@ -197,7 +201,7 @@ const columns = computed<DataTableColumns<FaultImportError>>(() => [
                 ghost: true,
                 onClick: () => openEditDrawer(row)
               },
-              { default: () => '处理' }
+              { default: () => t('page.faultImportErrors.btnProcess') }
             ),
             h(
               NButton,
@@ -205,7 +209,7 @@ const columns = computed<DataTableColumns<FaultImportError>>(() => [
                 size: 'small',
                 onClick: () => showDetail(row)
               },
-              { default: () => '详情' }
+              { default: () => t('page.faultImportErrors.btnDetail') }
             )
           ]
         }
@@ -405,6 +409,38 @@ const actionTextMap: Record<string, string> = {
   resolve: '已解决'
 };
 
+// ============== 修改历史列（i18n 版） ==============
+const logColumns = computed<DataTableColumns<FaultImportErrorLog>>(() => [
+  {
+    title: t('page.faultImportErrors.logColTime'),
+    key: 'created_at',
+    width: 180,
+    render: (row: FaultImportErrorLog) => formatDate(row.created_at)
+  },
+  {
+    title: t('page.faultImportErrors.logColAction'),
+    key: 'action',
+    width: 100,
+    render: (row: FaultImportErrorLog) =>
+      h(
+        NTag,
+        {
+          type: (row.action === 'resolve'
+            ? 'success'
+            : row.action === 'retry'
+              ? 'warning'
+              : row.action === 'ignore'
+                ? 'info'
+                : 'default') as any,
+          size: 'small'
+        },
+        { default: () => actionTextMap[row.action] || row.action || '-' }
+      )
+  },
+  { title: t('page.faultImportErrors.logColOperator'), key: 'operator_name', width: 120 },
+  { title: t('page.faultImportErrors.logColResult'), key: 'error_msg', ellipsis: { tooltip: true } }
+]);
+
 // ============== 初始化 ==============
 onMounted(() => {
   loadData();
@@ -414,46 +450,46 @@ onMounted(() => {
 
 <template>
   <div class="p-16px">
-    <NCard title="故障机导入错误记录" :bordered="false" class="mb-16px">
+    <NCard :title="t('page.faultImportErrors.colErrorMsg').length ? t('page.faultImportErrors.colErrorMsg') : '故障机导入错误记录'" :bordered="false" class="mb-16px">
       <NForm inline :model="searchForm" label-placement="left" label-width="80">
-        <NFormItem label="SN">
+        <NFormItem :label="t('page.faultImportErrors.labelSn')">
           <NInput
             v-model:value="searchForm.sn"
-            placeholder="机器 SN"
+            :placeholder="t('page.faultImportErrors.placeholderSn')"
             clearable
             style="width: 200px"
           />
         </NFormItem>
-        <NFormItem label="场地ID">
+        <!-- <NFormItem :label="t('page.faultImportErrors.labelSiteId')">
           <NInput
             v-model:value="searchForm.site_id"
-            placeholder="场地 ID"
+            :placeholder="t('page.faultImportErrors.placeholderSiteId')"
             clearable
             style="width: 160px"
           />
         </NFormItem>
-        <NFormItem label="group_id">
+        <NFormItem :label="t('page.faultImportErrors.labelGroupId')">
           <NInput
             v-model:value="searchForm.group_id"
-            placeholder="group_id"
+            :placeholder="t('page.faultImportErrors.placeholderGroupId')"
             clearable
             style="width: 100px"
           />
-        </NFormItem>
-        <NFormItem label="状态">
+        </NFormItem> -->
+        <NFormItem :label="t('page.faultImportErrors.labelStatus')">
           <NSelect
             v-model:value="searchForm.status"
             :options="statusOptions"
-            placeholder="全部"
+            :placeholder="t('page.faultImportErrors.placeholderStatusAll')"
             clearable
             style="width: 140px"
           />
         </NFormItem>
         <NFormItem>
           <NSpace>
-            <NButton type="primary" @click="onSearch">查询</NButton>
-            <NButton @click="onReset">重置</NButton>
-            <NButton @click="loadData">刷新</NButton>
+            <NButton type="primary" @click="onSearch">{{ t('page.faultImportErrors.btnSearch') }}</NButton>
+            <NButton @click="onReset">{{ t('page.faultImportErrors.btnReset') }}</NButton>
+            <NButton @click="loadData">{{ t('page.faultImportErrors.btnRefresh') }}</NButton>
           </NSpace>
         </NFormItem>
       </NForm>
@@ -474,58 +510,58 @@ onMounted(() => {
     </NCard>
 
     <!-- 详情 Modal -->
-    <NModal v-model:show="detailShow" preset="card" title="错误记录详情" style="width: 720px">
+    <NModal v-model:show="detailShow" preset="card" :title="t('page.faultImportErrors.detailModalTitle')" style="width: 720px">
       <NForm v-if="detailRow" label-placement="left" label-width="100">
-        <NFormItem label="ID">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelId')">
           <NText>{{ detailRow.id }}</NText>
         </NFormItem>
-        <NFormItem label="场地">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelSite')">
           <NText>{{ detailRow.site_name }} (ID: {{ detailRow.site_id }})</NText>
         </NFormItem>
-        <NFormItem label="Excel 行号">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelLineNum')">
           <NText>{{ detailRow.line_num }}</NText>
         </NFormItem>
-        <NFormItem label="下架时间">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelDownTime')">
           <NText>{{ detailRow.down_time }}</NText>
         </NFormItem>
-        <NFormItem label="规格">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelModel')">
           <NText>{{ detailRow.model }}</NText>
         </NFormItem>
-        <NFormItem label="SN">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelSn')">
           <NText>{{ detailRow.sn }}</NText>
         </NFormItem>
-        <NFormItem label="问题描述">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelProblemDesc')">
           <NText>{{ detailRow.problem_desc }}</NText>
         </NFormItem>
-        <NFormItem label="错误原因">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelErrorMsg')">
           <NText>{{ detailRow.error_msg }}</NText>
         </NFormItem>
-        <NFormItem label="错误码">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelErrorCode')">
           <component :is="renderErrorCodeTag(detailRow.last_error_code)" />
         </NFormItem>
-        <NFormItem label="原始数据 (OriginalInfo)">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelOriginalInfo')">
           <NText style="white-space: pre-wrap; word-break: break-all">
             {{ detailRow.original_info || '-' }}
           </NText>
         </NFormItem>
-        <NFormItem label="重试次数">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelRetryCount')">
           <NText>{{ detailRow.retry_count || 0 }}</NText>
         </NFormItem>
-        <NFormItem label="处理状态">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelProcessedStatus')">
           <NTag :type="statusColorMap[detailRow.status] || 'default'">
             {{ statusTextMap[detailRow.status] || '-' }}
           </NTag>
         </NFormItem>
-        <NFormItem label="处理备注">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelRemark')">
           <NText>{{ detailRow.remark || '-' }}</NText>
         </NFormItem>
-        <NFormItem label="处理时间">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelProcessedAt')">
           <NText>{{ detailRow.processed_at || '-' }}</NText>
         </NFormItem>
-        <NFormItem label="修正人/时间">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelProcessedByAndAt')">
           <NText>{{ detailRow.processed_by || '-' }} / {{ detailRow.processed_at || '-' }}</NText>
         </NFormItem>
-        <NFormItem label="创建时间">
+        <NFormItem :label="t('page.faultImportErrors.detailLabelCreatedAt')">
           <NText>{{ detailRow.created_at || '-' }}</NText>
         </NFormItem>
       </NForm>
@@ -534,12 +570,12 @@ onMounted(() => {
     <!-- 处理抽屉（带修正后字段 + 审计 tab） -->
     <NDrawer v-model:show="editDrawerShow" :width="720" placement="right">
       <NDrawerContent
-        :title="`处理导入错误 #${editRow?.id || ''}`"
+        :title="t('page.faultImportErrors.drawerTitle', { id: editRow?.id || '' })"
         closable
       >
         <NTabs type="line" animated>
           <!-- Tab 1: 修正 + 提交 -->
-          <NTabPane name="fix" tab="修正提交">
+          <NTabPane name="fix" :tab="t('page.faultImportErrors.tabFix')">
             <NForm v-if="editRow" :model="editForm" label-placement="left" label-width="100">
               <NAlert
                 :type="(FaultImportErrorCodeMap[editRow.last_error_code || '']?.color as any) || 'warning'"
@@ -550,32 +586,32 @@ onMounted(() => {
               </NAlert>
 
 
-              <NFormItem label="原 SN">
+              <NFormItem :label="t('page.faultImportErrors.labelOriginalSn')">
                 <NText type="warning">{{ editRow.original_info_parsed?.sn || editRow.sn }}</NText>
               </NFormItem>
-              <NFormItem label="原下架时间">
+              <NFormItem :label="t('page.faultImportErrors.labelOriginalDownTime')">
                 <NText type="warning">{{ editRow.original_info_parsed?.down_time || editRow.down_time }}</NText>
               </NFormItem>
-              <NFormItem label="原规格">
+              <NFormItem :label="t('page.faultImportErrors.labelOriginalModel')">
                 <NText type="warning">{{ editRow.original_info_parsed?.model || editRow.model }}</NText>
               </NFormItem>
 
 
-              <NFormItem label="修正 SN" required>
-                <NInput v-model:value="editForm.sn" placeholder="修正后的 SN" />
+              <NFormItem :label="t('page.faultImportErrors.labelFixedSn')" required>
+                <NInput v-model:value="editForm.sn" :placeholder="t('page.faultImportErrors.placeholderFixedSn')" />
               </NFormItem>
-              <NFormItem label="修正场地">
+              <NFormItem :label="t('page.faultImportErrors.labelFixedSite')">
                 <NSelect
                   v-model:value="editForm.site_id"
                   :options="siteOptions"
-                  placeholder="选择场地"
+                  :placeholder="t('page.faultImportErrors.placeholderChooseSite')"
                   clearable
                   filterable
                   style="width: 100%"
                 />
               </NFormItem>
 
-              <NFormItem label="修下架时间" required>
+              <NFormItem :label="t('page.faultImportErrors.labelFixedDownTime')" required>
                 <NDatePicker
                   v-model:formatted-value="editForm.down_time"
                   type="datetime"
@@ -584,24 +620,21 @@ onMounted(() => {
                   style="width: 100%"
                 />
               </NFormItem>
-              <NFormItem label="修正规格">
+              <NFormItem :label="t('page.faultImportErrors.labelFixedModel')">
                 <NInput v-model:value="editForm.model" />
               </NFormItem>
-              <NFormItem label="修正问题描述">
+              <NFormItem :label="t('page.faultImportErrors.labelFixedProblemDesc')">
                 <NInput v-model:value="editForm.problem_desc" type="textarea" :rows="2" />
               </NFormItem>
 
-              <!-- <NFormItem label="处理状态">
-                <NSelect v-model:value="editForm.status" :options="statusOptions" />
-              </NFormItem> -->
-              <NFormItem label="处理备注">
+              <NFormItem :label="t('page.faultImportErrors.labelRemark')">
                 <NInput v-model:value="editForm.remark" type="textarea" :rows="2" />
               </NFormItem>
             </NForm>
           </NTabPane>
 
           <!-- Tab 2: 审计历史 -->
-          <NTabPane name="logs" tab="修改历史">
+          <NTabPane name="logs" :tab="t('page.faultImportErrors.tabLogs')">
             <NDataTable
               :columns="logColumns"
               :data="logs"
@@ -617,9 +650,9 @@ onMounted(() => {
         <!-- footer 放在 NDrawerContent 上，naive-ui 才会渲染 -->
         <template #footer>
           <NSpace justify="end">
-            <NButton @click="editDrawerShow = false">取消</NButton>
-            <NButton @click="onIgnore" v-if="editRow && editRow.status !== 2">标记为已忽略</NButton>
-            <NButton type="primary" :loading="submitLoading" @click="onEditSubmit">提交并重试</NButton>
+            <NButton @click="editDrawerShow = false">{{ t('page.faultImportErrors.btnCancel') }}</NButton>
+            <NButton @click="onIgnore" v-if="editRow && editRow.status !== 2">{{ t('page.faultImportErrors.btnIgnore') }}</NButton>
+            <NButton type="primary" :loading="submitLoading" @click="onEditSubmit">{{ t('page.faultImportErrors.btnSubmitRetry') }}</NButton>
           </NSpace>
         </template>
       </NDrawerContent>
@@ -635,27 +668,7 @@ function formatDate(iso?: string | null): string {
   return d.isValid() ? d.format('YYYY-MM-DD HH:mm:ss') : iso;
 }
 
-const logColumns: DataTableColumns<FaultImportErrorLog> = [
-{
-  title: '时间',
-  key: 'created_at',
-  width: 180,
-  render: row => formatDate(row.created_at)
-} ,
-  {
-    title: '操作',
-    key: 'action',
-    width: 100,
-    render: (row: FaultImportErrorLog) =>
-      h(
-        NTag,
-        { type: (row.action === 'resolve' ? 'success' : row.action === 'retry' ? 'warning' : 'default') as any, size: 'small' },
-        { default: () => row.action }
-      )
-  },
-  { title: '操作人', key: 'operator_name', width: 120 },
-  { title: '结果', key: 'error_msg', ellipsis: { tooltip: true } }
-];
+// logColumns 已在 setup 块中通过 computed 定义（支持 i18n）
 </script>
 
 <style scoped>
