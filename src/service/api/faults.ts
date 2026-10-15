@@ -235,14 +235,13 @@ export function updateFaultImportError(
     down_time?: string;    // 修正后下架时间
     model?: string;        // 修正后规格
     problem_desc?: string; // 修正后问题描述
+    site_id?: number;        // 修正后场地id
+    site_name?: string;      // 修正后场地名
     // 一致性校验
     original_info?: string;      // 与库中 OriginalInfo 比对
   }
 ) {
   return request<{
-    code: number;
-    msg: string;
-    data: {
       ok: boolean;
       id: number;
       fault_id?: number;          // 转换成功返回新 fault.id
@@ -250,7 +249,6 @@ export function updateFaultImportError(
       validated: boolean;
       error_code: string;
       error?: string;
-    };
   }>({
     url: `/api/faults/import_errors/${id}`,
     method: 'put',
@@ -276,14 +274,11 @@ export function fetchFaultImportErrorLogs(
   params: { page?: number; page_size?: number } = {}
 ) {
   return request<{
-    code: number;
-    msg: string;
-    data: {
+
       list: FaultImportErrorLog[];
       total: number;
       page: number;
       page_size: number;
-    };
   }>({
     url: `/api/faults/import_errors/${id}/logs`,
     method: 'get',

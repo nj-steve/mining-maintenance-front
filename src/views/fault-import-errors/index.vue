@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue';
+import dayjs from 'dayjs';
 import {
   NAlert,
   NButton,
@@ -29,6 +30,7 @@ import {
   type FaultImportError,
   type FaultImportErrorLog
 } from '@/service/api/faults';
+import { fetchSites } from '@/service/api/site';
 
 const message = useMessage();
 
@@ -81,7 +83,7 @@ async function loadData() {
       start_at: searchForm.value.start_at || undefined,
       end_at: searchForm.value.end_at || undefined
     });
-    console.log('导入错误记录接口返回:', res.data);
+    // console.log('导入错误记录接口返回:', res.data );
 
     if (!res || !res.data) {
       message.error('加载导入错误记录失败：接口未返回数据');
@@ -226,12 +228,36 @@ const editForm = ref({
   status: 1 as 0 | 1 | 2,
   remark: '',
   sn: '',
-  down_time: '',
+  down_time: null as string | null,
   model: '',
   problem_desc: '',
+  site_id: null as number | null,
   // last_error_code: ''
 });
 const submitLoading = ref(false);
+
+// 安全解析下架时间：不合法的值置为 null，避免 NDatePicker 报 RangeError
+function safeDownTime(val: unknown): string | null {
+  if (!val) return null;
+  const d = dayjs(val as string);
+  return d.isValid() ? (d.format('YYYY-MM-DD HH:mm:ss') as string) : null;
+}
+
+// ============== 场地下拉 ==============
+const siteOptions = ref<SelectOption[]>([]);
+async function loadSiteOptions() {
+  try {
+    const res = await fetchSites({ page: 1, limit: 500 });
+    const list = res.data?.data?.list ?? res.data?.list ?? [];
+    siteOptions.value = (list as any[]).map(s => ({
+      label: s.name ?? s.site_name ?? `场地#${s.id}`,
+      value: s.id
+    }));
+  } catch (err) {
+    console.error('加载场地列表失败', err);
+    siteOptions.value = [];
+  }
+}
 
 function openEditDrawer(row: FaultImportError) {
   editRow.value = row;
@@ -241,9 +267,10 @@ function openEditDrawer(row: FaultImportError) {
     status: row.status === 0 ? 1 : row.status,
     remark: row.remark || '',
     sn: orig.sn ?? row.sn,
-    down_time: orig.down_time ?? row.down_time,
+    down_time: safeDownTime(orig.down_time ?? row.down_time),
     model: orig.model ?? row.model,
     problem_desc: orig.problem_desc ?? row.problem_desc,
+    site_id: row.site_id ?? null,
     // last_error_code: row.last_error_code
   };
   editDrawerShow.value = true;
@@ -257,13 +284,14 @@ async function onEditSubmit() {
       status: editForm.value.status,
       remark: editForm.value.remark,
       sn: editForm.value.sn,
-      down_time: editForm.value.down_time,
+      down_time: editForm.value.down_time ?? undefined,
       model: editForm.value.model,
       problem_desc: editForm.value.problem_desc,
+      site_id: editForm.value.site_id ?? undefined,
       original_info: editRow.value.original_info
     });
-    if (res.data?.code === 0) {
-      const data = res.data.data;
+    if (res.data?.ok) {
+      const data = res.data;
       if (data?.ok) {
         message.success(`处理成功${data.fault_id ? `，已转换为故障机 #${data.fault_id}` : ''}`);
         editDrawerShow.value = false;
@@ -276,7 +304,8 @@ async function onEditSubmit() {
         // 不关闭抽屉，让运维继续改
       }
     } else {
-      message.error(res.data?.msg || '处理失败');
+      console.error(res.data?.error || '处理失败');
+      message.error(res.data?.error || '处理失败');
     }
   } catch (err) {
     message.error('处理失败');
@@ -295,7 +324,7 @@ async function onIgnore() {
       remark: editForm.value.remark || '已忽略',
       original_info: editRow.value.original_info
     });
-    if (res.data?.code === 0) {
+    if (res.data?.ok) {
       message.success('已忽略');
       editDrawerShow.value = false;
       loadData();
@@ -310,23 +339,55 @@ async function onIgnore() {
 // ============== 审计历史 ==============
 const logsLoading = ref(false);
 const logs = ref<FaultImportErrorLog[]>([]);
+const logsTotal = ref(0);
+const logsPagination = ref({
+  page: 1,
+  pageSize: 10,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50, 100],
+  onChange: (page: number) => {
+    logsPagination.value.page = page;
+    loadLogs();
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    logsPagination.value.pageSize = pageSize;
+    logsPagination.value.page = 1;
+    loadLogs();
+  }
+});
+
 async function loadLogs() {
   if (!editRow.value) return;
   logsLoading.value = true;
   try {
-    const res = await fetchFaultImportErrorLogs(editRow.value.id, { page: 1, page_size: 50 });
-    if (res.data?.code === 0) {
-      logs.value = res.data.data?.list || [];
+    const res = await fetchFaultImportErrorLogs(editRow.value.id, {
+      page: logsPagination.value.page,
+      page_size: logsPagination.value.pageSize
+    });
+    if (!res || !res.data) {
+      logs.value = [];
+      logsTotal.value = 0;
+      return;
     }
+    const payload = res.data ?? {};
+    logs.value = Array.isArray(payload.list) ? payload.list : [];
+    logsTotal.value = Number(payload.total ?? 0);
   } catch (err) {
     console.error(err);
+    logs.value = [];
+    logsTotal.value = 0;
   } finally {
     logsLoading.value = false;
   }
 }
 
 watch(editDrawerShow, (show) => {
-  if (show) loadLogs();
+  if (show) {
+    // 重新打开抽屉时重置分页到第一页
+    logsPagination.value.page = 1;
+    logsPagination.value.pageSize = 10;
+    loadLogs();
+  }
 });
 
 const actionColorMap: Record<string, string> = {
@@ -347,6 +408,7 @@ const actionTextMap: Record<string, string> = {
 // ============== 初始化 ==============
 onMounted(() => {
   loadData();
+  loadSiteOptions();
 });
 </script>
 
@@ -487,6 +549,7 @@ onMounted(() => {
                 <!-- {{ editRow.error_msg }} -->
               </NAlert>
 
+
               <NFormItem label="原 SN">
                 <NText type="warning">{{ editRow.original_info_parsed?.sn || editRow.sn }}</NText>
               </NFormItem>
@@ -497,10 +560,22 @@ onMounted(() => {
                 <NText type="warning">{{ editRow.original_info_parsed?.model || editRow.model }}</NText>
               </NFormItem>
 
+
               <NFormItem label="修正 SN" required>
                 <NInput v-model:value="editForm.sn" placeholder="修正后的 SN" />
               </NFormItem>
-              <NFormItem label="修正下架时间" required>
+              <NFormItem label="修正场地">
+                <NSelect
+                  v-model:value="editForm.site_id"
+                  :options="siteOptions"
+                  placeholder="选择场地"
+                  clearable
+                  filterable
+                  style="width: 100%"
+                />
+              </NFormItem>
+
+              <NFormItem label="修下架时间" required>
                 <NDatePicker
                   v-model:formatted-value="editForm.down_time"
                   type="datetime"
@@ -516,9 +591,9 @@ onMounted(() => {
                 <NInput v-model:value="editForm.problem_desc" type="textarea" :rows="2" />
               </NFormItem>
 
-              <NFormItem label="处理状态">
+              <!-- <NFormItem label="处理状态">
                 <NSelect v-model:value="editForm.status" :options="statusOptions" />
-              </NFormItem>
+              </NFormItem> -->
               <NFormItem label="处理备注">
                 <NInput v-model:value="editForm.remark" type="textarea" :rows="2" />
               </NFormItem>
@@ -532,6 +607,8 @@ onMounted(() => {
               :data="logs"
               :loading="logsLoading"
               :row-key="(row: FaultImportErrorLog) => row.id"
+              :pagination="logsPagination"
+              :scroll-x="1000"
               size="small"
             />
           </NTabPane>
@@ -551,12 +628,20 @@ onMounted(() => {
 </template>
 
 <script lang="ts">
+// 格式化 ISO 时间为 年-月-日 时:分:秒
+function formatDate(iso?: string | null): string {
+  if (!iso) return '-';
+  const d = dayjs(iso);
+  return d.isValid() ? d.format('YYYY-MM-DD HH:mm:ss') : iso;
+}
+
 const logColumns: DataTableColumns<FaultImportErrorLog> = [
-  {
-    title: '时间',
-    key: 'created_at',
-    width: 160
-  },
+{
+  title: '时间',
+  key: 'created_at',
+  width: 180,
+  render: row => formatDate(row.created_at)
+} ,
   {
     title: '操作',
     key: 'action',
