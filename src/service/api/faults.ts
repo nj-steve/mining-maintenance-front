@@ -183,6 +183,42 @@ export interface FaultImportError {
   updated_at?: string;
 }
 
+// ==================== 故障机 SN 异常日志 ====================
+
+// 单条 SN 异常记录
+export interface FaultAbnormalLog {
+  id: number;
+  sn: string;
+  site_id?: number;
+  site_name?: string;
+  reason?: string;
+  detail?: string;
+  source?: string;
+  created_at?: string;
+  [key: string]: any;
+}
+
+// 查询指定 SN 的异常记录
+export function fetchFaultAbnormalLogs(
+  sn: string,
+  params: { page?: number; page_size?: number } = {}
+) {
+  return request<{
+    list: FaultAbnormalLog[];
+    pagination: {
+        page: number;
+        pages: number;
+        total: number;
+        page_size: number;
+    }
+
+  }>({
+    url: `/api/faults/abnormal_logs/${encodeURIComponent(sn)}`,
+    method: 'get',
+    params
+  });
+}
+
 // 错误码字典（前端用于徽章颜色/文案）
 export const FaultImportErrorCodeMap: Record<
   string,

@@ -7,7 +7,7 @@ import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vu
 import UploadWorkOrderExcel from './components/UploadWorkOrderExcel.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { fetchFaults, exportFaults } from '@/service/api/faults';
+import { fetchFaults, exportFaults, fetchFaultAbnormalLogs, type FaultAbnormalLog } from '@/service/api/faults';
 import {fetchSites} from '@/service/api/site';
 
 import {fetchOrdersStatus} from '@/service/api/workflow';
@@ -47,6 +47,7 @@ interface Faults {
   repair_result_text?: string;
   repair_method?: number;
   repair_type?: string;
+  abnormal_log_count?: number;
   repair_method_text?: string;
   warranty_status?: number;
   warranty_status_text?: string;
@@ -349,6 +350,96 @@ const getTranslatedStatus = (name: string) => {
   return map[name] || name;
 };
 
+// ---------------- SN 异常记录弹框 ----------------
+const abnormalModalShow = ref(false);
+const abnormalLoading = ref(false);
+const abnormalRow = ref<FaultAbnormalLog[]>([]);
+const abnormalTotal = ref(0);
+const abnormalPagination = ref({
+  page: 1,
+  pageSize: 10,
+  itemCount: 0,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50, 100],
+  onChange: (page: number) => {
+    abnormalPagination.value.page = page;
+    loadAbnormalLogs();
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    abnormalPagination.value.pageSize = pageSize;
+    abnormalPagination.value.page = 1;
+    loadAbnormalLogs();
+  }
+});
+const abnormalSn = ref('');
+
+async function loadAbnormalLogs() {
+  if (!abnormalSn.value) return;
+  abnormalLoading.value = true;
+  try {
+    const { data, error } = await fetchFaultAbnormalLogs(abnormalSn.value, {
+      page: abnormalPagination.value.page,
+      page_size: abnormalPagination.value.pageSize
+    });
+    if (error == null && data) {
+      abnormalRow.value = Array.isArray(data.list) ? data.list : [];
+      abnormalTotal.value = Number(data.pagination?.total ?? 0);
+      console.log("abnormalTotal.value",abnormalTotal.value)
+    } else {
+      abnormalRow.value = [];
+      abnormalTotal.value = 0;
+    }
+    abnormalPagination.value.itemCount = abnormalTotal.value;
+
+
+  } catch (err) {
+    abnormalRow.value = [];
+    abnormalTotal.value = 0;
+    abnormalPagination.value.itemCount = 0;
+  } finally {
+    abnormalLoading.value = false;
+  }
+}
+
+function showAbnormalLogs(sn: string) {
+  abnormalSn.value = sn;
+  abnormalPagination.value.page = 1;
+  abnormalModalShow.value = true;
+  loadAbnormalLogs();
+}
+
+const abnormalColumns: DataTableColumns<FaultAbnormalLog> = [
+  {
+    title: () => renderHeaderTitle(t('page.faults.abnormalLogs.time')),
+    key: 'log_time',
+    width: 180
+  },
+  {
+    title: () => renderHeaderTitle(t('page.faults.abnormalLogs.site')),
+    key: 'code',
+    width: 160,
+    ellipsis: { tooltip: true }
+  },
+  {
+    title: () => renderHeaderTitle(t('page.faults.abnormalLogs.reason')),
+    key: 'explanation',
+    minWidth: 180,
+    ellipsis: { tooltip: true }
+  },
+  {
+    title: () => renderHeaderTitle(t('page.faults.abnormalLogs.macAddress')),
+    key: 'mac_address',
+    minWidth: 260,
+    ellipsis: { tooltip: true }
+  },
+  // {
+  //   title: () => renderHeaderTitle(t('page.faults.abnormalLogs.source')),
+  //   key: 'source',
+  //   width: 140,
+  //   ellipsis: { tooltip: true }
+  // }
+];
+
 // ---------------- 表格列 ----------------
 const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
 const columns: DataTableColumns<Faults> = [
@@ -358,12 +449,21 @@ const columns: DataTableColumns<Faults> = [
     width: 60
   },
   // { title: '序号', key: 'id', width: 80 },
-  { title: () => renderHeaderTitle(t('page.faults.snCode')), key: 'sn', width: 180,
+  { title: () => renderHeaderTitle(t('page.faults.snCode')), key: 'sn', width: 200,
     render: (row: Faults) => {
       const sn = row.sn || t('page.faults.unknown');
+      const abnormalCount = Number(row.abnormal_log_count ?? 0);
+      const hasAbnormal = abnormalCount > 0;
       return h(NTooltip, null, {
-        trigger: () => h('div', { style: 'display:flex; align-items:center; gap:8px; max-width:180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, [
-          h('span', { class: 'text-sm text-gray-500', style: 'flex:1; min-width:0;' }, sn),
+        trigger: () => h('div', { style: 'display:flex; align-items:center; gap:8px; max-width:200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;', onClick: () => { if (row.sn) showAbnormalLogs(row.sn); } }, [
+          h('span', { class: 'text-sm text-primary-600 hover:underline', style: 'flex:1; min-width:0;' }, sn),
+          hasAbnormal
+            ? h('span', { style: 'display:inline-flex; align-items:center; flex-shrink:0;' }, [
+                h(Icon, { icon: 'mdi:check-circle', width: 16, height: 16, class: 'text-emerald-500' })
+              ])
+            : h('span', { style: 'display:inline-flex; align-items:center; flex-shrink:0;' }, [
+                h(Icon, { icon: 'mdi:help-circle', width: 16, height: 16, class: 'text-gray-400' })
+              ])
         ]),
         default: () => sn
       });
@@ -1138,6 +1238,30 @@ const exportFaultsFile = async () => {
           <NButton size="small" class="text-sm" @click="handleCancelWorkOrder">{{ t('page.faults.cancel') }}</NButton>
         </NSpace>
       </template>
+    </NModal>
+
+    <!-- SN 异常记录弹框 -->
+    <NModal
+      v-model:show="abnormalModalShow"
+      preset="card"
+      style="width: 900px"
+      :title="`${t('page.faults.abnormalLogs.title')} - ${abnormalSn}`"
+    >
+      <NSpace justify="space-between" align="center" class="mb-12px">
+        <span class="text-sm text-gray-500">
+          {{ t('page.faults.abnormalLogs.total', { count: abnormalTotal }) }}
+        </span>
+      </NSpace>
+      <NDataTable
+        :columns="abnormalColumns"
+        :data="abnormalRow"
+        :loading="abnormalLoading"
+        :pagination="abnormalPagination"
+        :row-key="(row: FaultAbnormalLog) => row.id"
+        :scroll-x="920"
+        size="small"
+        striped
+      />
     </NModal>
 
   </div>

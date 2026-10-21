@@ -332,6 +332,15 @@ const local: App.I18n.Schema = {
       type: 'Type',
       machine: 'Machine',
       hashBoard: 'Hash Board',
+      abnormalLogs: {
+        title: 'SN Abnormal Logs',
+        time: 'Time',
+        site: 'Abnormal Part',
+        reason: 'Explanation',
+        control: 'Control',
+        macAddress: 'MAC Address',
+        total: 'Total {count} Items'
+      },
       site: 'Site',
       model: 'Model',
       orderNo: 'Order No.',

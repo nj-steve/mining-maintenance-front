@@ -337,6 +337,15 @@ const local: App.I18n.Schema = {
       type: '类型',
       machine: '整机',
       hashBoard: '算力板',
+      abnormalLogs: {
+        title: 'SN 异常记录',
+        time: '时间',
+        site: '异常部件',
+        reason: '异常原因',
+        control: '控制板',
+        macAddress: 'MAC地址',
+        total: '共 {count} 条异常记录'
+      },
       site: '场地',
       model: '型号',
       orderNo: '工单编号',

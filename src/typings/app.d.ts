@@ -567,6 +567,15 @@ declare namespace App {
         copySuccess: string;
         copyFailed: string;
         snCode: string;
+        abnormalLogs: {
+          title: string;
+          time: string;
+          site: string;
+          reason: string;
+          control: string;
+          macAddress: string;
+          total: string;
+        };
         unknown: string;
         type: string;
         machine: string;
