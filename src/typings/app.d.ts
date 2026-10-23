@@ -361,6 +361,16 @@ declare namespace App {
           sendRepair: string;
           onsiteAndSendRepair: string;
         };
+        faultAbnormalCode: {
+          hashBoard: string;
+          sensor: string;
+          temperature: string;
+          fan: string;
+          power: string;
+          aging: string;
+          memory: string;
+          network: string;
+        };
         repairMethod: {
           onsite: string;
           sendRepair: string;
@@ -570,10 +580,11 @@ declare namespace App {
         abnormalLogs: {
           title: string;
           time: string;
-          site: string;
+          code: string;
           reason: string;
           control: string;
           macAddress: string;
+          abnormalLogCount: string;
           total: string;
         };
         unknown: string;

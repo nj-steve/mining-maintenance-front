@@ -61,6 +61,16 @@ const local: App.I18n.Schema = {
       sendRepair: 'Send Repair',
       onsiteAndSendRepair: 'On-site + Send Repair',
     },
+    faultAbnormalCode: {
+      hashBoard: 'Hash Board',
+      sensor: 'Sensor',
+      temperature: 'Temperature',
+      fan: 'Fan',
+      power: 'Power',
+      aging: 'Aging',
+      memory: 'Memory',
+      network: 'Network'
+    },
     repairMethod: {
       onsite: 'On-site',
       sendRepair: 'Send Repair',
@@ -335,10 +345,11 @@ const local: App.I18n.Schema = {
       abnormalLogs: {
         title: 'SN Abnormal Logs',
         time: 'Time',
-        site: 'Abnormal Part',
+        code: 'Fault Code',
         reason: 'Explanation',
         control: 'Control',
         macAddress: 'MAC Address',
+        abnormalLogCount: 'Abnormal Log Count',
         total: 'Total {count} Items'
       },
       site: 'Site',

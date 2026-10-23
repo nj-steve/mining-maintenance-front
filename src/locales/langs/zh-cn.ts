@@ -61,6 +61,16 @@ const local: App.I18n.Schema = {
       sendRepair: '寄修',
       onsiteAndSendRepair: '驻场+寄修'
     },
+    faultAbnormalCode: {
+      hashBoard: '算力板',
+      sensor: '传感器',
+      temperature: '温度',
+      fan: '风扇',
+      power: '电源',
+      aging: '老化',
+      memory: '内存',
+      network: '网络'
+    },
     repairMethod: {
       onsite: '驻场',
       sendRepair: '寄修',
@@ -340,10 +350,11 @@ const local: App.I18n.Schema = {
       abnormalLogs: {
         title: 'SN 异常记录',
         time: '时间',
-        site: '异常部件',
+        code: '故障编码',
         reason: '异常原因',
         control: '控制板',
         macAddress: 'MAC地址',
+        abnormalLogCount: '异常记录数',
         total: '共 {count} 条异常记录'
       },
       site: '场地',

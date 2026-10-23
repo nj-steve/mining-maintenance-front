@@ -23,6 +23,8 @@ import EditFaultModalButton from './components/EditFaultModalButtonShouhou.vue'
 import EditFaultModalButtonYunwei from './components/EditFaultModalButtonYunwei.vue'
 import EditFaultModalButtonAdmin from './components/EditFaultModalButtonAdmin.vue'
 import UploadBindWorkOrderExcel from './components/UploadBindWorkOrderExcel.vue'
+import { getFaultAbnormalCodeMeta, getCountTagType } from '@/constants/business';
+import { NText } from 'naive-ui';
 
 import { Icon } from '@iconify/vue';
 
@@ -415,16 +417,45 @@ const abnormalColumns: DataTableColumns<FaultAbnormalLog> = [
     width: 180
   },
   {
-    title: () => renderHeaderTitle(t('page.faults.abnormalLogs.site')),
+    title: () => renderHeaderTitle(t('page.faults.abnormalLogs.code')),
     key: 'code',
-    width: 160,
-    ellipsis: { tooltip: true }
+    width: 140,
+    render: (row: FaultAbnormalLog) => {
+      const raw = String(row.code ?? '').trim();
+      if (!raw) return h(NText, { depth: 3 }, { default: () => '-' });
+      const meta = getFaultAbnormalCodeMeta(raw);
+      if (!meta) {
+        return h(
+          NTag,
+          { type: 'default', size: 'small' },
+          { default: () => raw }
+        );
+      }
+      return h(
+        NTag,
+        { type: meta.type, size: 'small' },
+        { default: () => meta.label }
+      );
+    }
   },
   {
     title: () => renderHeaderTitle(t('page.faults.abnormalLogs.reason')),
     key: 'explanation',
     minWidth: 180,
     ellipsis: { tooltip: true }
+  },
+  {
+    title: () => renderHeaderTitle(t('page.faults.abnormalLogs.abnormalLogCount')),
+    key: 'count',
+    width: 120,
+    render: (row: FaultAbnormalLog) => {
+      const count = Number(row.count ?? 0);
+      return h(
+        NTag,
+        { type: getCountTagType(count), size: 'small' },
+        { default: () => String(count) }
+      );
+    }
   },
   {
     title: () => renderHeaderTitle(t('page.faults.abnormalLogs.macAddress')),
