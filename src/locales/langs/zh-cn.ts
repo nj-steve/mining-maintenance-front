@@ -243,7 +243,8 @@ const local: App.I18n.Schema = {
     scrapmachine:"报废机管理",
     repairreport:"维修报表",
     operationlogs:"操作日志",
-    'fault-import-errors': '导错记录'
+    'fault-import-errors': '导错记录',
+    'fault-import-summary': '导入统计'
   },
   page: {
     login: {
@@ -634,9 +635,9 @@ const local: App.I18n.Schema = {
       btnDetail: '详情',
       // 搜索栏
       labelSn: 'SN',
-      labelSiteId: '场地ID',
+      labelSiteId: '场地筛选',
       labelGroupId: 'group_id',
-      labelStatus: '状态',
+      labelStatus: '状态筛选',
       placeholderSn: '机器 SN',
       placeholderSiteId: '场地 ID',
       placeholderGroupId: 'group_id',
@@ -689,6 +690,35 @@ const local: App.I18n.Schema = {
       statusPending: '待处理',
       statusProcessed: '已处理',
       statusIgnored: '已忽略'
+    },
+    faultImportSummary: {
+      statImportCount: '导入总次数',
+      statSuccessCount: '成功导入',
+      statFailureCount: '失败条数',
+      statSiteCount: '涉及场地',
+      statSuccessRate: '导入成功率',
+      colId: 'ID',
+      colSiteName: '场地',
+      colFileName: '文件',
+      colOperator: '操作人',
+      colSuccessCount: '成功',
+      colFailureCount: '失败',
+      colStatus: '结果',
+      colCreateTime: '导入时间',
+      colErrorMessage: '错误信息',
+      labelSiteId: '场地筛选',
+      labelTimeRange: '导入时间',
+      placeholderSiteAll: '场地筛选',
+      btnSearch: '查询',
+      btnReset: '重置',
+      btnRefresh: '刷新',
+      last7Days: '近7天',
+      last30Days: '近30天',
+      all: '全部',
+      statusSuccess: '成功',
+      statusFailed: '失败',
+      loadFailed: '加载导入统计失败',
+      tipViewImportErrors: '点击查看该场地的导错记录'
     },
     repairReport: {
       "statisticalPeriod": "统计周期",

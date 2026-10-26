@@ -919,6 +919,35 @@ declare namespace App {
         statusProcessed: string;
         statusIgnored: string;
       };
+      faultImportSummary: {
+        statImportCount: string;
+        statSuccessCount: string;
+        statFailureCount: string;
+        statSiteCount: string;
+        statSuccessRate: string;
+        colId: string;
+        colSiteName: string;
+        colFileName: string;
+        colOperator: string;
+        colSuccessCount: string;
+        colFailureCount: string;
+        colStatus: string;
+        colCreateTime: string;
+        colErrorMessage: string;
+        labelSiteId: string;
+        labelTimeRange: string;
+        placeholderSiteAll: string;
+        btnSearch: string;
+        btnReset: string;
+        btnRefresh: string;
+        last7Days: string;
+        last30Days: string;
+        all: string;
+        statusSuccess: string;
+        statusFailed: string;
+        loadFailed: string;
+        tipViewImportErrors: string;
+      };
       repairReport: {
           // title: string;
           statisticalPeriod: string;

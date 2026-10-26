@@ -50,9 +50,21 @@ export const generatedRoutes: GeneratedRoute[] = [
     meta: {
       title: 'fault-import-errors',
       icon: 'mdi:bug',
-      order: 45,
+      order: 46,
       roles: ['1', '2', '3', '5'],
       i18nKey: 'route.fault-import-errors'
+    }
+  },
+  {
+    name: 'fault-import-summary',
+    path: '/fault-import-summary',
+    component: 'layout.base$view.fault-import-summary',
+    meta: {
+      title: 'fault-import-summary',
+      icon: 'mdi:file-chart-outline',
+      order: 45,
+      roles: ['1', '2', '3', '5'],
+      i18nKey: 'route.fault-import-summary'
     }
   },
   {

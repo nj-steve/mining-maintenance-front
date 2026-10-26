@@ -243,7 +243,8 @@ const local: App.I18n.Schema = {
     scrapmachine:"Scrap Machines",
     repairreport:"Repair Report",
     operationlogs:"Operation Log",
-    'fault-import-errors': ' Error List of Import'
+    'fault-import-errors': ' Error List of Import',
+    'fault-import-summary': 'Import Statistics'
   },
   page: {
     login: {
@@ -629,10 +630,10 @@ const local: App.I18n.Schema = {
       btnDetail: 'Detail',
       // Search bar
       labelSn: 'SN',
-      labelSiteId: 'Site ID',
+      labelSiteId: 'Site Filter',
       labelGroupId: 'group_id',
-      labelStatus: 'Status',
-      placeholderSn: 'Machine SN',
+      labelStatus: 'Status Filter',
+      placeholderSn: 'SN Filter',
       placeholderSiteId: 'Site ID',
       placeholderGroupId: 'group_id',
       placeholderStatusAll: 'All',
@@ -684,6 +685,35 @@ const local: App.I18n.Schema = {
       statusPending: 'Pending',
       statusProcessed: 'Processed',
       statusIgnored: 'Ignored'
+    },
+    faultImportSummary: {
+      statImportCount: 'Total Imports',
+      statSuccessCount: 'Succeeded',
+      statFailureCount: 'Failed',
+      statSiteCount: 'Sites',
+      statSuccessRate: 'Success Rate',
+      colId: 'ID',
+      colSiteName: 'Site',
+      colFileName: 'File',
+      colOperator: 'Operator',
+      colSuccessCount: 'Success',
+      colFailureCount: 'Failure',
+      colStatus: 'Result',
+      colCreateTime: 'Imported At',
+      colErrorMessage: 'Error',
+      labelSiteId: 'Site',
+      labelTimeRange: 'Imported At',
+      placeholderSiteAll: 'Site Filter',
+      btnSearch: 'Search',
+      btnReset: 'Reset',
+      btnRefresh: 'Refresh',
+      last7Days: 'Last 7 Days',
+      last30Days: 'Last 30 Days',
+      all: 'All',
+      statusSuccess: 'Success',
+      statusFailed: 'Failed',
+      loadFailed: 'Failed to load import statistics',
+      tipViewImportErrors: 'Click to view import error records of this site'
     },
     repairReport: {
       "statisticalPeriod": "Statistical Period",

@@ -21,6 +21,7 @@ declare module "@elegant-router/types" {
     "404": "/404";
     "500": "/500";
     "fault-import-errors": "/fault-import-errors";
+    "fault-import-summary": "/fault-import-summary";
     "faults": "/faults";
     "home": "/home";
     "iframe-page": "/iframe-page/:url";
@@ -73,6 +74,7 @@ declare module "@elegant-router/types" {
     | "404"
     | "500"
     | "fault-import-errors"
+    | "fault-import-summary"
     | "faults"
     | "home"
     | "iframe-page"
@@ -112,6 +114,7 @@ declare module "@elegant-router/types" {
     | "iframe-page"
     | "login"
     | "fault-import-errors"
+    | "fault-import-summary"
     | "faults"
     | "home"
     | "miningsite"

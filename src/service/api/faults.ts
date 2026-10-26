@@ -292,6 +292,56 @@ export function updateFaultImportError(
   });
 }
 
+// ==================== 故障机导入汇总统计 ====================
+
+// 导入记录明细项
+export interface FaultImportSummaryItem {
+  id: number;
+  user_id: number;
+  user_name: string;
+  site_id: number;
+  site_name: string;
+  file_name: string;
+  success_count: number;
+  failure_count: number;
+  status: number;          // 1=成功 0=失败
+  error_message: string;
+  create_time: string;
+}
+
+// 合计信息（pagination 与 summary 结构一致）
+export interface FaultImportSummaryTotal {
+  page: number;
+  page_size: number;
+  pages: number;
+  import_count: number;
+  success_count: number;
+  failure_count: number;
+  site_count: number;
+}
+
+// 接口响应体
+export interface FaultImportSummaryResult {
+  list: FaultImportSummaryItem[];
+  pagination: FaultImportSummaryTotal;
+  summary: FaultImportSummaryTotal;
+}
+
+// 导入记录汇总查询
+export function fetchFaultImportSummary(params: {
+  site_id?: number;
+  start_time?: string;
+  end_time?: string;
+  page?: number;
+  page_size?: number;
+}) {
+  return request<FaultImportSummaryResult>({
+    url: '/api/faults/import_summary',
+    method: 'get',
+    params
+  });
+}
+
 // 审计历史
 export interface FaultImportErrorLog {
   id: number;

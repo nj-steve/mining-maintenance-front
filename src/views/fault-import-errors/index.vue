@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import dayjs from 'dayjs';
 import {
   NAlert,
@@ -19,6 +20,7 @@ import {
   NTabs,
   NTag,
   NText,
+  NTooltip,
   useMessage
 } from 'naive-ui';
 import type { DataTableColumns, SelectOption } from 'naive-ui';
@@ -35,11 +37,12 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const message = useMessage();
+const route = useRoute();
 
 // ============== 查询条件 ==============
 const searchForm = ref({
   sn: '',
-  // site_id: '' as string,
+  site_id: null as number | null,
   // group_id: '1',
   status: null as 0 | 1 | 2 | null,
   start_at: null as string | null,
@@ -79,7 +82,7 @@ async function loadData() {
       page: pagination.value.page,
       page_size: pagination.value.pageSize,
       sn: searchForm.value.sn || undefined,
-      // site_id: searchForm.value.site_id ? Number(searchForm.value.site_id) : undefined,
+      site_id: searchForm.value.site_id ?? undefined,
       // group_id: searchForm.value.group_id || '1',
       status: searchForm.value.status === null ? undefined : searchForm.value.status,
       start_at: searchForm.value.start_at || undefined,
@@ -114,7 +117,7 @@ function onSearch() {
 function onReset() {
   searchForm.value = {
     sn: '',
-    // site_id: '',
+    site_id: null,
     // group_id: '1',
     status: null,
     start_at: null,
@@ -249,6 +252,25 @@ function safeDownTime(val: unknown): string | null {
 
 // ============== 场地下拉 ==============
 const siteOptions = ref<SelectOption[]>([]);
+
+// 场地名称渲染：超宽省略号，鼠标悬停显示完整名称
+function renderSiteLabel(option: SelectOption) {
+  const label = String(option.label ?? '');
+  return h(
+    NTooltip,
+    { trigger: 'hover', placement: 'bottom' },
+    {
+      trigger: () =>
+        h(
+          'div',
+          { class: 'w-full overflow-hidden text-ellipsis whitespace-nowrap', title: label },
+          label
+        ),
+      default: () => h('div', { class: 'max-w-360px break-words' }, label)
+    }
+  );
+}
+
 async function loadSiteOptions() {
   try {
     const res = await fetchSites({ page: 1, limit: 500 });
@@ -441,8 +463,42 @@ const logColumns = computed<DataTableColumns<FaultImportErrorLog>>(() => [
   { title: t('page.faultImportErrors.logColResult'), key: 'error_msg', ellipsis: { tooltip: true } }
 ]);
 
+// ============== 路由传参：接收其他页面跳转过来的 site_id ==============
+// 兼容两种传法：
+//   1. query: /fault-import-errors?site_id=9
+//   2. params: /fault-import-errors/:site_id（需要路由配置支持）
+function parseSiteIdFromRoute(): number | null {
+  const raw = route.query.site_id ?? route.params.site_id;
+  if (raw === undefined || raw === null || raw === '') return null;
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  const num = Number(value);
+  return Number.isFinite(num) && num > 0 ? num : null;
+}
+
+// 首次进入时把路由上的 site_id 回填到筛选表单
+function applyRouteSiteId() {
+  const siteId = parseSiteIdFromRoute();
+  if (siteId !== null) {
+    searchForm.value.site_id = siteId;
+  }
+  return siteId;
+}
+
+// 路由 site_id 变化时（例如从其他页面再次跳转过来）自动重新查询
+watch(
+  () => route.query.site_id ?? route.params.site_id,
+  () => {
+    const siteId = parseSiteIdFromRoute();
+    if (siteId === searchForm.value.site_id) return;
+    searchForm.value.site_id = siteId;
+    pagination.value.page = 1;
+    loadData();
+  }
+);
+
 // ============== 初始化 ==============
 onMounted(() => {
+  applyRouteSiteId();
   loadData();
   loadSiteOptions();
 });
@@ -452,7 +508,7 @@ onMounted(() => {
   <div class="p-16px">
     <NCard :title="t('page.faultImportErrors.colErrorMsg').length ? t('page.faultImportErrors.colErrorMsg') : '故障机导入错误记录'" :bordered="false" class="mb-16px">
       <NForm inline :model="searchForm" label-placement="left" label-width="80">
-        <NFormItem :label="t('page.faultImportErrors.labelSn')">
+        <NFormItem>
           <NInput
             v-model:value="searchForm.sn"
             :placeholder="t('page.faultImportErrors.placeholderSn')"
@@ -460,27 +516,23 @@ onMounted(() => {
             style="width: 200px"
           />
         </NFormItem>
-        <!-- <NFormItem :label="t('page.faultImportErrors.labelSiteId')">
-          <NInput
+        <NFormItem>
+          <NSelect
             v-model:value="searchForm.site_id"
-            :placeholder="t('page.faultImportErrors.placeholderSiteId')"
+            :options="siteOptions"
+            :placeholder="t('page.faultImportErrors.labelSiteId')"
+            :render-label="renderSiteLabel"
+            filterable
             clearable
-            style="width: 160px"
+            style="width: 180px"
+            @update:value="onSearch"
           />
         </NFormItem>
-        <NFormItem :label="t('page.faultImportErrors.labelGroupId')">
-          <NInput
-            v-model:value="searchForm.group_id"
-            :placeholder="t('page.faultImportErrors.placeholderGroupId')"
-            clearable
-            style="width: 100px"
-          />
-        </NFormItem> -->
-        <NFormItem :label="t('page.faultImportErrors.labelStatus')">
+        <NFormItem>
           <NSelect
             v-model:value="searchForm.status"
             :options="statusOptions"
-            :placeholder="t('page.faultImportErrors.placeholderStatusAll')"
+            :placeholder="t('page.faultImportErrors.labelStatus')"
             clearable
             style="width: 140px"
           />
