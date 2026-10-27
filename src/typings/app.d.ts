@@ -947,6 +947,15 @@ declare namespace App {
         statusFailed: string;
         loadFailed: string;
         tipViewImportErrors: string;
+        tipNoBatchId: string;
+        statErrorCount: string;
+        batchDrawerTitle: string;
+        batchLabelSite: string;
+        batchLabelFile: string;
+        batchLabelImportTime: string;
+        batchLabelBatchId: string;
+        batchLabelLogId: string;
+        batchLabelSiteId: string;
       };
       repairReport: {
           // title: string;

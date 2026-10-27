@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
 import {
   NButton,
@@ -30,15 +29,18 @@ import {
   type FaultImportSummaryTotal
 } from '@/service/api/faults';
 import { fetchSites } from '@/service/api/site';
+import FaultImportBatchDrawer from './components/FaultImportBatchDrawer.vue';
 
 const { t } = useI18n();
 const message = useMessage();
-const router = useRouter();
 
 const searchForm = ref({
   site_id: null as number | null,
   time_range: null as [string, string] | null
 });
+
+// 当前选中的快捷时间范围：7 / 30 / 0（全部）/ null（自定义）
+const activeRange = ref<number | null>(7);
 
 const dataList = ref<FaultImportSummaryItem[]>([]);
 const loading = ref(false);
@@ -112,20 +114,30 @@ function onSearch() {
 }
 
 function onReset() {
-  searchForm.value = { site_id: null, time_range: null };
+  searchForm.value = { site_id: null, time_range: buildTimeRange(7) };
+  activeRange.value = 7;
   pagination.value.page = 1;
   loadData();
 }
 
+// 构造快捷时间范围：days=0 表示不限制
+function buildTimeRange(days: number): [string, string] | null {
+  if (days === 0) return null;
+  return [
+    dayjs().subtract(days, 'day').format('YYYY-MM-DD 00:00:00'),
+    dayjs().format('YYYY-MM-DD 23:59:59')
+  ];
+}
+
 function applyQuickRange(days: number) {
-  if (days === 0) {
-    searchForm.value.time_range = null;
-  } else {
-    searchForm.value.time_range = [
-      dayjs().subtract(days, 'day').format('YYYY-MM-DD 00:00:00'),
-      dayjs().format('YYYY-MM-DD 23:59:59')
-    ];
-  }
+  searchForm.value.time_range = buildTimeRange(days);
+  activeRange.value = days;
+  onSearch();
+}
+
+// 手动选择时间范围后，取消快捷按钮的高亮
+function onTimeRangeChange() {
+  activeRange.value = null;
   onSearch();
 }
 
@@ -209,13 +221,25 @@ const statCards = computed(() => [
 
 const statusTagType = (status: number) => (status === 1 ? 'success' : 'error');
 
-// 点击失败数跳转到「导错记录」页面，并按场地过滤
-function goToImportErrors(row: FaultImportSummaryItem) {
-  if (!row.failure_count || row.failure_count <= 0) return;
-  router.push({
-    name: 'fault-import-errors',
-    query: { site_id: row.site_id }
-  });
+// ============== 批次详情抽屉 ==============
+const batchDrawerShow = ref(false);
+const currentBatchId = ref<number | null>(null);
+
+// 点击失败数：打开批次详情抽屉，按批次精确关联错误明细
+function openBatchDetail(row: FaultImportSummaryItem) {
+  if (!row.import_batch_id || row.import_batch_id <= 0) {
+    message.warning(t('page.faultImportSummary.tipNoBatchId'));
+    return;
+  }
+  currentBatchId.value = row.import_batch_id;
+  console.log(row);
+  console.log(row.import_batch_id);
+  batchDrawerShow.value = true;
+}
+
+// 处理成功后刷新统计（失败数会变化）
+function onBatchProcessed() {
+  loadData();
 }
 
 const columns = computed<DataTableColumns<FaultImportSummaryItem>>(() => [
@@ -290,7 +314,7 @@ const columns = computed<DataTableColumns<FaultImportSummaryItem>>(() => [
                 size: 'small',
                 bordered: false,
                 style: { cursor: 'pointer' },
-                onClick: () => goToImportErrors(row)
+                onClick: () => openBatchDetail(row)
               },
               { default: () => String(count) }
             ),
@@ -335,6 +359,9 @@ const columns = computed<DataTableColumns<FaultImportSummaryItem>>(() => [
 ]);
 
 onMounted(() => {
+  // 默认展示近 3 天的导入信息
+  searchForm.value.time_range = buildTimeRange(3);
+  activeRange.value = 3;
   loadData();
   loadSiteOptions();
 });
@@ -398,7 +425,7 @@ onMounted(() => {
                 end-placeholder="end"
                 size="small"
                 style="width: 340px"
-                @update:formatted-value="onSearch"
+                @update:formatted-value="onTimeRangeChange"
               />
             </NFormItem>
           </NForm>
@@ -466,5 +493,12 @@ onMounted(() => {
         style="min-height: 520px"
       />
     </NCard>
+
+    <!-- 批次详情抽屉：按 import_batch_id 精确关联错误明细 -->
+    <FaultImportBatchDrawer
+      v-model:show="batchDrawerShow"
+      :batch-id="currentBatchId"
+      @processed="onBatchProcessed"
+    />
   </div>
 </template>

@@ -299,6 +299,7 @@ export interface FaultImportSummaryItem {
   id: number;
   user_id: number;
   user_name: string;
+  import_batch_id: number;   // 导入批次ID，用于关联错误明细
   site_id: number;
   site_name: string;
   file_name: string;
@@ -342,6 +343,32 @@ export function fetchFaultImportSummary(params: {
   });
 }
 
+// 批次导入错误明细（批次信息 + 错误明细列表）
+export interface FaultImportBatchErrorResult {
+  import_batch_id: number;
+  operation_log_id: number;
+  site_id: number;
+  site_name: string;
+  file_name: string;
+  success_count: number;
+  failure_count: number;
+  import_time: string;
+  error_count: number;              // 该批次错误总数（用于分页 itemCount）
+  list: FaultImportError[];         // 错误明细（已分页）
+}
+
+// 按批次ID查询导入失败明细
+export function fetchFaultImportBatchErrors(
+  batchId: number | string,
+  params: { page?: number; page_size?: number } = {}
+) {
+  return request<FaultImportBatchErrorResult>({
+    url: `/api/faults/import_summary/${batchId}/errors`,
+    method: 'get',
+    params
+  });
+}
+
 // 审计历史
 export interface FaultImportErrorLog {
   id: number;
@@ -360,7 +387,6 @@ export function fetchFaultImportErrorLogs(
   params: { page?: number; page_size?: number } = {}
 ) {
   return request<{
-
       list: FaultImportErrorLog[];
       total: number;
       page: number;

@@ -713,7 +713,16 @@ const local: App.I18n.Schema = {
       statusSuccess: 'Success',
       statusFailed: 'Failed',
       loadFailed: 'Failed to load import statistics',
-      tipViewImportErrors: 'Click to view import error records of this site'
+      tipViewImportErrors: 'Click to view error details of this batch',
+      tipNoBatchId: 'Record information is incomplete, details unavailable',
+      statErrorCount: 'Error Details',
+      batchDrawerTitle: 'Import Batch Details',
+      batchLabelSite: 'Site',
+      batchLabelFile: 'File',
+      batchLabelImportTime: 'Imported At',
+      batchLabelBatchId: 'Batch ID',
+      batchLabelLogId: 'Operation Log ID',
+      batchLabelSiteId: 'Site ID'
     },
     repairReport: {
       "statisticalPeriod": "Statistical Period",

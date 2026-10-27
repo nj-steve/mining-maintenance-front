@@ -718,7 +718,16 @@ const local: App.I18n.Schema = {
       statusSuccess: '成功',
       statusFailed: '失败',
       loadFailed: '加载导入统计失败',
-      tipViewImportErrors: '点击查看该场地的导错记录'
+      tipViewImportErrors: '点击查看该批次的导错明细',
+      tipNoBatchId: '记录信息不全，无法查看明细',
+      statErrorCount: '错误明细',
+      batchDrawerTitle: '导入批次详情',
+      batchLabelSite: '场地',
+      batchLabelFile: '导入文件',
+      batchLabelImportTime: '导入时间',
+      batchLabelBatchId: '批次ID',
+      batchLabelLogId: '操作日志ID',
+      batchLabelSiteId: '场地ID'
     },
     repairReport: {
       "statisticalPeriod": "统计周期",
