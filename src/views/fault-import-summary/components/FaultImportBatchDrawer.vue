@@ -124,7 +124,7 @@ const statusTextMap = computed<Record<number, string>>(() => ({
 const columns = computed<DataTableColumns<FaultImportError>>(() => [
   { title: t('page.faultImportErrors.colSn'), key: 'sn', width: 160 },
   { title: t('page.faultImportErrors.colDownTime'), key: 'down_time', width: 150 },
-  { title: t('page.faultImportErrors.colModel'), key: 'model', width: 90 },
+  // { title: t('page.faultImportErrors.colModel'), key: 'model', width: 90 },
   {
     title: t('page.faultImportErrors.colProblemDesc'),
     key: 'problem_desc',
@@ -415,9 +415,9 @@ watch(
   >
     <NDrawerContent :title="t('page.faultImportSummary.batchDrawerTitle')" closable>
       <div v-if="detail" class="mb-16px">
-        <NGrid cols="1 m:3" responsive="screen" :x-gap="12">
+        <NGrid cols="1 m:3" responsive="screen" :x-gap="10">
           <NGi v-for="stat in batchStats" :key="stat.key">
-            <NCard size="small" :bordered="false" class="rd-8px">
+            <NCard size="small" :bordered="false" class="rd-4px">
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-12px text-gray-500">{{ stat.label }}</p>
@@ -429,7 +429,7 @@ watch(
           </NGi>
         </NGrid>
 
-        <NDivider class="my-12px" />
+        <NDivider class="my-8px" style="margin-top: 0px;" />
 
         <NDescriptions label-placement="left" :column="3" size="small" bordered>
           <NDescriptionsItem :label="t('page.faultImportSummary.batchLabelSite')">
@@ -440,15 +440,6 @@ watch(
           </NDescriptionsItem>
           <NDescriptionsItem :label="t('page.faultImportSummary.batchLabelImportTime')">
             {{ detail.import_time || '-' }}
-          </NDescriptionsItem>
-          <NDescriptionsItem :label="t('page.faultImportSummary.batchLabelBatchId')">
-            {{ detail.import_batch_id }}
-          </NDescriptionsItem>
-          <NDescriptionsItem :label="t('page.faultImportSummary.batchLabelLogId')">
-            {{ detail.operation_log_id || '-' }}
-          </NDescriptionsItem>
-          <NDescriptionsItem :label="t('page.faultImportSummary.batchLabelSiteId')">
-            {{ detail.site_id || '-' }}
           </NDescriptionsItem>
         </NDescriptions>
       </div>

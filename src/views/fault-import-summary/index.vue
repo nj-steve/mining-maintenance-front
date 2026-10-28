@@ -253,7 +253,7 @@ const columns = computed<DataTableColumns<FaultImportSummaryItem>>(() => [
       h(NSpace, { size: 6, align: 'center' }, {
         default: () => [
           h(NText, { depth: 1 }, { default: () => row.site_name || '-' }),
-          h(NTag, { size: 'tiny', type: 'default', bordered: false }, { default: () => `#${row.site_id}` })
+          // h(NTag, { size: 'tiny', type: 'default', bordered: false }, { default: () => `#${row.site_id}` })
         ]
       })
   },

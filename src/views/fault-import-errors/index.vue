@@ -160,7 +160,7 @@ const columns = computed<DataTableColumns<FaultImportError>>(() => [
   { title: t('page.faultImportErrors.colSiteName'), key: 'site_name', width: 130, ellipsis: { tooltip: true } },
   // { title: t('page.faultImportErrors.colLineNum'), key: 'line_num', width: 80 },
   { title: t('page.faultImportErrors.colDownTime'), key: 'down_time', width: 160 },
-  { title: t('page.faultImportErrors.colModel'), key: 'model', width: 100 },
+  // { title: t('page.faultImportErrors.colModel'), key: 'model', width: 100 },
 
   { title: t('page.faultImportErrors.colProblemDesc'), key: 'problem_desc', width: 200, ellipsis: { tooltip: true } },
   { title: t('page.faultImportErrors.colErrorMsg'), key: 'error_msg', minWidth: 240, ellipsis: { tooltip: true } },
