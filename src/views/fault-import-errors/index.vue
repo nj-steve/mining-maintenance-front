@@ -34,10 +34,15 @@ import {
 } from '@/service/api/faults';
 import { fetchSites } from '@/service/api/site';
 import { useI18n } from 'vue-i18n';
+import { useAuthStore } from '@/store/modules/auth';
 
 const { t } = useI18n();
 const message = useMessage();
 const route = useRoute();
+
+const authStore = useAuthStore();
+// 只读用户（角色5）：仅可查看，操作列只保留「查看」，不提供「处理」
+const isRead = authStore.userInfo.roles.includes('5');
 
 // ============== 查询条件 ==============
 const searchForm = ref({
@@ -196,16 +201,19 @@ const columns = computed<DataTableColumns<FaultImportError>>(() => [
         { size: 8 },
         {
           default: () => [
-            h(
-              NButton,
-              {
-                size: 'small',
-                type: 'primary',
-                ghost: true,
-                onClick: () => openEditDrawer(row)
-              },
-              { default: () => t('page.faultImportErrors.btnProcess') }
-            ),
+            // 只读用户仅可查看，不提供「处理」入口
+            !isRead
+              ? h(
+                  NButton,
+                  {
+                    size: 'small',
+                    type: 'primary',
+                    ghost: true,
+                    onClick: () => openEditDrawer(row)
+                  },
+                  { default: () => t('page.faultImportErrors.btnProcess') }
+                )
+              : null,
             h(
               NButton,
               {
@@ -703,8 +711,8 @@ onMounted(() => {
         <template #footer>
           <NSpace justify="end">
             <NButton @click="editDrawerShow = false">{{ t('page.faultImportErrors.btnCancel') }}</NButton>
-            <NButton @click="onIgnore" v-if="editRow && editRow.status !== 2">{{ t('page.faultImportErrors.btnIgnore') }}</NButton>
-            <NButton type="primary" :loading="submitLoading" @click="onEditSubmit">{{ t('page.faultImportErrors.btnSubmitRetry') }}</NButton>
+            <NButton @click="onIgnore" v-if="!isRead && editRow && editRow.status !== 2">{{ t('page.faultImportErrors.btnIgnore') }}</NButton>
+            <NButton type="primary" :loading="submitLoading" @click="onEditSubmit" v-if="!isRead">{{ t('page.faultImportErrors.btnSubmitRetry') }}</NButton>
           </NSpace>
         </template>
       </NDrawerContent>

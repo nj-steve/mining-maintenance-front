@@ -91,7 +91,7 @@ function handleQuery() {
   queryStartDate.value = start
   queryEndDate.value = end
 
-  message.success(t('page.repairReport.searchSuccess'))
+  // message.success(t('page.repairReport.searchSuccess'))
 }
 
 function handleReset() {

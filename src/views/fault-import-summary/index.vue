@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import {
   NButton,
   NCard,
+  NCheckbox,
   NDataTable,
   NDatePicker,
   NDivider,
@@ -36,7 +37,9 @@ const message = useMessage();
 
 const searchForm = ref({
   site_id: null as number | null,
-  time_range: null as [string, string] | null
+  time_range: null as [string, string] | null,
+  // 仅显示存在导入失败（failure_count > 0）的记录
+  has_failure: false
 });
 
 // 当前选中的快捷时间范围：7 / 30 / 0（全部）/ null（自定义）
@@ -80,6 +83,7 @@ async function loadData() {
       site_id: searchForm.value.site_id ?? undefined,
       start_time: searchForm.value.time_range?.[0] || undefined,
       end_time: searchForm.value.time_range?.[1] || undefined,
+      has_failure: searchForm.value.has_failure ? true : undefined,
       page: pagination.value.page,
       page_size: pagination.value.pageSize
     });
@@ -114,7 +118,7 @@ function onSearch() {
 }
 
 function onReset() {
-  searchForm.value = { site_id: null, time_range: buildTimeRange(7) };
+  searchForm.value = { site_id: null, time_range: buildTimeRange(7), has_failure: false };
   activeRange.value = 7;
   pagination.value.page = 1;
   loadData();
@@ -427,6 +431,16 @@ onMounted(() => {
                 style="width: 340px"
                 @update:formatted-value="onTimeRangeChange"
               />
+            </NFormItem>
+
+            <NFormItem class="whitespace-nowrap" style="margin-left: 10px;">
+              <NCheckbox
+                v-model:checked="searchForm.has_failure"
+                size="small"
+                @update:checked="onSearch"
+              >
+                {{ t('page.faultImportSummary.labelHasFailure') }}
+              </NCheckbox>
             </NFormItem>
           </NForm>
           <NSpace :size="8" :wrap="false">

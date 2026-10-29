@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { NDataTable, useMessage, NButton,NTag, NModal, NForm, NFormItem, NInput, NTooltip, NPopconfirm, NDropdown, NIcon } from 'naive-ui';
+import { NDataTable, useMessage, useDialog, NButton,NTag, NModal, NForm, NFormItem, NInput, NTooltip, NPopconfirm, NDropdown, NIcon } from 'naive-ui';
 import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import UploadWorkOrderExcel from './components/UploadWorkOrderExcel.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { fetchFaults, exportFaults, fetchFaultAbnormalLogs, type FaultAbnormalLog } from '@/service/api/faults';
+import { fetchFaults, exportFaults, fetchFaultAbnormalLogs, batchDeleteFaults, type FaultAbnormalLog } from '@/service/api/faults';
 import {fetchSites} from '@/service/api/site';
 
 import {fetchOrdersStatus} from '@/service/api/workflow';
@@ -33,6 +33,8 @@ const { t } = useI18n();
 const hasRole=!authStore.userInfo.roles.includes('3')
 const isAdmin=authStore.userInfo.roles.includes('1') // 超管
 const isRead=authStore.userInfo.roles.includes('5') // 只读用户
+// 删除权限：仅超管（1）
+const canBatchDelete = isAdmin
 
 // console.log("Outer >> hasRole>>",hasRole)
 interface Faults {
@@ -76,6 +78,7 @@ interface Faults {
 }
 
 const message = useMessage();
+const dialog = useDialog();
 const router = useRouter();
 
 const tableData = ref<Faults[]>([]);
@@ -847,6 +850,53 @@ const handleSelectionChange = (keys: (string | number)[], rows: any[]) => {
   // console.log('选中的记录:', keys, rows);
 };
 
+// 批量删除故障机
+const handleBatchDelete = () => {
+  const ids = selectedRowKeys.value;
+  if (ids.length === 0) {
+    message.warning(t('page.faults.pleaseSelectDeviceToDelete'));
+    return;
+  }
+
+  dialog.warning({
+    title: t('page.faults.batchDeleteTitle'),
+    content: t('page.faults.batchDeleteContent', { count: ids.length }),
+    positiveText: t('page.faults.btnConfirm'),
+    negativeText: t('page.faults.btnCancel'),
+    onPositiveClick: async () => {
+      try {
+        const { data, error } = await batchDeleteFaults({ fault_ids: ids });
+        if (error == null && data) {
+          if (data.failed_count > 0) {
+            // 部分失败：提示成功/失败数量，并展示失败原因
+            message.warning(
+              t('page.faults.batchDeletePartialSuccess', {
+                success: data.success_count,
+                failed: data.failed_count
+              })
+            );
+            if (data.errors?.length) {
+              console.warn('批量删除部分失败:', data.errors);
+            }
+          } else {
+            message.success(t('page.faults.batchDeleteSuccess', { count: data.success_count }));
+          }
+        } else {
+          message.error(t('page.faults.batchDeleteFailed'));
+        }
+      } catch (e) {
+        message.error(t('page.faults.batchDeleteFailed'));
+        console.error('批量删除失败:', e);
+      } finally {
+        // 无论成败都清空选择并刷新列表
+        selectedRowKeys.value = [];
+        selectedRows.value = [];
+        await fetchData();
+      }
+    }
+  });
+};
+
 // 创建工单
 const handleCreateWorkOrderSelect = (key: string) => {
   if (key === 'batch') {
@@ -1194,6 +1244,22 @@ const exportFaultsFile = async () => {
             @refresh="handleRefresh"
           />
         </template>
+
+        <!-- 批量删除：仅售后管理员（2）与超管（1）可见 -->
+        <NButton
+          v-if="canBatchDelete"
+          type="error"
+          ghost
+          size="small"
+          class="text-sm"
+          :disabled="selectedRows.length === 0"
+          @click="handleBatchDelete"
+        >
+          <template #icon>
+            <Icon icon="ant-design:delete-outlined" />
+          </template>
+          {{ t('page.faults.batchDelete', { count: selectedRows.length }) }}
+        </NButton>
          <NButton circle size="small" ghost class="text-sm" @click="exportFaultsFile" :title="t('page.faults.exportExcel')">
           <template #icon>
             <icon-ant-design-download-outlined />

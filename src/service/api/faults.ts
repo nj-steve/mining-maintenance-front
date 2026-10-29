@@ -107,6 +107,24 @@ export function deleteFaultsStatusById(id:number) {
   });
 }
 
+// 批量删除故障机
+// POST /api/faults/batch_delete
+// body: { fault_ids: number[] }
+export interface BatchDeleteFaultsResult {
+  success_count: number;
+  failed_count: number;
+  failed_ids: number[];
+  errors: string[];
+}
+
+export function batchDeleteFaults(params: { fault_ids: number[] }) {
+  return request<BatchDeleteFaultsResult>({
+    url: '/api/faults/batch_delete',
+    method: 'post',
+    data: params
+  });
+}
+
 // /api/faults/id
 // params:
 //   status: number
@@ -333,6 +351,7 @@ export function fetchFaultImportSummary(params: {
   site_id?: number;
   start_time?: string;
   end_time?: string;
+  has_failure?: boolean;
   page?: number;
   page_size?: number;
 }) {

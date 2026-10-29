@@ -38,6 +38,7 @@ import {
   type FaultImportErrorLog
 } from '@/service/api/faults';
 import { fetchSites } from '@/service/api/site';
+import { useAuthStore } from '@/store/modules/auth';
 
 const props = defineProps<{
   show: boolean;
@@ -51,6 +52,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const message = useMessage();
+
+const authStore = useAuthStore();
+// 只读用户（角色5）：仅可查看批次与错误明细，不提供「处理」入口
+const isRead = authStore.userInfo.roles.includes('5');
 
 const detail = ref<FaultImportBatchErrorResult | null>(null);
 const dataList = ref<FaultImportError[]>([]);
@@ -155,16 +160,18 @@ const columns = computed<DataTableColumns<FaultImportError>>(() => [
     width: 90,
     fixed: 'right',
     render: row =>
-      h(
-        NButton,
-        {
-          size: 'small',
-          type: 'primary',
-          ghost: true,
-          onClick: () => openEditDrawer(row)
-        },
-        { default: () => t('page.faultImportErrors.btnProcess') }
-      )
+      isRead
+        ? null
+        : h(
+            NButton,
+            {
+              size: 'small',
+              type: 'primary',
+              ghost: true,
+              onClick: () => openEditDrawer(row)
+            },
+            { default: () => t('page.faultImportErrors.btnProcess') }
+          )
   }
 ]);
 
@@ -526,10 +533,10 @@ watch(
           <template #footer>
             <NSpace justify="end">
               <NButton @click="editDrawerShow = false">{{ t('page.faultImportErrors.btnCancel') }}</NButton>
-              <NButton @click="onIgnore" v-if="editRow && editRow.status !== 2">
+              <NButton @click="onIgnore" v-if="!isRead && editRow && editRow.status !== 2">
                 {{ t('page.faultImportErrors.btnIgnore') }}
               </NButton>
-              <NButton type="primary" :loading="submitLoading" @click="onEditSubmit">
+              <NButton type="primary" :loading="submitLoading" @click="onEditSubmit" v-if="!isRead">
                 {{ t('page.faultImportErrors.btnSubmitRetry') }}
               </NButton>
             </NSpace>

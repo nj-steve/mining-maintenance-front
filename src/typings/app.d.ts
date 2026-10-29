@@ -629,6 +629,15 @@ declare namespace App {
         batchCreate: string;
         importCreate: string;
         pleaseSelectDeviceToCreateOrder: string;
+        batchDelete: string;
+        batchDeleteTitle: string;
+        batchDeleteContent: string;
+        batchDeleteSuccess: string;
+        batchDeletePartialSuccess: string;
+        batchDeleteFailed: string;
+        pleaseSelectDeviceToDelete: string;
+        btnConfirm: string;
+        btnCancel: string;
         onlySelectOneSite: string;
         onlySelectNewOffShelf: string;
       searchCard: {
@@ -936,6 +945,7 @@ declare namespace App {
         colErrorMessage: string;
         labelSiteId: string;
         labelTimeRange: string;
+        labelHasFailure: string;
         placeholderSiteAll: string;
         btnSearch: string;
         btnReset: string;
