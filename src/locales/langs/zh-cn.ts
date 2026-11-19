@@ -236,7 +236,7 @@ const local: App.I18n.Schema = {
     miningsite:"矿场日报",
     users:"权限管理",
     repairrecordsdetail: '维修明细',
-    synctask: '同步任务',
+    synctask: '定时任务',
     workflowdetail:"工单详情",
     sitedetail:"矿场详情",
     'user-center': '个人中心',

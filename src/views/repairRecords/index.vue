@@ -612,8 +612,8 @@ const handleFail = () => {
 </script>
 
 <template>
-  <div class="flex  gap-16px flex-col-stretch  lt-sm:overflow-auto">
-    <NCard>
+  <div class="min-h-0 flex flex-1 flex-col gap-16px overflow-hidden lt-sm:overflow-auto">
+    <NCard class="shrink-0">
       <RepairSearchBar
               :work-order-no="work_order_no"
               :sn="sn"
@@ -628,10 +628,8 @@ const handleFail = () => {
               @update:repair-type="repair_type = $event"
             />
     </NCard>
-    <!-- <NCard> -->
-    <!-- 查询框 -->
-    <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-200px)]">
-       <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 6px">
+    <NCard size="small" class="card-wrapper min-h-0 flex-1 lt-sm:min-h-320px" content-class="min-h-0 flex flex-col">
+       <div class="mb-4 flex shrink-0 items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 6px">
       <div  style="display: flex; gap: 8px; align-items: center;">
 
         <NDropdown :options="importOptions" @select="handleImportSelect" v-if="isRepairStation">
@@ -660,14 +658,7 @@ const handleFail = () => {
         </NButton>
       </div>
     </div>
-    <!-- 表格 -->
-    <!-- <NDataTable flex-height small :columns="columns"
-    :data="tableData" :pagination="pagination"
-    :loading="loading" :scroll-x="1400"
-    remote striped
-        class="sm:h-full" /> -->
-
-        <NDataTable
+      <NDataTable
         flex-height
         :columns="columns"
         :data="tableData"
@@ -677,16 +668,24 @@ const handleFail = () => {
         :row-key="(row: any) => row.ID"
         :scroll-x="2000"
         striped
-        class="sm:h-full"
+        class="repair-records-table min-h-0 flex-1"
       />
       <!-- 报废标记弹窗 -->
       <ScrapFlagsModal v-model:show="showScrapModal" :detail-id="currentDetailId" :detail-row="currentDetailRow" @success="fetchData" />
-    </n-card>
-     <!-- </NCard> -->
+    </NCard>
   </div>
 </template>
 
 <style scoped>
+.repair-records-table :deep(.n-data-table__pagination) {
+  flex-shrink: 0;
+}
+
+.repair-records-table :deep(.n-pagination) {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
 .cell-date {
   font-family: monospace;
   color: #333;

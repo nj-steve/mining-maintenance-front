@@ -236,7 +236,7 @@ const local: App.I18n.Schema = {
     miningsite:"Site Daily Report",
     users:"Permission",
     repairrecordsdetail:"Repair Records Detail",
-    synctask: 'Sync Tasks',
+    synctask: 'Scheduled Tasks',
     workflowdetail:"Work Flow Detail",
     sitedetail:"Site Detail",
    'user-center': 'User Center',

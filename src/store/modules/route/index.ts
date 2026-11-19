@@ -70,6 +70,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     const authRoutesMap = new Map<string, ElegantConstRoute>([]);
 
     routes.forEach(route => {
+      if (route.name === 'synctask' && !authStore.isSuperAdmin) return;
       authRoutesMap.set(route.name, route);
     });
 

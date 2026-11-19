@@ -36,6 +36,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     group_ids: '',
   });
 
+  const isSuperAdmin = computed(() => userInfo.roles.includes('1'));
+
   /** is super role in static route */
   const isStaticSuper = computed(() => {
     const { VITE_AUTH_ROUTE_MODE, VITE_STATIC_SUPER_ROLE } = import.meta.env;
@@ -269,6 +271,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     token,
     userInfo,
     activeGroupId,
+    isSuperAdmin,
     isStaticSuper,
     isLogin,
     loginLoading,
