@@ -94,6 +94,7 @@ const searchWorkOrderNo = ref<string>('');
 const searchResultStatus = ref<number | null>(null);
 const searchSalerId = ref<number | null>(null);
 const searchRepairType = ref<number | null>(null);
+const searchHasAbnormalLogs = ref(false);
 
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表
 const statusOptionsData = ref<any[]>([]);
@@ -178,7 +179,9 @@ const handleImportSelect = (key: string) => {
 }
 
 // ---------------- 数据获取 ----------------
+let faultListRequest = 0;
 const fetchData = async () => {
+  const requestId = ++faultListRequest;
   // 重新查询前清空之前的选择状态
   selectedRowKeys.value = [];
   tableData.value = []
@@ -197,6 +200,7 @@ const fetchData = async () => {
     enable_all: onlyMySite,//1 全部，-1 我的
     repair_result: searchResultStatus.value || undefined,
     repair_type: searchRepairType.value || undefined,
+    has_abnormal_logs: searchHasAbnormalLogs.value || undefined,
     start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
     end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
     model: searchModel.value || undefined
@@ -204,6 +208,7 @@ const fetchData = async () => {
 
   try {
     const {data,error} = await fetchFaults(params);
+    if (requestId !== faultListRequest) return;
 
     if(error==null && data){
         tableData.value = data.list;
@@ -214,10 +219,11 @@ const fetchData = async () => {
         message.error(`${t('page.faults.loadFailed')}: ${error}`);
     }
   } catch (error) {
+    if (requestId !== faultListRequest) return;
     message.error(t('page.faults.loadFailed'));
     console.error('加载失败:', error);
   } finally {
-    loading.value = false
+    if (requestId === faultListRequest) loading.value = false;
   }
 }
 
@@ -835,7 +841,7 @@ onMounted(() => {
   // fetchSiteData();
 });
 
-watch([searchSerial,searchWorkOrderNo, searchSalerId, searchResultStatus, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel, searchRepairType], () => {
+watch([searchSerial,searchWorkOrderNo, searchSalerId, searchResultStatus, searchSiteId, searchStatus, searchStartDate, searchEndDate, searchModel, searchRepairType, searchHasAbnormalLogs], () => {
   tableData.value = [];
   selectedRowKeys.value = [];
   selectedRows.value = [];
@@ -1045,6 +1051,7 @@ const exportFaultsFile = async () => {
       saler_id: searchSalerId.value || undefined,
       enable_all: onlyMySite,
       repair_result: searchResultStatus.value || undefined,
+      has_abnormal_logs: searchHasAbnormalLogs.value || undefined,
       start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
       end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
       model: searchModel.value || undefined
@@ -1149,6 +1156,7 @@ const exportFaultsFile = async () => {
       v-model:resultStatus="searchResultStatus"
       v-model:salerId="searchSalerId"
       v-model:repairType="searchRepairType"
+      v-model:has-abnormal-logs="searchHasAbnormalLogs"
       :site-options="siteOptions"
       :status-options="statusOptions"
       :repair-type-options="repairTypeOptions"

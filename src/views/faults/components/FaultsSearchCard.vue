@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // import { ref, watch } from 'vue';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
-import { NCard, NButton, NInput, NSelect, NDatePicker, NSwitch } from 'naive-ui';
+import { NCard, NButton, NCheckbox, NInput, NSelect, NDatePicker } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 // import { repairResultOptions } from '@/constants/business';
 import { fetchUser } from '@/service/api';
@@ -27,6 +27,7 @@ const status = defineModel<number | null>('status', { default: null });
 const resultStatus = defineModel<number | null>('resultStatus', { default: null });
 const salerIdModel = defineModel<number | null>('salerId', { default: null });
 const repairType = defineModel<number | null>('repairType', { default: null });
+const hasAbnormalLogs = defineModel<boolean>('hasAbnormalLogs', { default: false });
 
 const props = defineProps<{
    siteOptions: SelectOption[];
@@ -259,6 +260,9 @@ function toggleExpand() {
         clearable
         style="width: 100%"
       />
+      <NCheckbox v-model:checked="hasAbnormalLogs" size="small">
+        {{ t('page.faults.searchCard.hasAbnormalLogs') }}
+      </NCheckbox>
 
       </div>
       <div v-if="expanded" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; align-items: center; margin-top: 8px;">

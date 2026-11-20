@@ -650,6 +650,7 @@ declare namespace App {
         flowStatus: string;
         repairStatus: string;
         type: string;
+        hasAbnormalLogs: string;
         inputSn: string;
         afterSalesSpecialist: string;
         startDate: string;

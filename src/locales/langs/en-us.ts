@@ -412,6 +412,7 @@ const local: App.I18n.Schema = {
         flowStatus: 'Flow Status',
         repairStatus: 'Repair Status',
         type: 'Type',
+        hasAbnormalLogs: 'Matched Faults',
         inputSn: 'Please input SN',
         afterSalesSpecialist: 'After-sales Specialist',
         startDate: 'Start Date',

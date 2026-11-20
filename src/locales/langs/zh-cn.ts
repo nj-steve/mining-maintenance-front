@@ -417,6 +417,7 @@ const local: App.I18n.Schema = {
         flowStatus: '流转状态',
         repairStatus: '维修状态',
         type: '类型',
+        hasAbnormalLogs: '匹配故障',
         inputSn: '请输入机器SN',
         afterSalesSpecialist: '售后专员',
         startDate: '开始时间',
