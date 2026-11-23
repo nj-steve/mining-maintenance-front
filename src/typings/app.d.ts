@@ -1466,6 +1466,7 @@ declare namespace App {
           };
           modules: {
             site: string;
+            siteDailyReport: string;
             faultMachine: string;
             workOrder: string;
             scrapMachine: string;
@@ -1485,6 +1486,9 @@ declare namespace App {
             username: string;
             module: string;
             operationType: string;
+            siteName: string;
+            downDate: string;
+            offShelfChange: string;
             targetTable: string;
             targetId: string;
             requestMethod: string;

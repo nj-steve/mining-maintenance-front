@@ -1156,6 +1156,7 @@ const local: App.I18n.Schema = {
       },
       modules: {
         site: 'Site',
+        siteDailyReport: 'Site Daily Report',
         faultMachine: 'Fault Machine',
         workOrder: 'Work Order',
         scrapMachine: 'Scrap Machine',
@@ -1175,6 +1176,9 @@ const local: App.I18n.Schema = {
         username: 'Username',
         module: 'Module',
         operationType: 'Operation Type',
+        siteName: 'Site Name',
+        downDate: 'Off-shelf Date',
+        offShelfChange: 'Off-shelf Count Change',
         targetTable: 'Target Table',
         targetId: 'Target ID',
         requestMethod: 'Request Method',

@@ -11,6 +11,7 @@ const { t } = useI18n();
 const message = useMessage();
 const loading = ref(false);
 const tableData = ref<OperationLog[]>([]);
+const siteDailyReportModule = '场地日报';
 
 const searchParams = reactive({
   user_id: null as number | null,
@@ -28,6 +29,7 @@ const statusOptions = computed(() => [
 
 const moduleOptions = computed(() => [
   { label: t('page.operationLogs.modules.site'), value: '场地' },
+  { label: t('page.operationLogs.modules.siteDailyReport'), value: siteDailyReportModule },
   { label: t('page.operationLogs.modules.faultMachine'), value: '故障机' },
   { label: t('page.operationLogs.modules.workOrder'), value: '工单' },
   { label: t('page.operationLogs.modules.scrapMachine'), value: '报废机' },
@@ -104,12 +106,51 @@ const renderTooltip = (content: string) => {
   );
 };
 
+const showSiteDailyReportColumns = computed(
+  () => searchParams.module === siteDailyReportModule || tableData.value.some(row => row.site_daily_report)
+);
+
+const siteDailyReportColumns = computed<DataTableColumns<OperationLog>>(() => [
+  {
+    title: t('page.operationLogs.columns.siteName'),
+    key: 'site_daily_report.site_name',
+    width: 160,
+    render: (row) => {
+      const report = row.site_daily_report;
+      return renderTooltip(report?.site_name || (report?.site_id ? `#${report.site_id}` : ''));
+    }
+  },
+  {
+    title: t('page.operationLogs.columns.downDate'),
+    key: 'site_daily_report.down_date',
+    width: 120,
+    render: (row) => row.site_daily_report?.down_date || '—'
+  },
+  {
+    title: t('page.operationLogs.columns.offShelfChange'),
+    key: 'site_daily_report.off_shelf_change',
+    width: 180,
+    render: (row) => {
+      const before = row.site_daily_report?.before_off_shelf_count;
+      const after = row.site_daily_report?.after_off_shelf_count;
+      if (before == null && after == null) return '—';
+
+      const change = `${before ?? '—'} → ${after ?? '—'}`;
+      if (before == null || after == null) return change;
+
+      const delta = after - before;
+      return `${change} (${delta > 0 ? '+' : ''}${delta})`;
+    }
+  }
+]);
+
 const columns = computed<DataTableColumns<OperationLog>>(() => [
   { title: t('page.operationLogs.columns.id'), key: 'id', width: 80 },
 
   { title: t('page.operationLogs.columns.username'), key: 'user_name', width: 100 },
   { title: t('page.operationLogs.columns.module'), key: 'module', width: 100 },
   { title: t('page.operationLogs.columns.operationType'), key: 'operation_type', width: 100 },
+  ...(showSiteDailyReportColumns.value ? siteDailyReportColumns.value : []),
   { title: t('page.operationLogs.columns.targetTable'), key: 'target_table', width: 120 },
   { title: t('page.operationLogs.columns.targetId'), key: 'target_id', width: 80, render: (row) => renderTooltip(row.target_id) },
   { title: t('page.operationLogs.columns.requestMethod'), key: 'request_method', width: 100 },
@@ -238,7 +279,7 @@ onMounted(() => {
         :data="tableData"
         :loading="loading"
         :pagination="pagination"
-        :scroll-x="2400"
+        :scroll-x="showSiteDailyReportColumns ? 2640 : 2400"
         class="h-full"
       />
     </n-card>

@@ -1,5 +1,13 @@
 import { request } from '../request';
 
+export interface OperationLogSiteDailyReport {
+  site_id: number;
+  site_name: string;
+  down_date: string;
+  before_off_shelf_count: number | null;
+  after_off_shelf_count: number | null;
+}
+
 export interface OperationLog {
   id: number;
   user_id: number;
@@ -18,6 +26,7 @@ export interface OperationLog {
   status: number;
   error_message: string;
   create_time: string;
+  site_daily_report?: OperationLogSiteDailyReport;
 }
 
 export function fetchOperationLogs(params: { page?: number; page_size?: number; [key: string]: any }) {

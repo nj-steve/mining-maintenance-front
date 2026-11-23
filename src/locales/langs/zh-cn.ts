@@ -1241,6 +1241,7 @@ const local: App.I18n.Schema = {
       },
       modules: {
         site: '场地',
+        siteDailyReport: '场地日报',
         faultMachine: '故障机',
         workOrder: '工单',
         scrapMachine: '报废机',
@@ -1260,6 +1261,9 @@ const local: App.I18n.Schema = {
         username: '用户名',
         module: '模块',
         operationType: '操作类型',
+        siteName: '场地名称',
+        downDate: '下架日期',
+        offShelfChange: '下架台数变化',
         targetTable: '目标表',
         targetId: '目标ID',
         requestMethod: '请求方法',

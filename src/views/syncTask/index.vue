@@ -78,9 +78,11 @@ function formatDuration(seconds: number) {
 }
 
 const isIntervalTask = (task: ScheduledTask) => (!task.schedule || task.schedule === 'interval') && task.interval_seconds > 0;
+const siteOffShelfCountsTask = 'site_off_shelf_counts_7d';
 function scheduleLabel(task: ScheduledTask) {
   if (isIntervalTask(task)) return text('every', { duration: formatDuration(task.interval_seconds) });
   if (task.name === 'dashboard_stats') return text('dashboardSchedule');
+  if (task.name === siteOffShelfCountsTask) return text('siteOffShelfCountsSchedule');
   return task.schedule === 'manual' ? text('manualOnly') : text('fixedSchedule');
 }
 
@@ -374,7 +376,10 @@ onBeforeUnmount(() => {
           </NInputNumber>
           <span v-else>{{ scheduleLabel(settings) }}</span>
         </NFormItem>
-        <NFormItem v-if="settings.schedule !== 'manual'" :label="text('runOnStart')">
+        <NFormItem
+          v-if="settings.schedule !== 'manual'"
+          :label="text(settings.name === siteOffShelfCountsTask ? 'runOnEachStartup' : 'runOnStart')"
+        >
           <NSwitch v-model:value="settingsRunOnStart" />
         </NFormItem>
         <NFormItem :label="text('timeout')">
