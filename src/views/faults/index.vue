@@ -93,7 +93,7 @@ const searchModel = ref<number | null>(null);
 const searchWorkOrderNo = ref<string>('');
 const searchResultStatus = ref<number | null>(null);
 const searchSalerId = ref<number | null>(null);
-const searchRepairType = ref<number | null>(null);
+const searchRepairType = ref<string | null>(null);
 const searchHasAbnormalLogs = ref(false);
 
 const siteOptions = ref<{ label: string; value: number }[]>([]); // 场地列表

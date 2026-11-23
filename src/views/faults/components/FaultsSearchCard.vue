@@ -1,22 +1,14 @@
 <script setup lang="ts">
-// import { ref, watch } from 'vue';
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
-import { NCard, NButton, NCheckbox, NInput, NSelect, NDatePicker } from 'naive-ui';
+import { computed, onMounted, onUnmounted, ref, useId, watch } from 'vue';
+import { NButton, NCheckbox, NDatePicker, NInput, NSelect, useThemeVars } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
-// import { repairResultOptions } from '@/constants/business';
-import { fetchUser } from '@/service/api';
-import { Icon } from '@iconify/vue';
 import { useI18n } from 'vue-i18n';
+import CollapseChevron from '~icons/ant-design/down-outlined';
+import SearchIcon from '~icons/ant-design/search-outlined';
+import { fetchUser } from '@/service/api';
 
 const { t } = useI18n();
-
-const computedRepairResultOptions = computed(() => [
-  { label: t('business.repairResult.pending'), value: 1 },
-  { label: t('business.repairResult.unrepaired'), value: 2 },
-  { label: t('business.repairResult.repaired'), value: 3 },
-  { label: t('business.repairResult.scrapped'), value: 4 },
-]);
-
+const theme = useThemeVars();
 
 const serial = defineModel<string>('serial', { default: '' });
 const workOrderNo = defineModel<string>('workOrderNo', { default: '' });
@@ -25,297 +17,299 @@ const startDate = defineModel<number | null>('startDate', { default: null });
 const endDate = defineModel<number | null>('endDate', { default: null });
 const status = defineModel<number | null>('status', { default: null });
 const resultStatus = defineModel<number | null>('resultStatus', { default: null });
-const salerIdModel = defineModel<number | null>('salerId', { default: null });
-const repairType = defineModel<number | null>('repairType', { default: null });
+const salerId = defineModel<number | null>('salerId', { default: null });
+const repairType = defineModel<string | null>('repairType', { default: null });
 const hasAbnormalLogs = defineModel<boolean>('hasAbnormalLogs', { default: false });
 
 const props = defineProps<{
-   siteOptions: SelectOption[];
-  statusOptions: SelectOption[],
-  repairTypeOptions?: SelectOption[],
-  hasRole:boolean
-  // salerOptions: SelectOption[]
-
- }>();
-const emit = defineEmits<{ (e: 'search'): void }>();
+  siteOptions: SelectOption[];
+  statusOptions: SelectOption[];
+  repairTypeOptions?: SelectOption[];
+  hasRole: boolean;
+}>();
+const emit = defineEmits<{ search: [] }>();
 
 const expanded = ref(true);
-// 使用 ref 保存状态，并实时同步 localStorage 的变化
-const onlyMySiteLocal = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
-let onlyMySitePoller: number | null = null;
-const readOnlyMySite = () => localStorage.getItem('onlyMySite') === 'true';
-const salerMap = ref<Record<number, string>>({});
+const advancedFiltersId = useId();
+const salerOptions = ref<SelectOption[]>([]);
+const onlyMySite = ref(localStorage.getItem('onlyMySite') === 'true');
+let onlyMySitePoller: number;
 
-const fetchUsers = async () => {
-  const {data,error} = await fetchUser({
-    page: 1,
-    page_size: -1,
-    status: 1,
-    role: 2,
-  });
-  if(error==null){
-    // console.log("data.list",data.list)
-    const salerMap_byId = data.list.reduce((acc:any, cur:any) => {
-      acc[cur.id] = cur.real_name;
-      return acc;
-    }, {} as Record<number, string>);
-    // console.log("salerMap_byId",salerMap_byId)
-    salerMap.value = salerMap_byId;
+const searchLabel = computed(() => t('page.faults.searchCard.search'));
+const snLabel = computed(() => t('page.faults.snCode'));
+const orderLabel = computed(() => t('page.faults.orderNo'));
+const repairResultOptions = computed(() => [
+  { label: t('business.repairResult.pending'), value: 1 },
+  { label: t('business.repairResult.unrepaired'), value: 2 },
+  { label: t('business.repairResult.repaired'), value: 3 },
+  { label: t('business.repairResult.scrapped'), value: 4 }
+]);
+const panelStyle = computed(() => ({
+  '--fault-filter-surface': theme.value.cardColor,
+  '--fault-filter-divider': theme.value.dividerColor,
+  '--fault-filter-border': theme.value.borderColor,
+  '--fault-filter-accent': theme.value.primaryColor
+}));
 
-    // editForm.value.saler_id = data[0].id;
-  }else{
-    // message.error('获取用户失败:' +error);
+async function fetchSalerOptions() {
+  const { data, error } = await fetchUser({ page: 1, page_size: -1, status: 1, role: 2 });
+  if (!error && data) {
+    salerOptions.value = data.list.map((user: { id: number; real_name: string }) => ({
+      label: user.real_name,
+      value: Number(user.id)
+    }));
   }
 }
 
-const salerOptions = computed(() => {
-  return Object.entries(salerMap.value).map(([id, name]) => ({ label: name, value: Number(id) }));
-});
+function syncOnlyMySite() {
+  onlyMySite.value = localStorage.getItem('onlyMySite') === 'true';
+}
 
 onMounted(() => {
-  if(props.hasRole){
-    fetchUsers();
-  }
-});
-
-onMounted(() => {
-  const update = () => {
-    const val = readOnlyMySite();
-    if (onlyMySiteLocal.value !== val) {
-      onlyMySiteLocal.value = val;
-    }
-  };
-  // 初始化一次
-  update();
-  // 在同一标签页内轮询以捕获 setItem 引发的变化
-  onlyMySitePoller = window.setInterval(update, 250);
-  // 监听其它标签页/窗口的存储变化
-  window.addEventListener('storage', (e: StorageEvent) => {
-    if (e.key === 'onlyMySite') {
-      update();
-    }
-  });
+  if (props.hasRole) void fetchSalerOptions();
+  onlyMySitePoller = window.setInterval(syncOnlyMySite, 250);
+  window.addEventListener('storage', syncOnlyMySite);
 });
 
 onUnmounted(() => {
-  if (onlyMySitePoller !== null) {
-    clearInterval(onlyMySitePoller);
-    onlyMySitePoller = null;
-  }
+  window.clearInterval(onlyMySitePoller);
+  window.removeEventListener('storage', syncOnlyMySite);
 });
 
-// 根据是否勾选“我的场地”，清空售后专员筛选
-watch(onlyMySiteLocal, (newVal) => {
-  if (newVal) {
-    salerIdModel.value = null;
-  }
+watch(onlyMySite, value => {
+  if (value) salerId.value = null;
 });
-
-// 场地筛选相关逻辑
-const showSiteFilter = ref(false);
-const siteNameFilter = ref('');
-const tempSelectedSiteId = ref<number | null>(null);
-
-const filteredSiteOptions = computed(() => {
-  if (!siteNameFilter.value) return props.siteOptions;
-  return props.siteOptions.filter(site =>
-    String(site.label).toLowerCase().includes(siteNameFilter.value.toLowerCase())
-  );
-});
-
-const getSelectedSiteLabel = () => {
-  if (!siteId.value) return t('page.faults.searchCard.siteFilter');
-  const site = props.siteOptions.find(s => s.value === siteId.value);
-  return site ? String(site.label) : t('page.faults.searchCard.siteFilter');
-};
-
-const isSiteSelected = (id: number) => {
-  // 如果尚未应用，显示临时选择；否则显示当前生效的选择
-  const current = showSiteFilter.value ? (tempSelectedSiteId.value ?? siteId.value) : siteId.value;
-  return current === id;
-};
-
-const toggleSiteSelection = (id: number) => {
-  if (tempSelectedSiteId.value === id) {
-    tempSelectedSiteId.value = null; // 取消选择
-  } else {
-    tempSelectedSiteId.value = id; // 选中
-  }
-};
-
-const applySiteFilter = () => {
-  siteId.value = tempSelectedSiteId.value;
-  showSiteFilter.value = false;
-};
-
-const clearSiteSelection = () => {
-  siteId.value = null;
-  tempSelectedSiteId.value = null;
-};
-
-// 监听弹窗打开，初始化临时选中状态
-watch(showSiteFilter, (val) => {
-  if (val) {
-    tempSelectedSiteId.value = siteId.value;
-    siteNameFilter.value = '';
-  }
-});
-
-function onSearch() {
-  emit('search');
-}
-
-function toggleExpand() {
-  expanded.value = !expanded.value;
-}
 </script>
 
 <template>
-  <NCard size="small" :bordered="false" class="faults-search-card">
-    <template #header>
-      <!-- <span></span> -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
+  <section class="fault-filters" :style="panelStyle" :aria-label="searchLabel">
+    <form class="fault-filters__form" @submit.prevent="emit('search')">
+      <div class="fault-filters__main">
+        <div class="fault-filters__fields">
+          <NInput
+            v-model:value="serial"
+            size="small"
+            :placeholder="snLabel"
+            :input-props="{ 'aria-label': snLabel }"
+            clearable
+          />
+          <NInput
+            v-model:value="workOrderNo"
+            size="small"
+            :placeholder="orderLabel"
+            :input-props="{ 'aria-label': orderLabel }"
+            clearable
+          />
+          <NSelect
+            v-if="props.siteOptions.length > 1"
+            v-model:value="siteId"
+            size="small"
+            :options="props.siteOptions"
+            :placeholder="t('page.faults.site')"
+            :aria-label="t('page.faults.site')"
+            filterable
+            clearable
+          />
+          <NSelect
+            v-model:value="status"
+            size="small"
+            :options="props.statusOptions"
+            :placeholder="t('page.faults.searchCard.flowStatus')"
+            :aria-label="t('page.faults.searchCard.flowStatus')"
+            clearable
+          />
+        </div>
 
-       <!-- <NSelect
-        size="medium"
-        v-model:value="siteId"
-        :options="props.siteOptions"
-        placeholder="请选择场地"
-        v-if="props.siteOptions.length > 1"
-        class="site-select"
-        clearable
-        filterable
-        style="width: 100%"
-      /> -->
-
-       <div class="relative" style="width: 95%;" v-if="props.siteOptions.length > 1">
-         <NButton
-         size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter">
-           <span class="truncate">{{ getSelectedSiteLabel() }}</span>
-           <!-- <Icon icon="ant-design:down-outlined" class="ml-2 text-xs" /> -->
-            <Icon
-             v-if="siteId"
-             icon="ant-design:close-circle-outlined"
-             class="ml-2 text-xs text-gray-400 hover:text-gray-600 z-10"
-             @click.stop="clearSiteSelection"
-           />
-           <Icon v-else icon="ant-design:down-outlined" class="ml-2 text-xs" />
-         </NButton>
-         <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]">
-           <div class="font-medium text-gray-900 mb-3">{{ t('page.faults.searchCard.selectSite') }}</div>
-           <NInput size="small" :placeholder="t('page.faults.searchCard.searchSite')" class="mb-3" v-model:value="siteNameFilter" >
-
-          </NInput>
-           <div class="max-h-60 overflow-y-auto">
-             <div
-               v-for="site in filteredSiteOptions"
-               :key="String(site.value)"
-               class="flex items-center py-2 hover:bg-gray-50 rounded px-2"
-             >
-               <input
-                 type="checkbox"
-                 :id="`site-${site.value}`"
-                 class="h-4 w-4 text-blue-600 rounded border-gray-300"
-                 :checked="isSiteSelected(Number(site.value))"
-                 @change="toggleSiteSelection(Number(site.value))"
-               />
-               <label :for="`site-${site.value}`" class="ml-2 text-gray-700 cursor-pointer flex-grow">{{ site.label }}</label>
-             </div>
-           </div>
-           <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200 gap-2">
-             <NButton size="small" @click="showSiteFilter = false">{{ t('page.faults.searchCard.cancel') }}</NButton>
-             <NButton size="small" type="primary" @click="applySiteFilter">{{ t('page.faults.searchCard.apply') }}</NButton>
-           </div>
-         </div>
-       </div>
-
-       <NInput
-        v-model:value="workOrderNo"
-        size="small"
-        :placeholder="t('page.faults.searchCard.inputOrderNo')"
-        clearable
-        style="width: 100%"
-      />
-       <NSelect
-        size="small"
-        v-model:value="status"
-        :options="props.statusOptions"
-        :placeholder="t('page.faults.searchCard.flowStatus')"
-        clearable
-        style="width: 100%"
-      />
-      <NSelect
-        size="small"
-        v-model:value="resultStatus"
-        :options="computedRepairResultOptions"
-        :placeholder="t('page.faults.searchCard.repairStatus')"
-        clearable
-        style="width: 100%"
-      />
-      <NSelect
-        size="small"
-        v-model:value="repairType"
-        :options="props.repairTypeOptions"
-        :placeholder="t('page.faults.searchCard.type')"
-        clearable
-        style="width: 100%"
-      />
-      <NCheckbox v-model:checked="hasAbnormalLogs" size="small">
-        {{ t('page.faults.searchCard.hasAbnormalLogs') }}
-      </NCheckbox>
-
+        <div class="fault-filters__toolbar">
+          <NCheckbox
+            v-model:checked="hasAbnormalLogs"
+            size="small"
+            class="fault-filters__match"
+            :class="{ 'is-active': hasAbnormalLogs }"
+          >
+            {{ t('page.faults.searchCard.hasAbnormalLogs') }}
+          </NCheckbox>
+          <div class="fault-filters__actions">
+            <NButton
+              size="small"
+              quaternary
+              :aria-expanded="expanded"
+              :aria-controls="advancedFiltersId"
+              @click="expanded = !expanded"
+            >
+              {{ expanded ? t('page.faults.searchCard.collapse') : t('page.faults.searchCard.expand') }}
+              <template #icon>
+                <CollapseChevron
+                  class="fault-filters__chevron"
+                  :class="{ 'is-open': expanded }"
+                  aria-hidden="true"
+                />
+              </template>
+            </NButton>
+            <NButton type="primary" size="small" attr-type="submit">
+              {{ searchLabel }}
+              <template #icon>
+                <SearchIcon aria-hidden="true" />
+              </template>
+            </NButton>
+          </div>
+        </div>
       </div>
-      <div v-if="expanded" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; align-items: center; margin-top: 8px;">
-      <NInput
-        v-model:value="serial"
-        size="small"
-        :placeholder="t('page.faults.searchCard.inputSn')"
-        clearable
-        style="width: 100%"
-      />
-       <NSelect
-        v-show="!onlyMySiteLocal && props.hasRole"
-        v-model:value="salerIdModel"
-        :options="salerOptions"
-        :placeholder="t('page.faults.searchCard.afterSalesSpecialist')"
-        size="small"
-        clearable
-        style="width: 100%; font-size: 12px;"
-      />
 
-      <NDatePicker
-        v-model:value="startDate"
-        type="date"
-        :placeholder="t('page.faults.searchCard.startDate')"
-        clearable
-        size="small"
-        style="width: 100%"
-      />
-
-      <NDatePicker
-        v-model:value="endDate"
-        type="date"
-        size="small"
-        :placeholder="t('page.faults.searchCard.endDate')"
-        clearable
-        style="width: 100%"
-      />
-
-      <div>
-      <!-- <NSwitch v-model:value="onlyMySite" size="medium" />
-    <span style="font-size: 12px; margin-left: 4px;">我的场地</span> -->
-    </div>
-    </div>
-    </template>
-    <template #header-extra>
-      <div style="display: flex; justify-content: flex-end;margin-left: 20px;  gap: 12px;">
-        <NButton type="primary" size="small" @click="onSearch">{{ t('page.faults.searchCard.search') }}</NButton>
-        <NButton size="small" quaternary @click="toggleExpand">{{ expanded ? t('page.faults.searchCard.collapse') : t('page.faults.searchCard.expand') }}</NButton>
+      <div v-show="expanded" :id="advancedFiltersId" class="fault-filters__advanced">
+        <NSelect
+          v-model:value="resultStatus"
+          size="small"
+          :options="repairResultOptions"
+          :placeholder="t('page.faults.searchCard.repairStatus')"
+          :aria-label="t('page.faults.searchCard.repairStatus')"
+          clearable
+        />
+        <NSelect
+          v-model:value="repairType"
+          size="small"
+          :options="props.repairTypeOptions"
+          :placeholder="t('page.faults.searchCard.type')"
+          :aria-label="t('page.faults.searchCard.type')"
+          clearable
+        />
+        <NDatePicker
+          v-model:value="startDate"
+          type="date"
+          size="small"
+          :placeholder="t('page.faults.searchCard.startDate')"
+          :aria-label="t('page.faults.searchCard.startDate')"
+          clearable
+        />
+        <NDatePicker
+          v-model:value="endDate"
+          type="date"
+          size="small"
+          :placeholder="t('page.faults.searchCard.endDate')"
+          :aria-label="t('page.faults.searchCard.endDate')"
+          clearable
+        />
+        <NSelect
+          v-if="props.hasRole && !onlyMySite"
+          v-model:value="salerId"
+          size="small"
+          class="fault-filters__saler"
+          :options="salerOptions"
+          :placeholder="t('page.faults.searchCard.afterSalesSpecialist')"
+          :aria-label="t('page.faults.searchCard.afterSalesSpecialist')"
+          filterable
+          clearable
+        />
       </div>
-    </template>
-    <!-- 移除底部按钮容器，按钮固定在右上角 -->
-  </NCard>
+    </form>
+  </section>
 </template>
 
 <style scoped>
+.fault-filters {
+  container-type: inline-size;
+  padding: 10px 12px;
+  border: 1px solid var(--fault-filter-divider);
+  border-top-color: color-mix(in srgb, var(--fault-filter-accent) 25%, var(--fault-filter-divider));
+  border-radius: 10px;
+  background: var(--fault-filter-surface);
+}
+
+.fault-filters__form,
+.fault-filters__fields,
+.fault-filters__advanced {
+  display: grid;
+  gap: 8px;
+}
+
+.fault-filters__main,
+.fault-filters__toolbar,
+.fault-filters__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fault-filters__main {
+  flex-wrap: wrap;
+}
+
+.fault-filters__fields {
+  flex: 1 1 490px;
+  min-width: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 116px), 1fr));
+}
+
+.fault-filters__advanced {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 136px), 1fr));
+  padding-top: 8px;
+  border-top: 1px solid var(--fault-filter-divider);
+}
+
+.fault-filters__fields > *,
+.fault-filters__advanced > * {
+  width: 100%;
+  min-width: 0;
+}
+
+.fault-filters__toolbar {
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.fault-filters__match {
+  box-sizing: border-box;
+  min-height: 28px;
+  align-items: center;
+  padding-inline: 9px;
+  border: 1px solid var(--fault-filter-divider);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fault-filter-accent) 4%, var(--fault-filter-surface));
+  white-space: nowrap;
+}
+
+.fault-filters__match:hover {
+  border-color: var(--fault-filter-border);
+}
+
+.fault-filters__match.is-active {
+  border-color: color-mix(in srgb, var(--fault-filter-accent) 55%, var(--fault-filter-divider));
+  background: color-mix(in srgb, var(--fault-filter-accent) 12%, var(--fault-filter-surface));
+}
+
+.fault-filters__match:focus-within {
+  outline: 2px solid var(--fault-filter-accent);
+  outline-offset: 2px;
+}
+
+.fault-filters__chevron {
+  font-size: 12px;
+}
+
+.fault-filters__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+@container (width < 840px) {
+  .fault-filters__toolbar {
+    flex: 1 1 100%;
+  }
+}
+
+@container (width < 520px) {
+  .fault-filters__fields,
+  .fault-filters__advanced {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fault-filters__saler {
+    grid-column: 1 / -1;
+  }
+}
+
+@container (width < 340px) {
+  .fault-filters__actions {
+    margin-inline-start: auto;
+  }
+}
 </style>
