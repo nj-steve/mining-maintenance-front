@@ -5,7 +5,7 @@ import { NDataTable, useMessage, useDialog, NButton,NTag, NModal, NForm, NFormIt
 import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import UploadWorkOrderExcel from './components/UploadWorkOrderExcel.vue';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import type { DataTableColumns, DataTableSortState, PaginationProps } from 'naive-ui';
 import { useRouter } from 'vue-router';
 import { fetchFaults, exportFaults, fetchFaultAbnormalLogs, batchDeleteFaults, type FaultAbnormalLog } from '@/service/api/faults';
 import {fetchSites} from '@/service/api/site';
@@ -83,12 +83,14 @@ const router = useRouter();
 
 const tableData = ref<Faults[]>([]);
 const loading = ref(false);
+const faultSortFields = { date: 'down_time', created_time: 'created_at', repair_count: 'repair_count' } as const;
+const faultSort = ref<{ field: (typeof faultSortFields)[keyof typeof faultSortFields]; direction: 'asc' | 'desc' } | null>(null);
 const searchSerial = ref<string>('');
 
 const searchSiteId = ref<number | null>(null);
 const searchStatus = ref<number | null>(null);
-const searchStartDate = ref<number | null>(null);
-const searchEndDate = ref<number | null>(null);
+const searchStartDate = ref<string | null>(null);
+const searchEndDate = ref<string | null>(null);
 const searchModel = ref<number | null>(null);
 const searchWorkOrderNo = ref<string>('');
 const searchResultStatus = ref<number | null>(null);
@@ -192,6 +194,8 @@ const fetchData = async () => {
   const params: any = {
     page: pagination.value.page,
     page_size: pagination.value.pageSize,
+    order_fields: faultSort.value?.field,
+    order_type: faultSort.value?.direction,
     sn: searchSerial.value || undefined,
     order_no: searchWorkOrderNo.value || undefined,
     site_id: searchSiteId.value || undefined,
@@ -201,8 +205,8 @@ const fetchData = async () => {
     repair_result: searchResultStatus.value || undefined,
     repair_type: searchRepairType.value || undefined,
     has_abnormal_logs: searchHasAbnormalLogs.value || undefined,
-    start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
-    end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
+    start_date: searchStartDate.value || undefined,
+    end_date: searchEndDate.value || undefined,
     model: searchModel.value || undefined
   };
 
@@ -225,6 +229,22 @@ const fetchData = async () => {
   } finally {
     if (requestId === faultListRequest) loading.value = false;
   }
+}
+
+function handleFaultSortChange(sorter: DataTableSortState | DataTableSortState[] | null) {
+  const active = Array.isArray(sorter) ? sorter[0] : sorter;
+  if (active?.order) {
+    const { columnKey } = active;
+    if (columnKey !== 'date' && columnKey !== 'created_time' && columnKey !== 'repair_count') return;
+    faultSort.value = {
+      field: faultSortFields[columnKey],
+      direction: active.order === 'ascend' ? 'asc' : 'desc'
+    };
+  } else {
+    faultSort.value = null;
+  }
+  pagination.value.page = 1;
+  void fetchData();
 }
 
 // 分页
@@ -714,7 +734,7 @@ const columns: DataTableColumns<Faults> = [
       return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true }, () => label)
     }
   },
-  { title: () => renderHeaderTitle(t('page.faults.repairCount')), key: 'repair_count', width: 100, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, String(row.repair_count ?? '0')) },
+  { title: () => renderHeaderTitle(t('page.faults.repairCount')), key: 'repair_count', width: 120, sorter: true, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, String(row.repair_count ?? '0')) },
   { title: () => renderHeaderTitle(t('page.faults.warranty')), key: 'warranty_status', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -726,8 +746,8 @@ const columns: DataTableColumns<Faults> = [
     }
   },
   { title: () => renderHeaderTitle(t('page.faults.problemDescription')), key: 'description', width: 200, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.description || '-') },
-  { title: () => renderHeaderTitle(t('page.faults.offShelfDate')), key: 'date', width: 120, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.date || '-') },
-  { title: () => renderHeaderTitle(t('page.faults.importTime')), key: 'created_time', width: 160,
+  { title: () => renderHeaderTitle(t('page.faults.offShelfDate')), key: 'date', width: 120, sorter: true, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.date || '-') },
+  { title: () => renderHeaderTitle(t('page.faults.importTime')), key: 'created_time', width: 160, sorter: true,
     render: (row: Faults) => {
       const s = row.created_time;
       if (!s) return '';
@@ -1052,8 +1072,8 @@ const exportFaultsFile = async () => {
       enable_all: onlyMySite,
       repair_result: searchResultStatus.value || undefined,
       has_abnormal_logs: searchHasAbnormalLogs.value || undefined,
-      start_date: searchStartDate.value ? new Date(searchStartDate.value).toISOString().split('T')[0] : undefined,
-      end_date: searchEndDate.value ? new Date(searchEndDate.value).toISOString().split('T')[0] : undefined,
+      start_date: searchStartDate.value || undefined,
+      end_date: searchEndDate.value || undefined,
       model: searchModel.value || undefined
     };
 
@@ -1288,6 +1308,7 @@ const exportFaultsFile = async () => {
         :row-key="(row: Faults) => row.id"
         :checked-row-keys="selectedRowKeys"
         @update:checked-row-keys="handleSelectionChange"
+        @update:sorter="handleFaultSortChange"
         :scroll-x="2000"
         striped
         class="sm:h-full"

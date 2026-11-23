@@ -420,8 +420,8 @@ const local: App.I18n.Schema = {
         hasAbnormalLogs: '匹配故障',
         inputSn: '请输入机器SN',
         afterSalesSpecialist: '售后专员',
-        startDate: '开始时间',
-        endDate: '结束时间',
+        startDate: '下架开始日期',
+        endDate: '下架结束日期',
         search: '搜索',
         expand: '展开',
         collapse: '折叠'

@@ -415,8 +415,8 @@ const local: App.I18n.Schema = {
         hasAbnormalLogs: 'Matched Faults',
         inputSn: 'Please input SN',
         afterSalesSpecialist: 'After-sales Specialist',
-        startDate: 'Start Date',
-        endDate: 'End Date',
+        startDate: 'Off-shelf From',
+        endDate: 'Off-shelf To',
         search: 'Search',
         expand: 'Expand',
         collapse: 'Collapse'

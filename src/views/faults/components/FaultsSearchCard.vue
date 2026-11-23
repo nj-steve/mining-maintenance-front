@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useId, watch } from 'vue';
-import { NButton, NCheckbox, NDatePicker, NInput, NSelect, useThemeVars } from 'naive-ui';
+import { computed, h, onMounted, onUnmounted, ref, useId, watch } from 'vue';
+import { NButton, NCheckbox, NDatePicker, NEllipsis, NInput, NSelect, useThemeVars } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
 import { useI18n } from 'vue-i18n';
 import CollapseChevron from '~icons/ant-design/down-outlined';
@@ -13,8 +13,8 @@ const theme = useThemeVars();
 const serial = defineModel<string>('serial', { default: '' });
 const workOrderNo = defineModel<string>('workOrderNo', { default: '' });
 const siteId = defineModel<number | null>('siteId', { default: null });
-const startDate = defineModel<number | null>('startDate', { default: null });
-const endDate = defineModel<number | null>('endDate', { default: null });
+const startDate = defineModel<string | null>('startDate', { default: null });
+const endDate = defineModel<string | null>('endDate', { default: null });
 const status = defineModel<number | null>('status', { default: null });
 const resultStatus = defineModel<number | null>('resultStatus', { default: null });
 const salerId = defineModel<number | null>('salerId', { default: null });
@@ -51,6 +51,20 @@ const panelStyle = computed(() => ({
   '--fault-filter-accent': theme.value.primaryColor
 }));
 
+function renderFilterOption(option: SelectOption, selected: boolean) {
+  const { label } = option;
+  if (typeof label === 'function') return label(option, selected);
+  return h(
+    NEllipsis,
+    {
+      tooltip: {
+        contentStyle: { maxWidth: 'min(420px, calc(100vw - 32px))', overflowWrap: 'anywhere', whiteSpace: 'normal' }
+      }
+    },
+    { default: () => String(label ?? '') }
+  );
+}
+
 async function fetchSalerOptions() {
   const { data, error } = await fetchUser({ page: 1, page_size: -1, status: 1, role: 2 });
   if (!error && data) {
@@ -86,6 +100,17 @@ watch(onlyMySite, value => {
     <form class="fault-filters__form" @submit.prevent="emit('search')">
       <div class="fault-filters__main">
         <div class="fault-filters__fields">
+          <NSelect
+            v-if="props.siteOptions.length > 1"
+            v-model:value="siteId"
+            size="small"
+            :options="props.siteOptions"
+            :render-label="renderFilterOption"
+            :placeholder="t('page.faults.site')"
+            :aria-label="t('page.faults.site')"
+            filterable
+            clearable
+          />
           <NInput
             v-model:value="serial"
             size="small"
@@ -101,19 +126,10 @@ watch(onlyMySite, value => {
             clearable
           />
           <NSelect
-            v-if="props.siteOptions.length > 1"
-            v-model:value="siteId"
-            size="small"
-            :options="props.siteOptions"
-            :placeholder="t('page.faults.site')"
-            :aria-label="t('page.faults.site')"
-            filterable
-            clearable
-          />
-          <NSelect
             v-model:value="status"
             size="small"
             :options="props.statusOptions"
+            :render-label="renderFilterOption"
             :placeholder="t('page.faults.searchCard.flowStatus')"
             :aria-label="t('page.faults.searchCard.flowStatus')"
             clearable
@@ -161,6 +177,7 @@ watch(onlyMySite, value => {
           v-model:value="resultStatus"
           size="small"
           :options="repairResultOptions"
+          :render-label="renderFilterOption"
           :placeholder="t('page.faults.searchCard.repairStatus')"
           :aria-label="t('page.faults.searchCard.repairStatus')"
           clearable
@@ -169,21 +186,24 @@ watch(onlyMySite, value => {
           v-model:value="repairType"
           size="small"
           :options="props.repairTypeOptions"
+          :render-label="renderFilterOption"
           :placeholder="t('page.faults.searchCard.type')"
           :aria-label="t('page.faults.searchCard.type')"
           clearable
         />
         <NDatePicker
-          v-model:value="startDate"
+          v-model:formatted-value="startDate"
           type="date"
+          value-format="yyyy-MM-dd"
           size="small"
           :placeholder="t('page.faults.searchCard.startDate')"
           :aria-label="t('page.faults.searchCard.startDate')"
           clearable
         />
         <NDatePicker
-          v-model:value="endDate"
+          v-model:formatted-value="endDate"
           type="date"
+          value-format="yyyy-MM-dd"
           size="small"
           :placeholder="t('page.faults.searchCard.endDate')"
           :aria-label="t('page.faults.searchCard.endDate')"
@@ -195,6 +215,7 @@ watch(onlyMySite, value => {
           size="small"
           class="fault-filters__saler"
           :options="salerOptions"
+          :render-label="renderFilterOption"
           :placeholder="t('page.faults.searchCard.afterSalesSpecialist')"
           :aria-label="t('page.faults.searchCard.afterSalesSpecialist')"
           filterable
