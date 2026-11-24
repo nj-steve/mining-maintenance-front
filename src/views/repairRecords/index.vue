@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h } from 'vue';
+import { refDebounced } from '@vueuse/core';
 import { NDataTable, useMessage, NButton, NTooltip, NTag, NDropdown, NIcon } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
@@ -55,6 +56,9 @@ const exportData = ref<Faults[]>([]);
 const loading = ref(false);
 const work_order_no = ref<string>('');
 const sn = ref<string>('');
+const macAddress = ref('');
+const macAddressFilter = refDebounced(macAddress, 250);
+const verifiedOnly = ref(false);
 const site_id = ref<number | undefined>(undefined);
 const repair_type = ref<number | undefined>(undefined);
 const siteOptions = ref<{ label: string; value: number }[]>([]);
@@ -236,12 +240,25 @@ const columns: DataTableColumns<any> = [
    {
   title: () => renderHeaderTitle(t('page.repairRecords.macAddress')),
   key: 'MacAddress',
-  width: 160,
+  width: 205,
   render: (row: any) => {
     if (!row.MacAddress) {
       return h('span', { class: 'text-sm text-gray-400' }, '-');
     }
-    return h('span', { class: 'text-sm text-gray-500 font-mono' }, row.MacAddress);
+    const verifiedLabel = t('page.repairRecords.macAddressVerified');
+    return h('div', { class: 'inline-flex items-center gap-2 whitespace-nowrap' }, [
+      h('span', { class: 'text-sm text-gray-500 font-mono' }, row.MacAddress),
+      row.mac_address_verified
+        ? h(NTooltip, { placement: 'top' }, {
+            trigger: () => h('span', {
+              class: 'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-base font-bold leading-none text-white ring-2 ring-emerald-100 dark:ring-emerald-900',
+              role: 'img',
+              'aria-label': verifiedLabel
+            }, '✓'),
+            default: () => verifiedLabel
+          })
+        : null
+    ]);
   }
 },
 {
@@ -436,7 +453,9 @@ const columns: DataTableColumns<any> = [
 ]
 
 // ---------------- 数据获取 ----------------
+let latestFetch = 0;
 const fetchData = async () => {
+  const fetchId = ++latestFetch;
   try {
     loading.value = true;
     const params: any = {
@@ -444,6 +463,8 @@ const fetchData = async () => {
       page_size: pagination.value.pageSize,
       work_order_no: work_order_no.value,
       sn: sn.value,
+      mac_address: macAddressFilter.value.trim(),
+      mac_address_verified: verifiedOnly.value || undefined,
       repair_result: repair_result.value,
       site_id: site_id.value,
       repair_type: repair_type.value
@@ -457,6 +478,7 @@ const fetchData = async () => {
     });
 
     const { data, error } = await fetchRepairDetails(params);
+    if (fetchId !== latestFetch) return;
     if(error==null){
         tableData.value = data.list;
         pagination.value.itemCount = Number(data.pagination.total) || 0;
@@ -466,9 +488,9 @@ const fetchData = async () => {
         message.error(t('page.repairRecords.loadFailed', { error }));
     }
   } catch (err) {
-    message.error(t('page.repairRecords.loadFailed', { error: String(err) }));
+    if (fetchId === latestFetch) message.error(t('page.repairRecords.loadFailed', { error: String(err) }));
   } finally {
-    loading.value = false;
+    if (fetchId === latestFetch) loading.value = false;
   }
 };
 
@@ -477,7 +499,7 @@ onMounted(() => {
   fetchData();
   getSiteList();
 });
-watch(() => [work_order_no.value, sn.value, repair_result.value, site_id.value, repair_type.value], () => {
+watch([work_order_no, sn, macAddressFilter, verifiedOnly, repair_result, site_id, repair_type], () => {
   tableData.value=[];
   pagination.value.page = 1;
   fetchData();
@@ -494,6 +516,8 @@ const exportCsv = async () => {
   try {
     const params: any = {
       sn: sn.value || undefined,
+      mac_address: macAddressFilter.value.trim() || undefined,
+      mac_address_verified: verifiedOnly.value || undefined,
       repair_result: repair_result.value || undefined,
       work_order_no: work_order_no.value || undefined,
     };
@@ -617,12 +641,16 @@ const handleFail = () => {
       <RepairSearchBar
               :work-order-no="work_order_no"
               :sn="sn"
+              :mac-address="macAddress"
+              :verified-only="verifiedOnly"
               :repair-result="repair_result"
               :site-id="site_id"
               :repair-type="repair_type"
               :site-options="siteOptions"
               @update:work-order-no="work_order_no = $event"
               @update:sn="sn = $event"
+              @update:mac-address="macAddress = $event"
+              @update:verified-only="verifiedOnly = $event"
               @update:repair-result="repair_result = $event"
               @update:site-id="site_id = $event"
               @update:repair-type="repair_type = $event"

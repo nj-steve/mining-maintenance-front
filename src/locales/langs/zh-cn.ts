@@ -799,6 +799,9 @@ const local: App.I18n.Schema = {
     repairRecords: {
       title: '维修明细',
       macAddress: 'MAC 地址',
+      macAddressVerified: 'MAC 已核验',
+      searchMacAddress: '输入 MAC 地址',
+      verifiedMacOnly: '仅核验通过',
       pleaseEnterWorkOrderNo: '请输入工单号',
       pleaseEnterMachineSn: '请输入机器SN',
       pleaseSelectSite: '请选择场地',

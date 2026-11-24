@@ -1024,6 +1024,9 @@ declare namespace App {
         repairRecords: {
         title: string;
         macAddress: string;
+        macAddressVerified: string;
+        searchMacAddress: string;
+        verifiedMacOnly: string;
         pleaseEnterWorkOrderNo: string;
         pleaseEnterMachineSn: string;
         pleaseSelectSite: string;

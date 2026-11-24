@@ -79,6 +79,7 @@ function formatDuration(seconds: number) {
 
 const isIntervalTask = (task: ScheduledTask) => (!task.schedule || task.schedule === 'interval') && task.interval_seconds > 0;
 const siteOffShelfCountsTask = 'site_off_shelf_counts_7d';
+const macVerificationTask = 'repair_detail_mac_verification';
 function scheduleLabel(task: ScheduledTask) {
   if (isIntervalTask(task)) return text('every', { duration: formatDuration(task.interval_seconds) });
   if (task.name === 'dashboard_stats') return text('dashboardSchedule');
@@ -271,6 +272,15 @@ const taskColumns = computed<DataTableColumns<ScheduledTask>>(() => [
   } }
 ]);
 
+const isMacVerificationHistory = computed(() => historyTask.value === macVerificationTask);
+const macRunMetrics = [
+  { key: 'verified_count', label: 'verifiedCount', width: 110 },
+  { key: 'skipped_empty_count', label: 'skippedEmptyCount', width: 110 },
+  { key: 'skipped_invalid_count', label: 'skippedInvalidCount', width: 130 },
+  { key: 'skipped_duplicate_count', label: 'skippedDuplicateCount', width: 120 }
+];
+const formatRunCount = (count?: number | null) => count == null ? '—' : count.toLocaleString(locale.value);
+
 const runColumns = computed<DataTableColumns<TaskRun>>(() => [
   { title: text('runID'), key: 'id', width: 74 },
   { title: text('trigger'), key: 'trigger', width: 114, render: row => h('div', [
@@ -278,6 +288,10 @@ const runColumns = computed<DataTableColumns<TaskRun>>(() => [
     row.attempt && row.attempt > 1 ? h('div', { class: 'task-code' }, text('attempt', { count: row.attempt })) : null
   ]) },
   { title: text('state'), key: 'status', width: 116, render: row => statusTag(row.status, worker.value?.online ?? false) },
+  ...(isMacVerificationHistory.value ? macRunMetrics.map(({ key, label, width }) => ({
+    title: text(label), key, width, align: 'right' as const,
+    render: (row: TaskRun) => formatRunCount(row.metrics?.[key])
+  })) : []),
   { title: text('startedAt'), key: 'started_at', width: 178, render: row => formatTime(row.started_at) },
   { title: text('finishedAt'), key: 'finished_at', width: 178, render: row => formatTime(row.finished_at) },
   { title: text('duration'), key: 'duration', width: 110, render: row => {
@@ -285,10 +299,8 @@ const runColumns = computed<DataTableColumns<TaskRun>>(() => [
     const ms = row.duration_ms ?? Date.parse(row.finished_at) - Date.parse(row.started_at);
     return Number.isFinite(ms) && ms >= 0 ? formatDuration(ms / 1000) : '—';
   } },
-  { title: text('processed'), key: 'processed_count', width: 96, render: row =>
-    row.processed_count == null ? '—' : row.processed_count.toLocaleString(locale.value) },
-  { title: text('failedCount'), key: 'failed_count', width: 96, render: row =>
-    row.failed_count == null ? '—' : row.failed_count.toLocaleString(locale.value) },
+  { title: text('processed'), key: 'processed_count', width: 96, render: row => formatRunCount(row.processed_count) },
+  { title: text('failedCount'), key: 'failed_count', width: 96, render: row => formatRunCount(row.failed_count) },
   { title: text('error'), key: 'error', minWidth: 230, render: row => h('span', { class: 'history-error' }, row.error || '—') }
 ]);
 
@@ -351,7 +363,7 @@ onBeforeUnmount(() => {
           <NButton size="small" :loading="historyLoading" @click="loadHistory()">{{ text('refresh') }}</NButton>
         </div>
         <NAlert v-if="historyError" type="error" class="mb-12px">{{ historyError }}</NAlert>
-        <NDataTable :columns="runColumns" :data="history" :loading="historyLoading" :row-key="row => row.id" :scroll-x="1192" size="small">
+        <NDataTable :columns="runColumns" :data="history" :loading="historyLoading" :row-key="row => row.id" :scroll-x="isMacVerificationHistory ? 1662 : 1192" size="small">
           <template #empty><NEmpty :description="text(historyError ? 'loadHistoryFailed' : 'noRuns')" /></template>
         </NDataTable>
         <template #footer>
@@ -378,7 +390,7 @@ onBeforeUnmount(() => {
         </NFormItem>
         <NFormItem
           v-if="settings.schedule !== 'manual'"
-          :label="text(settings.name === siteOffShelfCountsTask ? 'runOnEachStartup' : 'runOnStart')"
+          :label="text(settings.name === siteOffShelfCountsTask || settings.name === macVerificationTask ? 'runOnEachStartup' : 'runOnStart')"
         >
           <NSwitch v-model:value="settingsRunOnStart" />
         </NFormItem>

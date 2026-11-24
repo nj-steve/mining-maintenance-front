@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { NInput, NSelect } from 'naive-ui';
+import { NCheckbox, NInput, NSelect } from 'naive-ui';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -20,6 +20,8 @@ const translatedRepairResultOptions = computed(() => [
 const props = defineProps<{
   workOrderNo: string;
   sn: string;
+  macAddress: string;
+  verifiedOnly: boolean;
   repairResult?: number;
   siteId?: number;
   repairType?: number;
@@ -29,6 +31,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:work-order-no', val: string): void;
   (e: 'update:sn', val: string): void;
+  (e: 'update:mac-address', val: string): void;
+  (e: 'update:verified-only', val: boolean): void;
   (e: 'update:repair-result', val?: number): void;
   (e: 'update:site-id', val?: number): void;
   (e: 'update:repair-type', val?: number): void;
@@ -36,7 +40,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div style="display: flex; gap: 8px; align-items: center;">
+  <div class="flex flex-wrap items-center gap-2">
 
     <NInput
       :value="workOrderNo"
@@ -44,7 +48,7 @@ const emit = defineEmits<{
       clearable
       size="small"
       class="text-sm"
-      style="width: 280px"
+      style="width: 220px"
       @update:value="emit('update:work-order-no', $event)"
     />
     <NInput
@@ -53,8 +57,16 @@ const emit = defineEmits<{
       clearable
       size="small"
       class="text-sm"
-      style="width: 280px"
+      style="width: 220px"
       @update:value="emit('update:sn', $event)"
+    />
+    <NInput
+      :value="macAddress"
+      :placeholder="t('page.repairRecords.searchMacAddress')"
+      clearable
+      size="small"
+      style="width: 200px"
+      @update:value="emit('update:mac-address', $event)"
     />
      <NSelect
       v-if="siteOptions"
@@ -88,5 +100,8 @@ const emit = defineEmits<{
       style="width: 120px;"
       @update:value="emit('update:repair-result', $event)"
     />
+    <NCheckbox :checked="verifiedOnly" size="small" @update:checked="emit('update:verified-only', $event)">
+      {{ t('page.repairRecords.verifiedMacOnly') }}
+    </NCheckbox>
   </div>
 </template>

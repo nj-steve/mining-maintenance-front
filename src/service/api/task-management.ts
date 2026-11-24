@@ -32,6 +32,7 @@ export interface TaskRun {
   attempt?: number;
   processed_count?: number | null;
   failed_count?: number | null;
+  metrics?: Record<string, number>;
   error: string;
 }
 

@@ -43,7 +43,12 @@
         <n-descriptions :column="1" label-placement="left" bordered size="small" class="text-sm">
           <n-descriptions-item>
             <template #label><span class="text-sm text-gray-500">{{ t("page.repairRecords.macAddress") }}</span></template>
-            <template v-if="!isEdit"><span class="text-sm text-gray-600">{{ form.mac_address }}</span></template>
+            <template v-if="!isEdit">
+              <span class="text-sm text-gray-600">{{ form.mac_address }}</span>
+              <n-tag v-if="verifiedMacAddress && form.mac_address === verifiedMacAddress" class="ml-2" type="success" size="small" :bordered="false">
+                {{ t('page.repairRecords.macAddressVerified') }}
+              </n-tag>
+            </template>
             <n-input v-else size="small" class="text-sm" v-model:value="form.mac_address" />
           </n-descriptions-item>
 
@@ -272,7 +277,7 @@
   // @ts-ignore
   import dayjs from 'dayjs';
   import { useMessage } from 'naive-ui';
-  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace, NCheckbox, NCheckboxGroup, NModal, NConfigProvider, GlobalThemeOverrides } from "naive-ui"
+  import { NCard, NDescriptions, NDescriptionsItem, NInput, NButton, NDatePicker, NSelect, NDynamicInput, NSpace, NCheckbox, NCheckboxGroup, NModal, NConfigProvider, NTag, GlobalThemeOverrides } from "naive-ui"
   import { fetchRepairDetailsByID, updateRepairDetails } from '@/service/api/repair'
   import { repairResultOptions, repairResultMap } from '@/constants/business'
   import QiniuImageUpload from '@/components/upload/QiniuImageUpload.vue'
@@ -313,6 +318,7 @@
     }
   }
 
+  const verifiedMacAddress = ref<string>()
   const form = ref({
     date: dayjs().format('YYYY-MM-DD'),
     work_order_no: "",
@@ -440,6 +446,7 @@
       // console.log("data",data)
       if (error === null && data !== null) {
         const detail = data; // 假设返回的是数组，取第一个
+        verifiedMacAddress.value = detail.mac_address_verified === true ? detail.MacAddress : undefined;
         form.value = {
           date: detail.Date ? dayjs(detail.Date).format('YYYY-MM-DD') : dayjs(detail.CreatedAt).format('YYYY-MM-DD HH:mm'),
           work_order_no: detail.WorkOrderNo || '',
