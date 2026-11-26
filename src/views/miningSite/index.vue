@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
+import { refDebounced, useMediaQuery } from '@vueuse/core';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace, NTooltip, NSwitch, NCheckbox, NCheckboxGroup, NEmpty } from 'naive-ui';
+import type { DataTableColumns, PaginationProps, TagProps } from 'naive-ui';
+import ReportIcon from '~icons/ant-design/dashboard-outlined';
+import AssetIcon from '~icons/ant-design/hdd-outlined';
+import OffShelfIcon from '~icons/ant-design/arrow-down-outlined';
+import OnShelfIcon from '~icons/ant-design/arrow-up-outlined';
+import RepairIcon from '~icons/ant-design/tool-outlined';
+import RefreshIcon from '~icons/ant-design/reload-outlined';
+import InfoIcon from '~icons/ant-design/info-circle-outlined';
+import SiteLinkIcon from '~icons/ant-design/right-outlined';
 import { useAuthStore } from '@/store/modules/auth';
-import { NDataTable, useMessage, NButton, useDialog,NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NSpace, NTooltip, NSwitch, NCheckbox, NCheckboxGroup } from 'naive-ui';
-import { Icon } from '@iconify/vue';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { fetchSites,updateSites,fetchUser, UpdateSiteHistory, fetchOrders } from '@/service/api';
+import { fetchSites, updateSites, fetchUser, UpdateSiteHistory, fetchOrders } from '@/service/api';
 import { siteStatusRecord } from '@/constants/business';
 import SearchBar from './components/SearchBar.vue';
 
@@ -54,17 +62,32 @@ interface Site {
 
 const message = useMessage();
 const router = useRouter();
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const narrowLayout = useMediaQuery('(max-width: 760px)');
 
 const tableData = ref<Site[]>([]);
-const loading = ref(false);
+const loading = ref(true);
+const loadFailed = ref(false);
 const searchSerial = ref<string>('');
+const siteNameFilter = refDebounced(searchSerial, 250);
 const selectedSalerId = ref<number | null>(null);
 const selectedSiteStatus = ref<number | null>(null);
 const bindTypeModel = ref<string | null>(null);
-const borderBindTypeModel = ref<string | null>(null);
 const searchDate = ref<string | null>(null);
 const statusModel = ref<string>('active');
+const onlyMySite = ref(localStorage.getItem('onlyMySite') === 'true');
+
+const summaryMetrics = [
+  { key: 'asset_count', label: 'assetCount', icon: AssetIcon, tone: 'asset' },
+  { key: 'fault_count', label: 'offShelfCount', icon: OffShelfIcon, tone: 'off-shelf' },
+  { key: 'today_shelf_count', label: 'onShelfCount', icon: OnShelfIcon, tone: 'on-shelf' },
+  { key: 'repairing', label: 'repairingCount', icon: RepairIcon, tone: 'repair' }
+] as const;
+const reportTotals = computed(() => tableData.value.reduce((totals, site) => {
+  for (const { key } of summaryMetrics) totals[key] += Number(site[key]) || 0;
+  return totals;
+}, { asset_count: 0, fault_count: 0, today_shelf_count: 0, repairing: 0 }));
+const numberFormatter = computed(() => new Intl.NumberFormat(locale.value));
 
 // 分页
 const pagination = ref<PaginationProps>({
@@ -227,72 +250,82 @@ const fetchUsers = async () => {
     message.error(t('page.miningSite.getUsersFailed') +error);
   }
 }
-// ---------------- 表格列 ----------------
-const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
-const columns: DataTableColumns<Site> = [
+type CountKey = 'asset_count' | 'fault_count' | 'today_shelf_count' | 'repairing' | 'wait_repair_count'
+  | 'in_logistics_count' | 'repair_finished_count' | 'wait_on_shelf_count' | 'wait_warehouse_count'
+  | 'abnormal_count' | 'scrapped_count';
+
+const renderHeaderTitle = (label: string) => h('span', { class: 'report-column-heading' }, label);
+const metricHeading = (label: string, hint: string) => h('span', { class: 'report-metric-heading' }, [
+  renderHeaderTitle(t(`page.miningSite.${label}`)),
+  h(NTooltip, { placement: 'top' }, {
+    trigger: () => h('span', { class: 'report-column-info', 'aria-label': t(`page.miningSite.${hint}`), tabindex: 0 }, [h(InfoIcon)]),
+    default: () => t(`page.miningSite.${hint}`)
+  })
+]);
+
+function renderCount(count: number, tone?: string) {
+  return h('span', {
+    class: ['report-count', count === 0 ? 'report-count--zero' : count < 0 ? 'report-count--negative' : tone && `report-count--${tone}`]
+  }, numberFormatter.value.format(count));
+}
+
+function countColumn(key: CountKey, label: string, hint: string, width: number, tone?: string): DataTableColumns<Site>[number] {
+  return {
+    title: () => metricHeading(label, hint),
+    key,
+    width,
+    align: 'right',
+    sorter: (a, b) => Number(a[key] ?? 0) - Number(b[key] ?? 0),
+    render: row => renderCount(Number(row[key] ?? 0), tone)
+  };
+}
+
+const openSite = (row: Site) => router.push(`/miningsite/${row.id}/info`);
+const netFaultCount = (row: Site) => (row.in_logistics_count || 0) + (row.wait_repair_count || 0) + (row.repairing || 0);
+const siteStatusTones: Record<string, TagProps['type']> = {
+  active: 'success', inactive: 'default', remove: 'error', pendingRemoval: 'warning', rental: 'info'
+};
+const repairStatusTones: Record<string, TagProps['type']> = {
+  0: 'default', 1: 'success', 2: 'primary', 3: 'warning', pendingRemoval: 'warning', rental: 'info'
+};
+
+function renderOrderBinding(type: string | undefined, orderNumber?: string) {
+  const binding = type || 'manual';
+  const label = binding === 'auto' || binding === 'manual' ? t(`page.miningSite.${binding}`) : binding;
+  return h('div', { class: 'report-binding' }, [
+    h(NTag, { type: binding === 'auto' ? 'info' : 'default', size: 'small', bordered: false, round: true }, () => label),
+    orderNumber ? h('span', { class: 'report-binding-number', title: orderNumber }, orderNumber) : null
+  ]);
+}
+
+function renderRowActions(row: Site) {
+  const action = (label: 'editDailyReport' | 'dailyReport' | 'edit' | 'view', handler: () => void) =>
+    h(NButton, { text: true, size: 'small', type: label === 'view' ? 'primary' : 'default', onClick: handler }, () => t(`page.miningSite.${label}`));
+
+  if (!hasRole && !isRead) return action('editDailyReport', () => handleOpenEditHistory(row));
+
+  return h('div', { class: 'report-row-actions' }, [
+    isAdmin ? action('dailyReport', () => handleOpenEditHistory(row)) : null,
+    hasRole && !isRead ? action('edit', () => handleOpenEdit(row)) : null,
+    hasRole ? action('view', () => openSite(row)) : null
+  ]);
+}
+
+const columns = computed<DataTableColumns<Site>>(() => [
   {
     title: () => renderHeaderTitle(t('page.miningSite.siteName')),
     key: 'name',
-    width: 200,
-    fixed: 'left',
-    render: (row: Site) => {
-      const content = row.name || '';
-      return h(
-        NTooltip,
-        { placement: 'top' },
-        {
-          default: () => content,
-          trigger: () =>
-            h(
-              'div',
-              {
-                style: {
-                  width: '200px',
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                  textOverflow: 'ellipsis',
-                  cursor: 'pointer'
-                },
-                title: content,
-                onClick: () => {
-                  router.push(`/miningsite/${row.id}/info`);
-                }
-              },
-              h('span', { class: 'text-sm text-gray-900 font-medium' }, content)
-            )
-        }
-      );
-    }
+    width: narrowLayout.value ? 146 : 200,
+    fixed: narrowLayout.value ? undefined : 'left',
+    render: row => h('button', {
+      type: 'button',
+      class: 'report-site-link',
+      title: row.name,
+      onClick: () => openSite(row)
+    }, [h('span', row.name), h(SiteLinkIcon, { 'aria-hidden': 'true' })])
   },
-  {
-    title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:100px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.assetCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.totalHostedMachines'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 130,
-    key: 'asset_count',
-    sorter: (row1: Site, row2: Site) => (row1.asset_count || 0) - (row2.asset_count || 0),
-    render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.asset_count?.toLocaleString() || 0)
-  },
-  {
+  countColumn('asset_count', 'assetCount', 'totalHostedMachines', narrowLayout.value ? 96 : 110),
+  /*{
     title: () => renderHeaderTitle(t('page.miningSite.expectedAssetCount')),
     key: 'yuqi_asset_count',
     width: 130,
@@ -318,574 +351,120 @@ const columns: DataTableColumns<Site> = [
       const formattedVal = Number(val.toFixed(2)).toLocaleString();
       return h('span', { class: 'text-sm text-gray-500' }, `${formattedVal} ${unit}`);
     }
+  },*/
+  countColumn('fault_count', 'offShelfCount', 'offShelfCountHint', narrowLayout.value ? 96 : 108, 'off-shelf'),
+  countColumn('today_shelf_count', 'onShelfCount', 'onShelfCountHint', 108, 'on-shelf'),
+  countColumn('repairing', 'repairingCount', 'repairingCountTooltip', 108, 'repair'),
+  countColumn('wait_repair_count', 'waitRepairCount', 'waitRepairCountTooltip', 108),
+  countColumn('in_logistics_count', 'inLogistics', 'inLogisticsTooltip', 118),
+  countColumn('repair_finished_count', 'repairFinishedCount', 'repairFinishedCountTooltip', 124),
+  countColumn('wait_on_shelf_count', 'pendingShelf', 'pendingShelfTooltip', 134),
+  countColumn('wait_warehouse_count', 'waitWarehouseCount', 'waitWarehouseCountTooltip', 124),
+  {
+    title: () => metricHeading('waitRepairRate', 'waitRepairRateTooltip'),
+    key: 'wait_repair_rate',
+    width: 138,
+    align: 'right',
+    sorter: (a, b) => (a.wait_repair_rate || 0) - (b.wait_repair_rate || 0),
+    render: row => h('span', { class: 'report-count' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`)
   },
   {
-    title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:130px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.fault24hCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.fault24hCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ),
-    width: 155, key: 'fault_count', sorter: (row1: Site, row2: Site) => (row1.fault_count || 0) - (row2.fault_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.fault_count)},
-
-    { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.inLogistics')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.inLogisticsTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 130, key: 'in_logistics_count', sorter: (row1: Site, row2: Site) => (row1.in_logistics_count || 0) - (row2.in_logistics_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.in_logistics_count.toLocaleString() || 0) },
-      { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.repairingCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.repairingCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 120, key: 'repairing', sorter: (row1: Site, row2: Site) => (row1.repairing || 0) - (row2.repairing || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.repairing.toLocaleString() || 0) },
-
-      { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.repairFinishedCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.repairFinishedCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 140, key: 'repair_finished_count', sorter: (row1: Site, row2: Site) => (row1.repair_finished_count || 0) - (row2.repair_finished_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.repair_finished_count ?? 0).toLocaleString()) },
-      { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.pendingShelf')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.pendingShelfTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 160, key: 'wait_on_shelf_count', sorter: (row1: Site, row2: Site) => (row1.wait_on_shelf_count || 0) - (row2.wait_on_shelf_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.wait_on_shelf_count.toLocaleString() || 0) },
-  { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:120px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.waitWarehouseCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.waitWarehouseCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 130, key: 'wait_warehouse_count', sorter: (row1: Site, row2: Site) => (row1.wait_warehouse_count || 0) - (row2.wait_warehouse_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.wait_warehouse_count ?? 0).toLocaleString()) },
-  // { title: '待上架', width: 120, key: 'wait_on_shelf_count',render: (row: Site) => row.wait_on_shelf_count.toLocaleString() || 0 },
-
-  // { title: '在修数', width: 120, key: 'repairing',render: (row: Site) => row.repairing.toLocaleString() || 0 },
-  // { title: () =>
-  //     h(
-  //       'div',
-  //       { style: 'display:flex; align-items:center; gap:4px;width:180px;' },
-  //       [
-  //         h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.onShelfWaitRepairCount')),
-  //         h(
-  //           NTooltip,
-  //           { placement: 'top' },
-  //           {
-  //             default: () => t('page.miningSite.onShelfWaitRepairCountTooltip'),
-  //             trigger: () =>
-  //               h(Icon, {
-  //                 icon: 'ant-design:question-circle-outlined',
-  //                 width: 14,
-  //                 height: 14,
-  //                 color: '#999',
-  //                 style: 'cursor:pointer;'
-  //               })
-  //           }
-  //         )
-  //       ]
-  //     ), width: 215, key: 'on_shelf_wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.on_shelf_wait_repair_count || 0) - (row2.on_shelf_wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.on_shelf_wait_repair_count.toLocaleString() || 0) },
-// 异常机器数
+    title: () => metricHeading('netFaultCount', 'netFaultCountTooltip'),
+    key: 'net_fault_count',
+    width: 132,
+    align: 'right',
+    sorter: (a, b) => netFaultCount(a) - netFaultCount(b),
+    render: row => renderCount(netFaultCount(row))
+  },
+  countColumn('abnormal_count', 'abnormalCount', 'abnormalCountTooltip', 132),
+  countColumn('scrapped_count', 'scrappedCount', 'scrappedCountTooltip', 136),
   {
-    title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:140px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.abnormalCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.abnormalCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:exclamation-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ),
-    width: 160,
-    key: 'abnormal_count',
-    sorter: (row1: Site, row2: Site) => (row1.abnormal_count || 0) - (row2.abnormal_count || 0),
-    render: (row: Site) => {
-      const v = row.abnormal_count ?? 0;
-      const className = v < 0 ? 'text-sm text-red-500 font-medium' : 'text-sm text-gray-500';
-      return h('span', { class: className }, Number(v).toLocaleString());
-    }
+    title: () => renderHeaderTitle(t('page.miningSite.machineOrderBind')),
+    width: 172,
+    key: 'bind_type',
+    render: row => renderOrderBinding(row.bind_type, row.order_no)
   },
   {
-    title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:140px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.todayShelfCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.todayShelfCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:exclamation-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ),
-    width: 140,
-    key: 'today_shelf_count',
-    sorter: (row1: Site, row2: Site) => (row1.today_shelf_count || 0) - (row2.today_shelf_count || 0),
-    render: (row: Site) => {
-      const v = row.today_shelf_count ?? 0;
-      const className = v < 0 ? 'text-sm text-red-500 font-medium' : 'text-sm text-gray-500';
-      return h('span', { class: className }, Number(v).toLocaleString());
-    }
+    title: () => renderHeaderTitle(t('page.miningSite.boardOrderBind')),
+    width: 172,
+    key: 'board_bind_type',
+    render: row => renderOrderBinding(row.board_bind_type, row.board_order_no)
   },
-  { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:6px;width:180px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.waitRepairCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.waitRepairCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 140, key: 'wait_repair_count', sorter: (row1: Site, row2: Site) => (row1.wait_repair_count || 0) - (row2.wait_repair_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, (row.wait_repair_count)?.toLocaleString?.() || '0') },
-  { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:4px;width:120px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.waitRepairRate')),
-          // h(
-          //   NTooltip,
-          //   { placement: 'top' },
-          //   {
-          //     default: () => t('page.miningSite.waitRepairRateTooltip'),
-          //     trigger: () =>
-          //       h(Icon, {
-          //         icon: 'ant-design:question-circle-outlined',
-          //         width: 14,
-          //         height: 14,
-          //         color: '#999',
-          //         style: 'cursor:pointer;'
-          //       })
-          //   }
-          // )
-        ]
-      ), width: 140, key: 'wait_repair_rate', sorter: (row1: Site, row2: Site) => (row1.wait_repair_rate || 0) - (row2.wait_repair_rate || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500', title: t('page.miningSite.waitRepairRateTooltip') }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
-  // { title: '待修率', width: 120, key: 'wait_repair_rate', render: (row: Site) => h('span', { title: '未下架+已下架+待处理 机器' }, `${Number(row.wait_repair_rate ?? 0).toFixed(2)}%`) },
-  { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.netFaultCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.netFaultCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 150, key: 'net_fault_count', sorter: (row1: Site, row2: Site) => ((row1.in_logistics_count||0)+(row1.wait_repair_count||0)+(row1.repairing||0)) - ((row2.in_logistics_count||0)+(row2.wait_repair_count||0)+(row2.repairing||0)), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, ((row.in_logistics_count||0)+(row.wait_repair_count||0)+(row.repairing||0)).toLocaleString?.() || String((row.in_logistics_count||0)+(row.wait_repair_count||0)+(row.repairing||0))) },
-  { title: () =>
-      h(
-        'div',
-        { style: 'display:flex; align-items:center; gap:4px;width:150px;' },
-        [
-          h('span', { class: 'text-xs font-medium text-gray-500' }, t('page.miningSite.scrappedCount')),
-          h(
-            NTooltip,
-            { placement: 'top' },
-            {
-              default: () => t('page.miningSite.scrappedCountTooltip'),
-              trigger: () =>
-                h(Icon, {
-                  icon: 'ant-design:question-circle-outlined',
-                  width: 14,
-                  height: 14,
-                  color: '#999',
-                  style: 'cursor:pointer;'
-                })
-            }
-          )
-        ]
-      ), width: 160, key: 'scrapped_count', sorter: (row1: Site, row2: Site) => (row1.scrapped_count || 0) - (row2.scrapped_count || 0), render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.scrapped_count.toLocaleString() || 0) },
-  // { title: '预报废数', key: 'scrapped_count',render: (row: Site) => row.scrapped_count.toLocaleString() || 0 },
-   { title: () => renderHeaderTitle(t('page.miningSite.machineOrderBind')), width: 220, key: 'bind_type', render: (row: Site) => {
-      const typeMap: Record<string, { text: string, type: 'success' | 'warning' | 'default' }> = {
-          'auto': { text: t('page.miningSite.auto'), type: 'success' },
-          'manual': { text: t('page.miningSite.manual'), type: 'warning' }
-      };
-      const type = row.bind_type || 'manual';
-      const config = typeMap[type] || { text: type, type: 'default' };
-
-      return h('div', { class: 'flex flex-col gap-1' }, [
-        h('div', { class: 'flex items-center gap-2' }, [
-          h(NTag, { class: 'text-sm', type: config.type, size: 'small' }, () => config.text),
-          // 如果需要展示绑定类型文本，可以在这里添加
-        ]),
-        row.order_no ? h('span', { class: 'text-xs text-gray-500' }, row.order_no) : null
-      ]);
-  }},
-  { title: () => renderHeaderTitle(t('page.miningSite.boardOrderBind')), width: 220, key: 'board_bind_type', render: (row: Site) => {
-      const typeMap: Record<string, { text: string, type: 'success' | 'warning' | 'default' }> = {
-          'auto': { text: t('page.miningSite.auto'), type: 'success' },
-          'manual': { text: t('page.miningSite.manual'), type: 'warning' }
-      };
-      const type = row.board_bind_type || 'manual';
-      const config = typeMap[type] || { text: type, type: 'default' };
-
-      return h('div', { class: 'flex flex-col gap-1' }, [
-        h('div', { class: 'flex items-center gap-2' }, [
-          h(NTag, { class: 'text-sm', type: config.type, size: 'small' }, () => config.text),
-        ]),
-        row.board_order_no ? h('span', { class: 'text-xs text-gray-500' }, row.board_order_no) : null
-      ]);
-  }},
-
   {
     title: () => renderHeaderTitle(t('page.miningSite.statusLabel')),
-    width: 100,
+    width: 112,
     key: 'status',
-    render: (row: Site) => {
+    render: row => {
       const status = row.status || '';
-      let type: 'success' | 'error' | 'warning' = 'warning';
-      let label = status;
-
-      if (status === 'active') {
-        type = 'success';
-        label = t('page.miningSite.status.active');
-      } else if (status === 'inactive') {
-        type = 'warning';
-        label = t('page.miningSite.status.inactive');
-      } else if (status === 'remove') {
-        type = 'error';
-        label = t('page.miningSite.status.remove');
-      }else if (status === 'pendingRemoval') {
-        type = 'warning';
-        label = t('page.miningSite.status.pendingRemoval');
-      }else if (status === 'rental') {
-        type = 'success';
-        label = t('page.miningSite.status.rental');
-      }
-
-
-      return h(NTag, { class: 'text-sm', type, size: 'small' }, () => label);
+      if (!status) return '—';
+      const known = Object.hasOwn(siteStatusTones, status);
+      return h(NTag, { type: known ? siteStatusTones[status] : 'default', size: 'small', bordered: false, round: true },
+        () => known ? t(`page.miningSite.status.${status}`) : status);
     }
   },
-
-  { title: () => renderHeaderTitle(t('page.miningSite.repairStatus')), width: 120, key: 'site_status',render: (row: any ) => {
-    const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-      0: 'default',
-      1: 'success',
-      2: 'primary',
-      3: 'warning',
-      pendingRemoval: 'warning',
-      rental: 'info',
-    };
-    const key = String(row.site_status);
-    return h(NTag, { class: 'text-sm', type: tagMap[key] }, () => siteStatusRecord[key] ?? String(row.site_status))
-  } },
-   ...(hasRole ? [{ title: () => renderHeaderTitle(t('page.miningSite.afterSalesSpecialist')), width: 120, key: 'saler_name', render: (row: Site) => h('span', { class: 'text-sm text-gray-500' }, row.saler_name || '') }] : []),
+  {
+    title: () => renderHeaderTitle(t('page.miningSite.repairStatus')),
+    width: 132,
+    key: 'site_status',
+    render: row => {
+      const key = String(row.site_status);
+      return h(NTag, { type: repairStatusTones[key] ?? 'default', size: 'small', bordered: false, round: true },
+        () => siteStatusRecord[key] ?? key);
+    }
+  },
+  ...(hasRole ? [{
+    title: () => renderHeaderTitle(t('page.miningSite.afterSalesSpecialist')),
+    width: 150,
+    key: 'saler_name',
+    render: (row: Site) => h('span', { class: 'report-meta' }, row.saler_name || '—')
+  }] : []),
   {
     title: () => renderHeaderTitle(t('page.miningSite.operation')),
     key: 'actions',
-    width: 180,
-    fixed: 'right',
-    align:'center',
-    render: (row: Site) => {
-      if(!hasRole && !isRead){
-             return h(
-        NButton,
-        {
-          ghost: true,
-          size:'small',
-          class: 'text-sm text-gray-500',
-          style: 'color: #6b7280;',
-          onClick: () => {
-            handleOpenEditHistory(row)
-            // router.push(`/sitereport?site_id=${row.id}`)
-          }
-        },
-        { default: () => t('page.miningSite.editDailyReport') }
-      );
-      }
-      if(isAdmin){
-        return h(
-          NSpace,
-          { size: 8, justify: 'center' },
-          {
-            default: () => [
-              h(
-                NButton,
-                {
-                  ghost: true,
-                  size:'small',
-                  class: 'text-sm text-gray-500',
-                  style: 'color: #6b7280;',
-                  onClick: () => {
-                    handleOpenEditHistory(row)
-                  }
-                },
-                { default: () => t('page.miningSite.dailyReport') }
-              ),
-              h(
-                NButton,
-                {
-                  ghost: true,
-                  size:'small',
-                  class: 'text-sm text-gray-500',
-                  style: 'color: #6b7280;',
-                  onClick: () => handleOpenEdit(row)
-                },
-                {
-                  default: () => t('page.miningSite.edit'),
-                }
-              ),
-              h(
-                NButton,
-                {
-                  ghost: true,
-                  size:'small',
-                  class: 'text-sm text-gray-500',
-                  style: 'color: #6b7280;',
-                  onClick: () => {
-                    router.push(`/miningsite/${row.id}/info`);
-                  }
-                },
-                {
-                  default: () => t('page.miningSite.view'),
-                }
-              )
-            ]
-          }
-        )
-      }
-      // 已移除重复的 isAdmin 分支内容
-      if (hasRole) {
-        const actions = [];
-        if (!isRead) {
-          actions.push(h(
-            NButton,
-            {
-              ghost: true,
-              size: 'small',
-              class: 'text-sm text-gray-500',
-              style: "margin-right: 8px;color: #6b7280;",
-              onClick: () => handleOpenEdit(row)
-            },
-            {
-              default: () => t('page.miningSite.edit'),
-            }
-          ));
-        }
-        actions.push(h(
-          NButton,
-          {
-            ghost: true,
-            size: 'small',
-            class: 'text-sm text-gray-500',
-            style: 'color: #6b7280;',
-            onClick: () => {
-              router.push(`/miningsite/${row.id}/info`);
-            }
-          },
-          {
-            default: () => t('page.miningSite.view'),
-          }
-        ));
-        return actions;
-      }
-    }
+    width: 154,
+    fixed: narrowLayout.value ? undefined : 'right',
+    align: 'center',
+    render: renderRowActions
   }
-];
+]);
+const tableWidth = computed(() => columns.value.reduce((width, column) => width + Number(column.width || 0), 0));
 
 // ---------------- 数据获取 ----------------
+let latestRequest = 0;
 const fetchData = async () => {
+  const request = ++latestRequest;
   loading.value = true;
-  let onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1
-  // console.log("selectedSiteStatus.value",selectedSiteStatus.value)
-  const params: any = {
+  loadFailed.value = false;
+  const params = {
     page: 1,
     page_size: -1,
-    name: searchSerial.value || undefined,
-    enable_all: onlyMySite,//1 全部，-1 我的
+    name: siteNameFilter.value.trim() || undefined,
+    enable_all: onlyMySite.value ? -1 : 1,
     saler_id: selectedSalerId.value || undefined,
     bind_type: bindTypeModel.value || undefined,
-    border_bind_type: borderBindTypeModel.value || undefined,
-    site_status: selectedSiteStatus.value===0 ? 0 : selectedSiteStatus.value || undefined,
+    site_status: selectedSiteStatus.value ?? undefined,
     status: statusModel.value || undefined,
+    date_time: searchDate.value || undefined
   };
 
-  if (searchDate.value) {
-    const startDate = new Date(searchDate.value);
-    const endDate = new Date(searchDate.value);
-
-    // 设置开始时间为当天的 00:00:00
-    startDate.setHours(0, 0, 0, 0);
-    // 设置结束时间为当天的 23:59:59
-    endDate.setHours(23, 59, 59, 999);
-
-    // Convert back to string with local timezone to prevent UTC offset shift
-    // Or simpler, just append time to the selected string
-    // params.datetime = `${searchDate.value}T00:00:00`;
-    params.date_time = `${searchDate.value}`;
-  }
-
-  // console.log("params",params)
-
   try {
-    const {data,error} = await fetchSites(params);
-    if(error==null){
-        if (data && data.list) {
-            tableData.value = data.list;
-        } else {
-            tableData.value = [];
-        }
-    }else{
-        message.error(t('page.miningSite.loadFailed') + error);
+    const { data, error } = await fetchSites(params);
+    if (request !== latestRequest) return;
+    if (error) {
+      loadFailed.value = true;
+      tableData.value = [];
+      message.error(t('page.miningSite.loadFailed') + error);
+    } else {
+      tableData.value = data?.list ?? [];
     }
   } catch (err) {
-    message.error(t('page.miningSite.loadFailed') + err);
+    if (request === latestRequest) {
+      loadFailed.value = true;
+      tableData.value = [];
+      message.error(t('page.miningSite.loadFailed') + err);
+    }
   } finally {
-    loading.value = false;
+    if (request === latestRequest) loading.value = false;
   }
 };
 
@@ -893,12 +472,9 @@ onMounted(() => {
   fetchData()
   fetchUsers();
 });
-watch([searchSerial, selectedSalerId, selectedSiteStatus, bindTypeModel, borderBindTypeModel, searchDate, statusModel], () => {
-  tableData.value = [];
+watch([siteNameFilter, selectedSalerId, selectedSiteStatus, bindTypeModel, searchDate, statusModel, onlyMySite], () => {
   pagination.value.page = 1;
-  fetchData();
-  fetchUsers();
-
+  void fetchData();
 });
 const siteStatusOptions = computed(() => {
   return Object.entries(siteStatusRecord).map(([value, label]) => ({ label, value: Number(value) }));
@@ -918,75 +494,81 @@ const siteStatusSelected = computed<number[]>({
     editForm.value.site_status = vals.reduce((acc, v) => acc | v, 0);
   }
 });
-const onSearch = () => {
-  tableData.value = [];
-  pagination.value.page = 1;
-  fetchData();
-};
-const onlyMySite = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
-// watch(onlyMySite, v => localStorage.setItem('onlyMySite', v.toString()));
-const onOnlyMySiteChange = (v: boolean) => {
-  onlyMySite.value = v;
-  localStorage.setItem('onlyMySite', v.toString());
-  tableData.value = [];
-  pagination.value.page = 1;
-  // 切换“我的场地”后立即刷新数据
-  fetchData();
-};
-
-const bindTypeOptions = [
+watch(onlyMySite, value => localStorage.setItem('onlyMySite', String(value)));
+const bindTypeOptions = computed(() => [
   { label: t('page.miningSite.auto'), value: 'auto' },
   { label: t('page.miningSite.manual'), value: 'manual' }
-]
-
-const borderBindTypeOptions = [
-  { label: t('page.miningSite.auto'), value: 'auto' },
-  { label: t('page.miningSite.manual'), value: 'manual' }
-]
+]);
 </script>
 
 <template>
-  <div class="min-h-500px flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
-    <!-- 查询框 -->
-     <div class="flex justify-between items-center" v-if="hasRole">
+  <div class="daily-report">
+    <header class="report-heading">
+      <div class="report-heading-main">
+        <div class="report-heading-icon" aria-hidden="true"><ReportIcon /></div>
+        <h1>{{ t('route.miningsite') }}</h1>
+      </div>
+      <NButton class="report-refresh" size="small" :loading="loading" @click="fetchData">
+        <template #icon><RefreshIcon aria-hidden="true" /></template>
+        {{ t('common.refresh') }}
+      </NButton>
+    </header>
+
+    <section v-if="hasRole" class="report-filter-panel">
       <SearchBar
-      v-model:date="searchDate"
-      v-model:serial="searchSerial"
-      v-model:salerId="selectedSalerId"
-      v-model:siteStatus="selectedSiteStatus"
-      v-model:bindType="bindTypeModel"
-      v-model:borderBindType="borderBindTypeModel"
-      v-model:status="statusModel"
-      :salerOptions="salerOptions"
-      :siteStatusOptions="siteStatusOptions"
-      :bindTypeOptions="bindTypeOptions"
-      :borderBindTypeOptions="borderBindTypeOptions"
-      @search="onSearch"
-    />
-    <div>
-      <NSwitch v-model:value="onlyMySite" size="medium" @update:value="onOnlyMySiteChange"  style="margin-left:10px;"/>
-    <span style="font-size: 12px; margin-left: 4px;">{{ $t('page.miningSite.mySite') }}</span>
-    </div>
+        v-model:date="searchDate"
+        v-model:serial="searchSerial"
+        v-model:saler-id="selectedSalerId"
+        v-model:site-status="selectedSiteStatus"
+        v-model:bind-type="bindTypeModel"
+        v-model:status="statusModel"
+        :saler-options="salerOptions"
+        :site-status-options="siteStatusOptions"
+        :bind-type-options="bindTypeOptions"
+      >
+        <template #scope>
+          <label class="report-my-sites">
+            <NSwitch v-model:value="onlyMySite" size="small" :aria-label="t('page.miningSite.mySite')" />
+            <span>{{ t('page.miningSite.mySite') }}</span>
+          </label>
+        </template>
+      </SearchBar>
+    </section>
 
+    <section class="report-overview" :aria-label="t('page.miningSite.filteredSummary')" :aria-busy="loading">
+      <div v-for="metric in summaryMetrics" :key="metric.key" class="report-stat" :class="`report-stat--${metric.tone}`">
+        <div class="report-stat-icon" aria-hidden="true"><component :is="metric.icon" /></div>
+        <div class="report-stat-content">
+          <div class="report-stat-label">{{ t(`page.miningSite.${metric.label}`) }}</div>
+          <div class="report-stat-value">{{ loading || loadFailed ? '—' : numberFormatter.format(reportTotals[metric.key]) }}</div>
+        </div>
+      </div>
+    </section>
 
-     </div>
-     <div class="card-wrapper sm:flex-1-hidden">
-
-    <!-- 表格 -->
-    <NDataTable
-    flex-height
-    :scroll-x="1800"
-    :columns="columns"
-    :data="tableData"
-    :pagination="pagination"
-    :row-key="row => row.id"
-    class="sm:h-full"
-    :loading="loading"
-    />
-    </div>
+    <section class="report-table-panel" :aria-label="t('route.miningsite')">
+      <NDataTable
+        class="report-table"
+        flex-height
+        size="small"
+        :scroll-x="tableWidth"
+        :columns="columns"
+        :data="tableData"
+        :pagination="pagination"
+        :row-key="row => row.id"
+        :loading="loading"
+      >
+        <template v-if="!loading" #empty>
+          <NEmpty :description="loadFailed ? t('page.miningSite.reportUnavailable') : t('page.miningSite.noReports')">
+            <template v-if="loadFailed" #extra>
+              <NButton size="small" @click="fetchData">{{ t('common.refresh') }}</NButton>
+            </template>
+          </NEmpty>
+        </template>
+      </NDataTable>
+    </section>
 
     <!-- 修改弹框 -->
-    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" :title="$t('page.miningSite.editSiteInfo')">
+    <NModal v-model:show="showEditModal" style="width: min(600px, calc(100vw - 32px))" preset="card" :title="$t('page.miningSite.editSiteInfo')">
       <NForm :model="editForm" label-width="100">
         <NFormItem :label="$t('page.miningSite.siteName')">
           <NInput v-model:value="editForm.name" disabled />
@@ -1046,7 +628,7 @@ const borderBindTypeOptions = [
     </NModal>
 
     <!-- 新增：在架待修数编辑弹框 -->
-    <NModal v-model:show="showEditHistoryModal" style="width: 500px" preset="card" :title="$t('page.miningSite.modifyOnShelfWaitRepairCount')">
+    <NModal v-model:show="showEditHistoryModal" style="width: min(500px, calc(100vw - 32px))" preset="card" :title="$t('page.miningSite.modifyOnShelfWaitRepairCount')">
       <NForm :model="siteHistoryForm" label-width="180">
         <NFormItem :label="$t('page.miningSite.onShelfWaitRepairCount')">
           <NInputNumber v-model:value="siteHistoryForm.on_shelf_wait_repair_count" :min="0" />
@@ -1062,13 +644,188 @@ const borderBindTypeOptions = [
   </div>
 </template>
 
-<style scoped lang="scss">
-.card-wrapper {
-  flex: 1;
-  padding: 0 !important;
-  .n-card__content {
-    padding: 0px !important;
-  }
+<style scoped>
+.daily-report {
+  --report-panel: #fff;
+  --report-tint: #f4f8fc;
+  --report-border: #dce6f1;
+  --report-text: #172d45;
+  --report-secondary: #506680;
+  --report-muted: #72849a;
+  --report-blue: #205fb7;
+  --report-blue-bg: #e9f2ff;
+  --report-orange: #a64c15;
+  --report-orange-bg: #fff2e8;
+  --report-teal: #08796b;
+  --report-teal-bg: #e4f6ef;
+  --report-repair: #5b50a7;
+  --report-repair-bg: #f0edff;
+  --report-danger: #b43840;
+  display: flex;
+  flex-direction: column;
+  min-height: 560px;
+  gap: 12px;
+  overflow: hidden;
 }
 
+:global(.dark) .daily-report {
+  --report-panel: #171f2b;
+  --report-tint: #1c2938;
+  --report-border: #2c3c50;
+  --report-text: #e6edf6;
+  --report-secondary: #aabbd0;
+  --report-muted: #93a7be;
+  --report-blue: #83b9ff;
+  --report-blue-bg: #223a56;
+  --report-orange: #ffaf75;
+  --report-orange-bg: #442d20;
+  --report-teal: #72ddc6;
+  --report-teal-bg: #1d3b38;
+  --report-repair: #c1b5ff;
+  --report-repair-bg: #342d53;
+  --report-danger: #ff9ba4;
+}
+
+.report-heading,
+.report-filter-panel,
+.report-stat,
+.report-table-panel {
+  border: 1px solid var(--report-border);
+  border-radius: 10px;
+  background: var(--report-panel);
+}
+
+.report-heading {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  background: linear-gradient(100deg, var(--report-tint), var(--report-panel) 70%);
+}
+
+.report-heading-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.report-heading h1 {
+  margin: 0;
+  color: var(--report-text);
+  font-size: clamp(20px, 2vw, 24px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.report-heading-icon,
+.report-stat-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--metric-ink, var(--report-blue));
+  background: var(--metric-bg, var(--report-blue-bg));
+}
+
+.report-heading-icon { width: 36px; height: 36px; border-radius: 8px; font-size: 20px; }
+.report-refresh { flex: none; border-radius: 7px; }
+.report-filter-panel { flex-shrink: 0; padding: 11px 15px; }
+.report-my-sites { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+
+.report-overview {
+  display: grid;
+  flex-shrink: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.report-stat {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 12px 14px;
+}
+
+.report-stat--off-shelf { --metric-ink: var(--report-orange); --metric-bg: var(--report-orange-bg); }
+.report-stat--on-shelf { --metric-ink: var(--report-teal); --metric-bg: var(--report-teal-bg); }
+.report-stat--repair { --metric-ink: var(--report-repair); --metric-bg: var(--report-repair-bg); }
+.report-stat-icon { width: 34px; height: 34px; border-radius: 8px; font-size: 17px; }
+.report-stat-content { min-width: 0; }
+.report-stat-label { color: var(--report-secondary); font-size: 12px; line-height: 17px; }
+
+.report-stat-value {
+  margin-top: 2px;
+  color: var(--report-text);
+  font-size: clamp(19px, 2.2vw, 26px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}
+
+.report-table-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 300px;
+  overflow: hidden;
+}
+
+.report-table { flex: 1; min-height: 0; }
+.report-table :deep(.n-data-table-th) { background: var(--report-tint); }
+.report-table :deep(.n-data-table__pagination) {
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 9px 12px;
+  border-top: 1px solid var(--report-border);
+}
+
+.report-table :deep(.report-column-heading) { color: var(--report-secondary); font-weight: 650; }
+.report-table :deep(.report-metric-heading) { display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.report-table :deep(.report-column-info) { display: inline-flex; flex: none; color: var(--report-muted); font-size: 12px; }
+.report-table :deep(.report-count) { color: var(--report-text); font-variant-numeric: tabular-nums; font-weight: 600; }
+.report-table :deep(.report-count--zero), .report-table :deep(.report-meta) { color: var(--report-muted); font-weight: 400; }
+.report-table :deep(.report-count--negative) { color: var(--report-danger); }
+.report-table :deep(.report-count--off-shelf) { color: var(--report-orange); }
+.report-table :deep(.report-count--on-shelf) { color: var(--report-teal); }
+.report-table :deep(.report-count--repair) { color: var(--report-repair); }
+
+.report-table :deep(.report-site-link) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  color: var(--report-text);
+  background: none;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.report-table :deep(.report-site-link:hover), .report-table :deep(.report-site-link:focus-visible) { color: var(--report-blue); }
+.report-table :deep(.report-site-link span), .report-table :deep(.report-binding-number) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.report-table :deep(.report-site-link svg) { flex: none; color: var(--report-muted); font-size: 10px; }
+.report-table :deep(.report-binding) { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.report-table :deep(.report-binding-number) { color: var(--report-secondary); font-size: 12px; }
+.report-table :deep(.report-row-actions) { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 9px; }
+
+@media (max-width: 760px) {
+  .daily-report { min-height: 0; overflow: visible; }
+  .report-heading { padding: 10px 12px; }
+  .report-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .report-stat { padding: 9px 10px; gap: 7px; }
+  .report-stat-icon { width: 29px; height: 29px; font-size: 15px; }
+  .report-filter-panel { padding: 10px 12px; }
+  .report-table-panel { flex: none; height: 470px; }
+}
 </style>

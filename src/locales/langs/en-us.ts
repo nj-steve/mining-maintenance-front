@@ -294,6 +294,11 @@ const local: App.I18n.Schema = {
       }
     },
     home: {
+      overview: 'Maintenance Overview',
+      trend: 'Repair Trends',
+      comparison: 'Device Counts by Metric',
+      shareOfAssets: '{rate} of total assets',
+      loadFailed: 'Could not load the maintenance overview. Refresh to try again.',
       section1Area: {
         pendingRepair: "Pending Repairs",
         removedToday: "Removed Today",
@@ -333,6 +338,9 @@ const local: App.I18n.Schema = {
       creativity: 'Creativity'
     },
     faults: {
+      listTitle: 'Faulty Machines',
+      batchTools: 'Batch actions',
+      copyOrderNo: 'Copy work order number',
       title: 'Faults',
       loadFailed: 'Load Failed',
       totalItems: 'Total {count} Items',
@@ -736,6 +744,8 @@ const local: App.I18n.Schema = {
       batchLabelSiteId: 'Site ID'
     },
     repairReport: {
+      "details": "Details",
+      "loadFailed": "Could not load the repair report. Search again to retry.",
       "statisticalPeriod": "Statistical Period",
       "custom": "Custom",
       "quick": "Quick",
@@ -840,6 +850,12 @@ const local: App.I18n.Schema = {
       noData: 'No Data'
     },
     repairStation: {
+      overviewTitle: 'Repair Stations',
+      matchingStations: 'Matching Stations',
+      currentPageStatus: 'KYC Status on This Page',
+      authenticationInProgress: 'In Progress',
+      authenticationFailed: 'Failed',
+      unknownStatus: 'Unknown Status',
       companyName: 'Company Name',
       repairStationGroup: 'Group',
       legalRepresentative: 'Legal Rep',
@@ -860,7 +876,7 @@ const local: App.I18n.Schema = {
       deleteFailed: 'Delete failed',
       loadFailed: 'Load failed: {error}',
       addStation: 'Add Repair Station',
-      searchPlaceholder: 'Enter repair station name',
+      searchPlaceholder: 'Search station name or address',
       paginationPrefix: 'Total {count}',
       pleaseFillComplete: 'Please fill in complete information',
       addSuccess: 'Added successfully!',
@@ -882,6 +898,17 @@ const local: App.I18n.Schema = {
     },
     miningSite: {
       title: 'Mining Site',
+      reportDate: 'Report Date',
+      latestReport: 'Latest Reports',
+      allFilterValues: 'All',
+      orderBinding: 'Work Order Binding',
+      filteredSummary: 'Summary of Filtered Reports',
+      noReports: 'No reports match the current filters',
+      reportUnavailable: 'Could not load site reports',
+      offShelfCount: 'Off-shelf',
+      offShelfCountHint: 'Whole machines taken off shelf in the report',
+      onShelfCount: 'On-shelf',
+      onShelfCountHint: 'Machines put back on shelf in the report',
       editSiteInfo: 'Edit Site Info',
       siteName: 'Site Name',
       siteAddress: 'Site Address',
@@ -969,7 +996,8 @@ const local: App.I18n.Schema = {
       title: 'Repair Records',
       macAddress: 'MAC Address',
       macAddressVerified: 'MAC verified',
-      searchMacAddress: 'Enter MAC address',
+      macVerifiedBadge: 'Verified',
+      searchMacAddress: 'MAC address',
       verifiedMacOnly: 'Verified MACs only',
       pleaseEnterWorkOrderNo: 'Please enter work order no',
       pleaseEnterMachineSn: 'Please enter machine SN',
@@ -1152,6 +1180,10 @@ const local: App.I18n.Schema = {
       board3SN: 'Board 3 SN'
     },
     operationLogs: {
+      matchingLogs: 'Matching Logs',
+      currentPageStatus: 'Results on This Page',
+      result: 'Result',
+      details: 'Details',
       title: 'Operation Logs',
       status: {
         success: 'Success',
@@ -1412,6 +1444,9 @@ const local: App.I18n.Schema = {
   "view": "View"
     },
     users: {
+      matchingUsers: 'Matching Users',
+      currentPageStatus: 'User Status on This Page',
+      statusFilter: 'Filter by Status',
       addSuccess: 'Added successfully!',
       addFailed: 'Add failed',
       editSuccess: 'Edited successfully!',
@@ -1449,8 +1484,8 @@ const local: App.I18n.Schema = {
 
       actions: {
         edit: 'Edit',
-        bindUser: '+ Bind User',
-        addUser: '+ Add User'
+        bindUser: 'Bind User',
+        addUser: 'Add User'
       },
 
       search: {

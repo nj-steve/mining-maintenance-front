@@ -114,14 +114,16 @@ watch(onlyMySite, value => {
           <NInput
             v-model:value="serial"
             size="small"
-            :placeholder="snLabel"
+            :placeholder="t('page.faults.searchCard.inputSn')"
             :input-props="{ 'aria-label': snLabel }"
             clearable
-          />
+          >
+            <template #prefix><SearchIcon aria-hidden="true" /></template>
+          </NInput>
           <NInput
             v-model:value="workOrderNo"
             size="small"
-            :placeholder="orderLabel"
+            :placeholder="t('page.faults.searchCard.inputOrderNo')"
             :input-props="{ 'aria-label': orderLabel }"
             clearable
           />
@@ -229,9 +231,8 @@ watch(onlyMySite, value => {
 <style scoped>
 .fault-filters {
   container-type: inline-size;
-  padding: 10px 12px;
+  padding: 11px 14px;
   border: 1px solid var(--fault-filter-divider);
-  border-top-color: color-mix(in srgb, var(--fault-filter-accent) 25%, var(--fault-filter-divider));
   border-radius: 10px;
   background: var(--fault-filter-surface);
 }
@@ -263,7 +264,7 @@ watch(onlyMySite, value => {
 
 .fault-filters__advanced {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 136px), 1fr));
-  padding-top: 8px;
+  padding-top: 9px;
   border-top: 1px solid var(--fault-filter-divider);
 }
 

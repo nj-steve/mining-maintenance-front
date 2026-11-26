@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useMediaQuery } from '@vueuse/core';
+import TaskIcon from '~icons/ant-design/schedule-outlined';
+import RefreshIcon from '~icons/ant-design/reload-outlined';
+import WorkerIcon from '~icons/ant-design/hdd-outlined';
+import RunningIcon from '~icons/ant-design/play-circle-outlined';
+import QueueIcon from '~icons/ant-design/clock-circle-outlined';
+import ErrorIcon from '~icons/ant-design/warning-outlined';
 import {
-  NAlert, NButton, NCard, NDataTable, NDrawer, NDrawerContent, NEmpty, NForm, NFormItem,
-  NInputNumber, NModal, NPagination, NSpace, NSwitch, NTag, NTooltip, useDialog, useMessage
+  NAlert, NButton, NDataTable, NDrawer, NDrawerContent, NEmpty, NForm, NFormItem,
+  NInputNumber, NModal, NPagination, NSpace, NSwitch, NTag, NTooltip, useDialog, useMessage, useThemeVars
 } from 'naive-ui';
 import type { DataTableColumns, TagProps } from 'naive-ui';
 import {
@@ -16,9 +23,18 @@ import { taskMessages } from './locale';
 const { t, te, locale } = useI18n({ useScope: 'local', messages: taskMessages });
 const message = useMessage();
 const dialog = useDialog();
+const narrowLayout = useMediaQuery('(max-width: 760px)');
+const theme = useThemeVars();
+const themeStyle = computed(() => ({
+  '--management-surface': theme.value.cardColor,
+  '--management-line': theme.value.dividerColor,
+  '--management-ink': theme.value.textColor1,
+  '--management-muted': theme.value.textColor2,
+  '--management-accent': theme.value.primaryColor
+}));
 const overview = ref<Awaited<ReturnType<typeof fetchTaskOverview>>['data']>(null);
 const overviewError = ref('');
-const loading = ref(false);
+const loading = ref(true);
 const refreshing = ref(false);
 const busyTask = ref('');
 const tasks = computed(() => overview.value?.tasks ?? []);
@@ -50,6 +66,24 @@ const statusTone: Record<string, TagProps['type']> = {
   running: 'info', succeeded: 'success', failed: 'error', cancelled: 'warning', interrupted: 'warning', queued: 'warning'
 };
 const text = (key: string, values: Record<string, string | number> = {}) => t(key, values);
+const workerStatus = computed(() => overviewError.value || !overview.value
+  ? 'unknown'
+  : worker.value?.online ? 'online' : 'offline');
+const hasQueuedRun = (task: ScheduledTask) => task.status === 'queued' || Boolean(task.pending && task.next_run_at);
+const taskMetrics = computed(() => [
+  {
+    key: 'runningTasks', icon: RunningIcon, tone: '#4179d9',
+    count: worker.value?.online ? tasks.value.filter(task => task.status === 'running').length : 0
+  },
+  { key: 'queuedTasks', icon: QueueIcon, tone: '#b26713', count: tasks.value.filter(hasQueuedRun).length },
+  {
+    key: 'failedTasks', icon: ErrorIcon, tone: '#bd5268',
+    count: tasks.value.filter(task => task.status === 'failed' || task.status === 'interrupted').length
+  }
+]);
+const metricFormatter = computed(() => new Intl.NumberFormat(locale.value));
+const renderHeader = (key: string) => () => h('span', { class: 'management-column-title' }, text(key));
+
 function localizedValue(namespace: string, value: string) {
   const key = `${namespace}.${value}`;
   return te(key) ? t(key) : value;
@@ -235,42 +269,74 @@ function confirmTask(row: ScheduledTask, action: 'run' | 'retry') {
 }
 
 function statusTag(status: string, online?: boolean) {
-  return h(NTag, { size: 'small', bordered: false, type: statusTone[status] ?? 'default' }, () =>
-    status === 'running' && online === false ? text('workerUnreachable') : localizedValue('status', status));
+  const workerOffline = status === 'running' && online === false;
+  return h(NTag, {
+    class: 'management-status-tag',
+    size: 'small',
+    round: true,
+    bordered: false,
+    type: workerOffline ? 'warning' : statusTone[status] ?? 'default'
+  }, () => workerOffline ? text('workerUnreachable') : localizedValue('status', status));
 }
 
 const taskColumns = computed<DataTableColumns<ScheduledTask>>(() => [
-  { title: text('task'), key: 'name', width: 208, render: row => h('div', [
-    h('div', { class: 'font-medium' }, localizedValue('names', row.name)),
-    h('div', { class: 'task-code' }, row.name)
-  ]) },
-  { title: text('enabled'), key: 'enabled', width: 94, render: row => h(NSwitch, {
-    value: row.enabled, size: 'small', disabled: Boolean(overviewError.value || busyTask.value),
-    loading: busyTask.value === row.name, 'aria-label': `${text('enabled')} – ${localizedValue('names', row.name)}`,
-    onUpdateValue: (enabled: boolean) => { void applySettings(row.name, { enabled }); }
-  }) },
-  { title: text('schedule'), key: 'schedule', width: 150, render: scheduleLabel },
-  { title: text('state'), key: 'status', width: 180, render: row => h(NSpace, { size: 6 }, () => [
-    statusTag(row.status || 'idle', worker.value?.online ?? false),
-    row.pending && row.next_run_at && row.status !== 'queued' ? statusTag('queued') : null
-  ]) },
-  { title: text('latestRun'), key: 'last_finished_at', width: 190, render: row => h('div', [
-    h('div', formatTime(row.status === 'running' ? row.last_started_at : row.last_finished_at ?? row.last_started_at)),
-    row.last_error ? h(NTooltip, { style: { maxWidth: 'min(80vw, 520px)', whiteSpace: 'pre-wrap' } }, {
-      trigger: () => h('div', { class: 'task-error-preview' }, row.last_error), default: () => row.last_error
-    }) : null
-  ]) },
-  { title: text('nextRun'), key: 'next_run_at', width: 184, render: row => formatTime(row.next_run_at) },
-  { title: text('actions'), key: 'actions', width: 230, render: row => {
-    const action = ['failed', 'interrupted', 'cancelled'].includes(row.status) ? 'retry' : 'run';
-    const disabled = Boolean(overviewError.value || busyTask.value || (row.pending && row.next_run_at) || row.status === 'running');
-    return h(NSpace, { size: 12 }, () => [
-      h(NButton, { text: true, size: 'small', onClick: () => showHistory(row.name) }, () => text('history')),
-      h(NButton, { text: true, size: 'small', disabled: Boolean(overviewError.value || busyTask.value), onClick: () => openSettings(row) }, () => text('settings')),
-      h(NButton, { text: true, size: 'small', type: 'primary', disabled, onClick: () => confirmTask(row, action) }, () => text(action))
-    ]);
-  } }
+  {
+    title: renderHeader('task'), key: 'name', width: narrowLayout.value ? 172 : 242,
+    render: row => h('div', [
+      h('div', { class: 'management-entity-name task-name' }, localizedValue('names', row.name)),
+      h('div', { class: 'task-code', title: row.name }, row.name),
+      narrowLayout.value
+        ? h(NButton, { text: true, type: 'primary', size: 'small', onClick: () => showHistory(row.name) }, () => text('history'))
+        : null
+    ])
+  },
+  {
+    title: renderHeader('state'), key: 'status', width: narrowLayout.value ? 124 : 142,
+    render: row => h('div', { class: 'task-state' }, [
+      statusTag(row.status || 'idle', overviewError.value ? undefined : worker.value?.online),
+      hasQueuedRun(row) && row.status !== 'queued' ? statusTag('queued') : null
+    ])
+  },
+  {
+    title: renderHeader('enabled'), key: 'enabled', width: 100,
+    render: row => h(NSwitch, {
+      value: row.enabled, size: 'small', disabled: Boolean(overviewError.value || busyTask.value),
+      loading: busyTask.value === row.name, 'aria-label': `${text('enabled')} – ${localizedValue('names', row.name)}`,
+      onUpdateValue: (enabled: boolean) => { void applySettings(row.name, { enabled }); }
+    })
+  },
+  { title: renderHeader('schedule'), key: 'schedule', width: 176, render: scheduleLabel },
+  {
+    title: renderHeader('latestRun'), key: 'last_finished_at', width: 188,
+    render: row => h('div', [
+      h('div', { class: 'management-contact' }, formatTime(row.status === 'running' ? row.last_started_at : row.last_finished_at ?? row.last_started_at)),
+      row.last_error ? h(NTooltip, { style: { maxWidth: 'min(80vw, 520px)', whiteSpace: 'pre-wrap' } }, {
+        trigger: () => h('span', { class: 'task-error-preview', tabindex: 0 }, row.last_error),
+        default: () => row.last_error
+      }) : null
+    ])
+  },
+  {
+    title: renderHeader('nextRun'), key: 'next_run_at', width: 179,
+    render: row => h('span', { class: 'management-contact' }, formatTime(row.next_run_at))
+  },
+  {
+    title: renderHeader('actions'), key: 'actions', width: narrowLayout.value ? 130 : 188,
+    fixed: narrowLayout.value ? undefined : 'right',
+    render: row => {
+      const action = ['failed', 'interrupted', 'cancelled'].includes(row.status) ? 'retry' : 'run';
+      const disabled = Boolean(overviewError.value || busyTask.value || (row.pending && row.next_run_at) || row.status === 'running');
+      return h('div', { class: 'task-row-actions' }, [
+        !narrowLayout.value
+          ? h(NButton, { quaternary: true, size: 'small', onClick: () => showHistory(row.name) }, () => text('history'))
+          : null,
+        h(NButton, { quaternary: true, size: 'small', disabled: Boolean(overviewError.value || busyTask.value), onClick: () => openSettings(row) }, () => text('settings')),
+        h(NButton, { quaternary: true, size: 'small', type: 'primary', disabled, onClick: () => confirmTask(row, action) }, () => text(action))
+      ]);
+    }
+  }
 ]);
+const taskTableWidth = computed(() => taskColumns.value.reduce((sum, column) => sum + Number(column.width ?? 0), 0));
 
 const isMacVerificationHistory = computed(() => historyTask.value === macVerificationTask);
 const macRunMetrics = [
@@ -282,12 +348,12 @@ const macRunMetrics = [
 const formatRunCount = (count?: number | null) => count == null ? '—' : count.toLocaleString(locale.value);
 
 const runColumns = computed<DataTableColumns<TaskRun>>(() => [
+  { title: text('state'), key: 'status', width: 123, render: row => statusTag(row.status, overviewError.value ? undefined : worker.value?.online) },
   { title: text('runID'), key: 'id', width: 74 },
   { title: text('trigger'), key: 'trigger', width: 114, render: row => h('div', [
     h('div', localizedValue('triggers', row.trigger)),
     row.attempt && row.attempt > 1 ? h('div', { class: 'task-code' }, text('attempt', { count: row.attempt })) : null
   ]) },
-  { title: text('state'), key: 'status', width: 116, render: row => statusTag(row.status, worker.value?.online ?? false) },
   ...(isMacVerificationHistory.value ? macRunMetrics.map(({ key, label, width }) => ({
     title: text(label), key, width, align: 'right' as const,
     render: (row: TaskRun) => formatRunCount(row.metrics?.[key])
@@ -301,8 +367,10 @@ const runColumns = computed<DataTableColumns<TaskRun>>(() => [
   } },
   { title: text('processed'), key: 'processed_count', width: 96, render: row => formatRunCount(row.processed_count) },
   { title: text('failedCount'), key: 'failed_count', width: 96, render: row => formatRunCount(row.failed_count) },
-  { title: text('error'), key: 'error', minWidth: 230, render: row => h('span', { class: 'history-error' }, row.error || '—') }
+  { title: text('error'), key: 'error', width: 230, render: row => h('span', { class: 'history-error' }, row.error || '—') }
 ]);
+
+const runTableWidth = computed(() => runColumns.value.reduce((sum, column) => sum + Number(column.width ?? 0), 0));
 
 onMounted(() => {
   void loadOverview();
@@ -320,41 +388,51 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="task-page">
-    <NCard :bordered="false" class="task-panel" :title="text('title')">
-      <template #header-extra>
-        <NButton size="small" :loading="loading" @click="loadOverview()">{{ text('refresh') }}</NButton>
-      </template>
-
-      <div class="worker-summary" aria-live="polite">
-        <div class="worker-summary-title">
-          <span>{{ text('worker') }}</span>
-          <NTag size="small" :bordered="false" :type="overviewError ? 'warning' : worker?.online ? 'success' : 'default'">
-            {{ text(overviewError || !overview ? 'unknown' : worker?.online ? 'online' : 'offline') }}
-          </NTag>
-        </div>
-        <span class="worker-detail">{{ text('heartbeat', { time: formatTime(worker?.heartbeat_at) }) }}</span>
-        <span v-if="worker?.worker_id" class="task-code">{{ worker.worker_id }}</span>
-        <span v-if="overview && !worker?.online && !overviewError" class="worker-detail">{{ text('offlineHint') }}</span>
+  <div class="management-page task-page" :style="themeStyle">
+    <header class="management-heading">
+      <div class="management-heading__title">
+        <span class="management-heading__icon" aria-hidden="true"><TaskIcon /></span>
+        <h1>{{ text('title') }}</h1>
       </div>
+      <NButton size="small" :loading="loading" @click="loadOverview()">
+        <template #icon><RefreshIcon /></template>
+        {{ text('refresh') }}
+      </NButton>
+    </header>
 
-      <NAlert v-if="overviewError" type="error" :title="text('loadFailed')" class="mb-14px">
-        {{ overviewError === text('loadFailed') ? text('refreshHint') : overviewError }}
-      </NAlert>
+    <div class="task-overview">
+      <section class="task-summary worker-summary" :class="`worker-summary--${workerStatus}`" aria-live="polite">
+        <h2><span class="task-summary-icon" aria-hidden="true"><WorkerIcon /></span>{{ text('worker') }}</h2>
+        <strong class="worker-state">{{ text(workerStatus) }}</strong>
+        <div class="worker-detail">{{ text('heartbeat', { time: formatTime(worker?.heartbeat_at) }) }}</div>
+        <div v-if="worker?.worker_id" class="task-code">{{ worker.worker_id }}</div>
+        <div v-if="workerStatus === 'offline'" class="worker-detail">{{ text('offlineHint') }}</div>
+      </section>
+      <section v-for="metric in taskMetrics" :key="metric.key" class="task-summary" :style="{ '--task-tone': metric.tone }">
+        <h2><span class="task-summary-icon" aria-hidden="true"><component :is="metric.icon" /></span>{{ text(metric.key) }}</h2>
+        <strong>{{ overview && !overviewError ? metricFormatter.format(metric.count) : '—' }}</strong>
+      </section>
+    </div>
 
+    <NAlert v-if="overviewError" type="error" :title="text('loadFailed')">
+      {{ overviewError === text('loadFailed') ? text('refreshHint') : overviewError }}
+    </NAlert>
+
+    <section class="management-table-panel" :aria-label="text('title')">
       <NDataTable
-        v-if="overview || loading"
+        class="management-table"
         :columns="taskColumns"
         :data="tasks"
         :loading="loading"
         :row-key="row => row.name"
-        :scroll-x="1236"
+        :scroll-x="taskTableWidth"
+        :bordered="false"
         size="small"
-        striped
+        flex-height
       >
-        <template #empty><NEmpty :description="text('noTasks')" /></template>
+        <template #empty><NEmpty :description="text(overviewError ? 'loadFailed' : 'noTasks')" /></template>
       </NDataTable>
-    </NCard>
+    </section>
 
     <NDrawer v-model:show="historyOpen" :width="960" style="max-width: 100vw">
       <NDrawerContent :title="text('historyTitle', { task: localizedValue('names', historyTask || '') })" closable>
@@ -363,7 +441,7 @@ onBeforeUnmount(() => {
           <NButton size="small" :loading="historyLoading" @click="loadHistory()">{{ text('refresh') }}</NButton>
         </div>
         <NAlert v-if="historyError" type="error" class="mb-12px">{{ historyError }}</NAlert>
-        <NDataTable :columns="runColumns" :data="history" :loading="historyLoading" :row-key="row => row.id" :scroll-x="isMacVerificationHistory ? 1662 : 1192" size="small">
+        <NDataTable class="task-history-table" :columns="runColumns" :data="history" :loading="historyLoading" :row-key="row => row.id" :scroll-x="runTableWidth" size="small">
           <template #empty><NEmpty :description="text(historyError ? 'loadHistoryFailed' : 'noRuns')" /></template>
         </NDataTable>
         <template #footer>
@@ -411,14 +489,163 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
+<style src="@/styles/css/management-list.css"></style>
+
 <style scoped>
-.task-page { min-width: 0; }
-.task-panel { border-radius: 8px; }
-.worker-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 16px; }
-.worker-summary-title { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-.worker-detail, .history-toolbar span { font-size: 12px; color: var(--n-title-text-color); opacity: 0.75; }
-.task-code { font-size: 11px; opacity: 0.65; overflow-wrap: anywhere; font-family: ui-monospace, monospace; }
-.task-error-preview { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #b54b54; font-size: 12px; }
-.history-error { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
-.history-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.task-overview {
+  display: grid;
+  flex: none;
+  grid-template-columns: minmax(260px, 1.6fr) repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.task-summary {
+  --task-tone: var(--management-accent);
+
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--task-tone) 20%, var(--management-line));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--task-tone) 4%, var(--management-surface));
+}
+
+.task-summary h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--management-muted);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.task-summary-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--task-tone) 13%, var(--management-surface));
+  color: color-mix(in srgb, var(--task-tone) 72%, var(--management-ink));
+  font-size: 15px;
+}
+
+.task-summary strong {
+  display: block;
+  margin-top: 6px;
+  color: color-mix(in srgb, var(--task-tone) 55%, var(--management-ink));
+  font-size: clamp(22px, 2.15vw, 30px);
+  font-weight: 720;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.worker-summary--online { --task-tone: #168460; }
+.worker-summary--offline { --task-tone: #bd5268; }
+.worker-summary--unknown { --task-tone: #68758a; }
+
+.worker-detail {
+  margin-top: 4px;
+  color: var(--management-muted);
+  font-size: 11px;
+}
+
+.task-code,
+.task-page :deep(.task-code) {
+  color: var(--management-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.task-page :deep(.task-name) {
+  line-height: 1.4;
+}
+
+.task-page :deep(.task-state),
+.task-page :deep(.task-row-actions) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.task-page :deep(.task-row-actions .n-button) {
+  padding-inline: 6px;
+}
+
+.task-page :deep(.task-error-preview) {
+  display: block;
+  overflow: hidden;
+  color: #a54855;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-history-table :deep(.history-error) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+.task-history-table :deep(.task-code) {
+  color: inherit;
+  opacity: 0.67;
+  font-size: 11px;
+}
+
+.history-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+@media (max-width: 850px) {
+  .task-overview {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .worker-summary {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 420px) {
+  .task-summary {
+    padding: 9px 8px;
+  }
+
+  .task-summary h2 {
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+
+  .task-summary-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .task-summary:not(.worker-summary) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .task-summary:not(.worker-summary) strong {
+    margin-top: auto;
+    padding-top: 6px;
+  }
+
+  .task-page :deep(.management-table .task-code) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
 </style>

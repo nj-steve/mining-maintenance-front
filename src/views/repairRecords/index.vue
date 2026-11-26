@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, h } from 'vue';
-import { refDebounced } from '@vueuse/core';
-import { NDataTable, useMessage, NButton, NTooltip, NTag, NDropdown, NIcon } from 'naive-ui';
+import { computed, onMounted, ref, watch, h } from 'vue';
+import { refDebounced, useMediaQuery } from '@vueuse/core';
+import { NDataTable, useMessage, NButton, NTooltip, NTag, NDropdown, useThemeVars } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchRepairDetails, exportRepairDetails } from '@/service/api/repair';
 import { fetchOrdersSite } from '@/service/api/site';
-import { Icon } from '@iconify/vue';
+import CopyIcon from '~icons/ant-design/copy-outlined';
+import DownloadIcon from '~icons/ant-design/download-outlined';
+import RefreshIcon from '~icons/ant-design/reload-outlined';
+import RepairIcon from '~icons/ant-design/tool-outlined';
+import UploadIcon from '~icons/ant-design/upload-outlined';
 
 import { useRouter } from 'vue-router';
 import RepairSearchBar from './components/RepairSearchBar.vue'
@@ -54,13 +58,25 @@ const message = useMessage();
 const tableData = ref<Faults[]>([]);
 const exportData = ref<Faults[]>([]);
 const loading = ref(false);
+const exporting = ref(false);
+const narrowLayout = useMediaQuery('(max-width: 760px)');
+const theme = useThemeVars();
+const themeStyle = computed(() => ({
+  '--repair-surface': theme.value.cardColor,
+  '--repair-line': theme.value.dividerColor,
+  '--repair-ink': theme.value.textColor1,
+  '--repair-muted': theme.value.textColor2,
+  '--repair-accent': theme.value.primaryColor,
+  '--repair-success': theme.value.successColor,
+  '--repair-on-success': theme.value.baseColor
+}));
 const work_order_no = ref<string>('');
 const sn = ref<string>('');
 const macAddress = ref('');
 const macAddressFilter = refDebounced(macAddress, 250);
 const verifiedOnly = ref(false);
 const site_id = ref<number | undefined>(undefined);
-const repair_type = ref<number | undefined>(undefined);
+const repair_type = ref<string>();
 const siteOptions = ref<{ label: string; value: number }[]>([]);
 
 // 报废标记弹窗
@@ -173,15 +189,15 @@ const formatDateTime = (value: any) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
 
-const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
+const renderHeaderTitle = (text: string) => h('span', { class: 'repair-column-title' }, text);
 
-const columns: DataTableColumns<any> = [
+const baseColumns: DataTableColumns<any> = [
    { title: () => renderHeaderTitle(t('page.repairRecords.snCode')), key: 'DeviceSN',
    width: 150, render: (row) => {
       const full = (row as any).DeviceSN || '';
       const prefix = full.slice(0, 5);
       const suffix = full.slice(-5);
-      const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
+      const truncated = full.length > (narrowLayout.value ? 11 : 14) ? `${prefix}…${suffix}` : full;
       const onCopy = async () => {
         try {
           await navigator.clipboard.writeText(full);
@@ -197,21 +213,20 @@ const columns: DataTableColumns<any> = [
           trigger: () => h(
             'div',
             {
-              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+              class: 'repair-identifier'
             },
             [
               h(
                 'span',
                 {
-                  class: 'text-sm text-gray-900',
-                  style: 'flex:1; min-width:0;'
+                  class: 'repair-sn'
                 },
                 truncated
               ),
               h(
                 NButton,
-                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
-                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 14, height: 14 }) }
+                { size: 'tiny', quaternary: true, type: 'primary', class: 'repair-copy', onClick: onCopy },
+                { default: () => h(CopyIcon) }
               )
             ]
           ),
@@ -219,6 +234,32 @@ const columns: DataTableColumns<any> = [
         }
       );
     } },
+  {
+    title: () => renderHeaderTitle(t('page.repairRecords.macAddress')),
+    key: 'MacAddress',
+    width: 232,
+    render: (row: any) => {
+      if (!row.MacAddress) return h('span', { class: 'repair-no-mac' }, '—');
+
+      const verifiedLabel = t('page.repairRecords.macAddressVerified');
+      return h('div', { class: 'repair-mac' }, [
+        h('span', { class: 'repair-mac__address' }, row.MacAddress),
+        row.mac_address_verified
+          ? h(NTooltip, { placement: 'top' }, {
+              trigger: () => h('span', {
+                class: 'repair-mac__verified',
+                role: 'img',
+                'aria-label': verifiedLabel
+              }, [
+                h('span', { class: 'repair-mac__check', 'aria-hidden': 'true' }, '✓'),
+                h('span', { class: 'repair-mac__label' }, t('page.repairRecords.macVerifiedBadge'))
+              ]),
+              default: () => verifiedLabel
+            })
+          : null
+      ]);
+    }
+  },
     { title: () => renderHeaderTitle(t('page.repairRecords.type')), key: 'repair_type', width: 100,
     render: (row) => {
       const type = row.repair_type;
@@ -237,30 +278,6 @@ const columns: DataTableColumns<any> = [
       return h(NTag, { class: 'text-sm', type: tagType, size: 'small', round: true, bordered: false }, () => label);
     }
    },
-   {
-  title: () => renderHeaderTitle(t('page.repairRecords.macAddress')),
-  key: 'MacAddress',
-  width: 205,
-  render: (row: any) => {
-    if (!row.MacAddress) {
-      return h('span', { class: 'text-sm text-gray-400' }, '-');
-    }
-    const verifiedLabel = t('page.repairRecords.macAddressVerified');
-    return h('div', { class: 'inline-flex items-center gap-2 whitespace-nowrap' }, [
-      h('span', { class: 'text-sm text-gray-500 font-mono' }, row.MacAddress),
-      row.mac_address_verified
-        ? h(NTooltip, { placement: 'top' }, {
-            trigger: () => h('span', {
-              class: 'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-base font-bold leading-none text-white ring-2 ring-emerald-100 dark:ring-emerald-900',
-              role: 'img',
-              'aria-label': verifiedLabel
-            }, '✓'),
-            default: () => verifiedLabel
-          })
-        : null
-    ]);
-  }
-},
 {
   title: () => renderHeaderTitle(t('page.repairRecords.site')),
   key: 'site_name',
@@ -308,7 +325,7 @@ const columns: DataTableColumns<any> = [
           trigger: () => h(
             'div',
             {
-              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
+              class: 'repair-identifier'
             },
             [
               h(
@@ -322,8 +339,8 @@ const columns: DataTableColumns<any> = [
               ),
               h(
                 NButton,
-                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
-                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 14, height: 14 }) }
+                { size: 'tiny', quaternary: true, type: 'primary', class: 'repair-copy', onClick: onCopy },
+                { default: () => h(CopyIcon) }
               )
             ]
           ),
@@ -368,15 +385,15 @@ const columns: DataTableColumns<any> = [
   { title: () => renderHeaderTitle(t('page.repairRecords.verifyDefect')), key: 'VerifyDefect', width: 120, render: (row) => h('span', { class: 'text-sm text-gray-500' }, row.VerifyDefect || '-') },
   { title: () => renderHeaderTitle(t('page.repairRecords.repairStatus')), key: 'RepairResult', width: 120,
     render: (row) => {
-      const label = repairResultMap[row.RepairResult] || t('page.repairRecords.unknown')
-       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        '已修复': 'success',
-        '报废': 'error',
-        '未修复': 'error',
-        '待修复': 'warning',
+      const label = repairResultMap[row.RepairResult] || t('page.repairRecords.unknown');
+      const tagMap: Record<number, 'success' | 'warning' | 'error'> = {
+        1: 'warning',
+        2: 'error',
+        3: 'success',
+        4: 'error'
       };
-      const type = tagMap[label] || 'default';
-      return h(NTag, { type,class:'text-xs', size: 'small',round:true }, () => label)
+      const type = tagMap[row.RepairResult] || 'default';
+      return h(NTag, { type, class: 'text-xs', size: 'small', round: true, bordered: false }, () => label);
     }
   },
   {
@@ -384,14 +401,14 @@ const columns: DataTableColumns<any> = [
     key: 'Date',
     width: 160,
     align: 'center',
-    render: (row: any) => h('span', { class: 'cell-date text-sm text-gray-500' }, formatDateTime(row?.Date))
+    render: (row: any) => h('span', { class: 'repair-date' }, formatDateTime(row?.Date))
   },
   {
     title: () => renderHeaderTitle(t('page.repairRecords.action')),
     key: 'actions',
     align: 'center',
     fixed: 'right',
-    width: 180,
+    width: isRead ? 92 : 170,
     render: (row) => {
       // console.log("表格行数据:", row);
       const rowId = row.id || row.ID || row.Id || row.workOrderNo || row.WorkOrderNo;
@@ -402,9 +419,8 @@ const columns: DataTableColumns<any> = [
           {
             type: 'primary',
             size: 'small',
-            ghost: true,
-            style: 'margin-right: 8px;',
-            class:'text-xs',
+            quaternary: true,
+            class: 'repair-action',
             onClick: () => goDetail(rowId)
           },
           { default: () => t('page.repairRecords.detail') }
@@ -416,9 +432,8 @@ const columns: DataTableColumns<any> = [
           {
             type: 'primary',
             size: 'small',
-            ghost: true,
-            style: 'margin-right: 8px;',
-            class:'text-xs',
+            quaternary: true,
+            class: 'repair-action',
             onClick: () => goDetail(rowId)
           },
           { default: () => t('page.repairRecords.detail') }
@@ -429,9 +444,8 @@ const columns: DataTableColumns<any> = [
               {
                 type: 'error',
                 size: 'small',
-                ghost: true,
-                style: 'margin-right: 8px;',
-                class: 'text-xs',
+                quaternary: true,
+                class: 'repair-action',
                 onClick: () => openScrapModal(row)
               },
               { default: () => t('page.repairRecords.componentMark') }
@@ -450,7 +464,19 @@ const columns: DataTableColumns<any> = [
       ]
     }
   }
-]
+];
+const columns = computed(() => {
+  if (!narrowLayout.value) return baseColumns;
+
+  return baseColumns.map(column => {
+    if (!('key' in column)) return column;
+    if (column.key === 'DeviceSN') return { ...column, width: 126 };
+    if (column.key === 'MacAddress') return { ...column, width: 174 };
+    if (column.key === 'actions') return { ...column, fixed: undefined };
+    return column;
+  });
+});
+const tableWidth = computed(() => columns.value.reduce((width, column) => width + Number(column.width ?? 0), 0));
 
 // ---------------- 数据获取 ----------------
 let latestFetch = 0;
@@ -512,7 +538,7 @@ const role = JSON.parse(localStorage.getItem('userInfo') ?? '{}')?.role;
 const isRepairStation = role === 4;
 
 const exportCsv = async () => {
-  loading.value = true;
+  exporting.value = true;
   try {
     const params: any = {
       sn: sn.value || undefined,
@@ -544,7 +570,7 @@ const exportCsv = async () => {
   } catch (err) {
     message.error(t('page.repairRecords.exportFailed', { error: String(err) }));
   } finally {
-    loading.value = false;
+    exporting.value = false;
   }
 
   // 获取所有待导出数据
@@ -636,107 +662,263 @@ const handleFail = () => {
 </script>
 
 <template>
-  <div class="min-h-0 flex flex-1 flex-col gap-16px overflow-hidden lt-sm:overflow-auto">
-    <NCard class="shrink-0">
-      <RepairSearchBar
-              :work-order-no="work_order_no"
-              :sn="sn"
-              :mac-address="macAddress"
-              :verified-only="verifiedOnly"
-              :repair-result="repair_result"
-              :site-id="site_id"
-              :repair-type="repair_type"
-              :site-options="siteOptions"
-              @update:work-order-no="work_order_no = $event"
-              @update:sn="sn = $event"
-              @update:mac-address="macAddress = $event"
-              @update:verified-only="verifiedOnly = $event"
-              @update:repair-result="repair_result = $event"
-              @update:site-id="site_id = $event"
-              @update:repair-type="repair_type = $event"
-            />
-    </NCard>
-    <NCard size="small" class="card-wrapper min-h-0 flex-1 lt-sm:min-h-320px" content-class="min-h-0 flex flex-col">
-       <div class="mb-4 flex shrink-0 items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 6px">
-      <div  style="display: flex; gap: 8px; align-items: center;">
-
-        <NDropdown :options="importOptions" @select="handleImportSelect" v-if="isRepairStation">
-          <NButton size="small" ghost type="primary">
+  <div class="repair-page" :style="themeStyle">
+    <header class="repair-heading">
+      <div class="repair-heading__title">
+        <span class="repair-heading__icon" aria-hidden="true">
+          <RepairIcon />
+        </span>
+        <h1>{{ t('page.repairRecords.title') }}</h1>
+      </div>
+      <div class="repair-heading__actions">
+        <NDropdown v-if="isRepairStation" :options="importOptions" @select="handleImportSelect">
+          <NButton size="small" type="primary" secondary>
             <template #icon>
-              <NIcon>
-                <Icon icon="material-symbols:upload" />
-              </NIcon>
+              <UploadIcon />
             </template>
             {{ t('page.repairRecords.import') }}
           </NButton>
         </NDropdown>
-
-        <UploadRepairDetailsExcel
-          ref="uploadRef"
-          :show-trigger="false"
-          @success="fetchData"
-          @fail="handleFail"
-        />
-      </div>
-      <div v-if="!isRead" style="display: flex; gap: 8px; align-items: center;">
-        <NButton circle size="medium" ghost @click="exportCsv" :title="t('page.repairRecords.exportCsvTitle')"  style="margin-right: 80px;">
-          <template #icon>
-            <icon-ant-design-download-outlined />
-          </template>
+        <NButton v-if="!isRead" size="small" :loading="exporting" @click="exportCsv">
+          <template #icon><DownloadIcon /></template>
+          {{ t('page.repairRecords.exportCsvTitle') }}
+        </NButton>
+        <NButton size="small" :loading="loading" @click="fetchData">
+          <template #icon><RefreshIcon /></template>
+          {{ t('common.refresh') }}
         </NButton>
       </div>
-    </div>
+    </header>
+
+    <RepairSearchBar
+      :work-order-no="work_order_no"
+      :sn="sn"
+      :mac-address="macAddress"
+      :verified-only="verifiedOnly"
+      :repair-result="repair_result"
+      :site-id="site_id"
+      :repair-type="repair_type"
+      :site-options="siteOptions"
+      @update:work-order-no="work_order_no = $event"
+      @update:sn="sn = $event"
+      @update:mac-address="macAddress = $event"
+      @update:verified-only="verifiedOnly = $event"
+      @update:repair-result="repair_result = $event"
+      @update:site-id="site_id = $event"
+      @update:repair-type="repair_type = $event"
+    />
+
+    <section class="repair-table-panel" :aria-label="t('page.repairRecords.title')">
       <NDataTable
         flex-height
+        remote
+        size="small"
+        :bordered="false"
         :columns="columns"
         :data="tableData"
         :pagination="pagination"
         :loading="loading"
-        remote
         :row-key="(row: any) => row.ID"
-        :scroll-x="2000"
-        striped
-        class="repair-records-table min-h-0 flex-1"
+        :scroll-x="tableWidth"
+        class="repair-table"
       />
-      <!-- 报废标记弹窗 -->
-      <ScrapFlagsModal v-model:show="showScrapModal" :detail-id="currentDetailId" :detail-row="currentDetailRow" @success="fetchData" />
-    </NCard>
+    </section>
+
+    <UploadRepairDetailsExcel ref="uploadRef" :show-trigger="false" @success="fetchData" @fail="handleFail" />
+    <ScrapFlagsModal v-model:show="showScrapModal" :detail-id="currentDetailId" :detail-row="currentDetailRow" @success="fetchData" />
   </div>
 </template>
 
 <style scoped>
-.repair-records-table :deep(.n-data-table__pagination) {
-  flex-shrink: 0;
+.repair-page {
+  --repair-tint: color-mix(in srgb, var(--repair-accent) 5%, var(--repair-surface));
+  --repair-verified-tint: color-mix(in srgb, var(--repair-success) 5%, var(--repair-surface));
+  --repair-verified-fill: color-mix(in srgb, var(--repair-success) 13%, var(--repair-surface));
+  --repair-verified-line: color-mix(in srgb, var(--repair-success) 27%, var(--repair-surface));
+
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
 }
 
-.repair-records-table :deep(.n-pagination) {
+.repair-heading,
+.repair-table-panel {
+  border: 1px solid var(--repair-line);
+  border-radius: 10px;
+  background: var(--repair-surface);
+}
+
+.repair-heading {
+  display: flex;
+  flex: none;
   flex-wrap: wrap;
-  row-gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(100deg, var(--repair-tint), var(--repair-surface) 70%);
 }
 
-.cell-date {
-  font-family: monospace;
-  color: #333;
-}
-.floating-export {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--n-primary-color);
-  color: #fff;
+.repair-heading__title,
+.repair-heading__actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  cursor: pointer;
-  user-select: none;
-  font-size: 20px;
-  z-index: 1000;
+  gap: 8px;
 }
-.floating-export:hover {
-  filter: brightness(1.05);
+
+.repair-heading__actions {
+  flex-wrap: wrap;
+}
+
+.repair-heading h1 {
+  margin: 0;
+  color: var(--repair-ink);
+  font-size: clamp(20px, 2vw, 24px);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.repair-heading__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--repair-accent);
+  background: color-mix(in srgb, var(--repair-accent) 12%, var(--repair-surface));
+  font-size: 18px;
+}
+
+.repair-table-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 330px;
+  overflow: hidden;
+}
+
+.repair-table {
+  flex: 1;
+  min-height: 0;
+}
+
+.repair-table :deep(.n-data-table-th) {
+  background: var(--repair-tint);
+}
+
+.repair-table :deep(.n-data-table__pagination) {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 9px 12px;
+  border-top: 1px solid var(--repair-line);
+}
+
+.repair-table :deep(.n-pagination) {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.repair-table :deep(.repair-column-title) {
+  color: var(--repair-muted);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.repair-table :deep(.repair-sn),
+.repair-table :deep(.repair-mac__address) {
+  color: var(--repair-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.repair-table :deep(.repair-identifier) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.repair-table :deep(.repair-copy) {
+  flex: none;
+  width: 22px;
+  padding-inline: 0;
+  font-size: 14px;
+}
+
+.repair-table :deep(.repair-sn) {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.repair-table :deep(.repair-mac) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.repair-table :deep(.repair-mac__verified) {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px 2px 3px;
+  border: 1px solid var(--repair-verified-line);
+  border-radius: 99px;
+  background: var(--repair-verified-fill);
+  color: var(--repair-ink);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.repair-table :deep(.repair-mac__check) {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--repair-success);
+  color: var(--repair-on-success);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.repair-table :deep(.repair-no-mac),
+.repair-table :deep(.repair-date) {
+  color: var(--repair-muted);
+}
+
+.repair-table :deep(.repair-date) {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.repair-table :deep(.repair-action) {
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .repair-table-panel {
+    flex: none;
+    height: 520px;
+  }
+
+  .repair-table :deep(.repair-mac__verified) {
+    padding: 2px;
+  }
+
+  .repair-table :deep(.repair-mac__label) {
+    display: none;
+  }
 }
 </style>

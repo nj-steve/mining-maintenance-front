@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { NModal, NForm, NFormItem, NInput, NSelect, NButton, useMessage, NSpace } from 'naive-ui';
 import { updateRepairStation } from '@/service/api/repair';
 import { useI18n } from 'vue-i18n';
+import { repairStationKycStatuses } from '@/constants/repair-station';
 
 interface CompanyInfo {
   ID: number;
@@ -45,10 +46,10 @@ const editForm = ref({
 });
 
 // KYC状态选项
-const kycStatusOptions = computed(() => [
-  { label: t('page.repairStation.unauthenticated'), value: 0 },
-  { label: t('page.repairStation.authenticated'), value: 1 }
-]);
+const kycStatusOptions = computed(() => repairStationKycStatuses.map(({ value, label }) => ({
+  label: t(`page.repairStation.${label}`),
+  value
+})));
 
 // 监听编辑数据变化，填充表单
 watch(() => props.editData, (newData) => {
@@ -118,7 +119,7 @@ const handleSaveEdit = async () => {
 </script>
 
 <template>
-  <NModal :show="show" @update:show="handleClose" style="width: 600px" preset="card" :title="t('page.repairStation.editStation')">
+  <NModal :show="show" @update:show="handleClose" style="width: min(600px, calc(100vw - 24px))" preset="card" :title="t('page.repairStation.editStation')">
     <NForm :model="editForm" label-width="120px">
       <NFormItem :label="t('page.repairStation.stationName')" required>
         <NInput v-model:value="editForm.name" :placeholder="t('page.repairStation.pleaseEnterStationName')" />

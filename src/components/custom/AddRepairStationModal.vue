@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { NModal, NForm, NFormItem, NInput, NSelect, NButton, useMessage, NSpace } from 'naive-ui';
 import { createRepairStation } from '@/service/api/repair';
 import { useI18n } from 'vue-i18n';
+import { repairStationKycStatuses } from '@/constants/repair-station';
 
 interface Props {
   show: boolean;
@@ -31,10 +32,10 @@ const addForm = ref({
 });
 
 // KYC状态选项
-const kycStatusOptions = computed(() => [
-  { label: t('page.repairStation.unauthenticated'), value: 0 },
-  { label: t('page.repairStation.authenticated'), value: 1 }
-]);
+const kycStatusOptions = computed(() => repairStationKycStatuses.map(({ value, label }) => ({
+  label: t(`page.repairStation.${label}`),
+  value
+})));
 
 // 重置表单
 const resetForm = () => {
@@ -83,7 +84,7 @@ const handleSaveAdd = async () => {
 </script>
 
 <template>
-  <NModal :show="show" @update:show="handleClose" style="width: 600px" preset="card" :title="t('page.repairStation.addStation')">
+  <NModal :show="show" @update:show="handleClose" style="width: min(600px, calc(100vw - 24px))" preset="card" :title="t('page.repairStation.addStation')">
     <NForm :model="addForm" label-width="120px">
       <NFormItem :label="t('page.repairStation.stationName')" required>
         <NInput v-model:value="addForm.name" :placeholder="t('page.repairStation.pleaseEnterStationName')" />

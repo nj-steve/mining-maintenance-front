@@ -1,6 +1,6 @@
 <template>
-  <NButton text size="tiny" style="margin-right: 8px;" @click="open">
-    <Icon icon="ant-design:edit-outlined" width="16" height="16" />
+  <NButton text size="tiny" style="margin-right: 8px;" :aria-label="t('page.faults.editFault.edit')" @click="open">
+    <EditIcon width="16" height="16" aria-hidden="true" />
   </NButton>
   <NModal v-model:show="show" style="width: 600px" preset="card" :title="t('page.faults.editFault.editFault')">
 
@@ -52,7 +52,7 @@
 import { ref } from 'vue'
 import { NButton, NModal, NForm, NFormItem, NSelect, NSpace, useMessage, NDatePicker, NInput } from 'naive-ui'
 import { updateFaults } from '@/service/api/faults'
-import { Icon } from '@iconify/vue'
+import EditIcon from '~icons/ant-design/edit-outlined'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'

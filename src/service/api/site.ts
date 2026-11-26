@@ -1,8 +1,23 @@
 import { request } from '../request';
 
 
+type DashboardMetric = 'wait_repair' | 'off_shelf' | 'pending' | 'logistics' | 'repairing' | 'repaired' | 'wait_on_shelf' | 'scrapped';
+
+export interface DashboardChartPoint {
+  day: string;
+  off_shelf: number;
+  pending: number;
+  repairing: number;
+  completed: number;
+}
+
+interface DashboardStats {
+  today_data: Record<`${DashboardMetric}_count` | `${DashboardMetric}_rate`, number>;
+  chart_data: DashboardChartPoint[] | null;
+}
+
 export function fetchDashboard() {
-  return request({
+  return request<DashboardStats>({
     url: '/api/dashboard',
     method: 'get',
   });

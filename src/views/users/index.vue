@@ -1,16 +1,32 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
-import { NDataTable, useMessage, NButton, useDialog, NTag, NModal, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
+import { refDebounced, useMediaQuery } from '@vueuse/core';
+import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NSpace, useThemeVars } from 'naive-ui';
+import UsersIcon from '~icons/ant-design/safety-certificate-outlined';
+import SearchIcon from '~icons/ant-design/search-outlined';
+import RefreshIcon from '~icons/ant-design/reload-outlined';
+import BindIcon from '~icons/ant-design/link-outlined';
+import AddIcon from '~icons/ant-design/user-add-outlined';
+import ManagementStatusSummary from '@/components/custom/ManagementStatusSummary.vue';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import { fetchUser, updateUser, createUser, fetchCompanies, fetchExternalUsers, bindExternalUser } from '@/service/api/auth';
-import { roleTagMap, roleRecord, userStatusMap, userStatusRecord } from "@/constants/business"
+import { roleTagMap, roleRecord, userStatusMap, UserStatus } from "@/constants/business"
 import { REG_EMAIL } from '@/constants/reg';
 import { useAuthStore } from '@/store/modules/auth';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
-const isAdmin = Boolean(authStore.userInfo?.roles?.includes('1') || authStore.userInfo?.roles?.includes('2'));
+const isAdmin = computed(() => authStore.userInfo.roles.some(role => role === '1' || role === '2'));
+const narrowLayout = useMediaQuery('(max-width: 760px)');
+const theme = useThemeVars();
+const themeStyle = computed(() => ({
+  '--management-surface': theme.value.cardColor,
+  '--management-line': theme.value.dividerColor,
+  '--management-ink': theme.value.textColor1,
+  '--management-muted': theme.value.textColor2,
+  '--management-accent': theme.value.primaryColor
+}));
 const groupOptions = computed(() => {
   const groups = authStore.userInfo?.groups || [];
   return groups.map(g => ({ label: g.name, value: String(g.id) }));
@@ -36,6 +52,8 @@ interface User {
   start_date: string;            // 入职日期 (YYYY-MM-DD)
   status?: number;               // 状态：1-在职，0-离职（可选）
   group_id?: string;
+  groups?: { id: number; name: string }[];
+  company_name?: string;
 
 }
 
@@ -54,27 +72,34 @@ interface EditUser {
   real_name: string;
 }
 
-const dialog = useDialog()
 const message = useMessage();
-
 const tableData = ref<User[]>([]);
-const loading = ref(false);
-const searchSerial = ref<string>(''); // 序列号搜索
-const searchRole = ref<number>(); // 角色筛选
+const matchingCount = ref<number>();
+const loading = ref(true);
+const searchName = ref('');
+const searchFilter = refDebounced(searchName, 250);
+const searchRole = ref<number | null>(null);
+const searchStatus = ref<number | null>(null);
 
-const modelOptions = ref<{ label: string; value: number }[]>([])
-// 状态下拉选项
-const statusOptions =  ref<{ label: string; value: number }[]>([])
-// 公司下拉选项
-const companyOptions = ref<{ label: string; value: string }[]>([])
-// const roleCompany=ref<[]>([]); //  获取角色公司id
-// [
-  // { label: '在架', value: 1 },
-  // { label: '维修', value: 2 },
-  // { label: '报废', value: 3 },
-  // { label: '下架', value: 4 }
-// ];
-
+const modelOptions = computed(() => Object.entries(roleRecord).map(([value, label]) => ({
+  label,
+  value: Number(value)
+})));
+const userStatuses = [
+  { value: UserStatus.Active, key: 'active', tone: '#168460' },
+  { value: UserStatus.Disabled, key: 'disabled', tone: '#b26713' },
+  { value: UserStatus.Leave, key: 'leave', tone: '#bd5268' }
+] as const;
+const statusOptions = computed(() => userStatuses.map(status => ({
+  label: t(`business.userStatus.${status.key}`),
+  value: status.value
+})));
+const statusSummary = computed(() => userStatuses.map(status => ({
+  label: t(`business.userStatus.${status.key}`),
+  count: tableData.value.filter(row => row.status === status.value).length,
+  tone: status.tone
+})));
+const companyOptions = ref<{ label: string; value: string }[]>([]);
 
 // 分页
 const pagination = ref<PaginationProps>({
@@ -290,110 +315,110 @@ const handleSave = async () => {
   }
 };
 
-// ---------------- 表格列 ----------------
-const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
-const columns: DataTableColumns<User> = [
-  {
-    title: () => renderHeaderTitle(t('page.users.columns.username')),
-    key: 'username',
-    width: 200,
-    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.username || '')
-  },
-  {
-    title: () => renderHeaderTitle(t('page.users.columns.realName')),
-    key: 'real_name',
-    width: 200,
-    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.real_name || '')
-  },
-  {
-    title: () => renderHeaderTitle(t('page.users.columns.roleType')),
-    key: 'role',
-    render: (row: any) => {
-      const label = roleRecord[row.role] || t('page.users.unknown');
-      return h(NTag, { class: 'text-sm', size:'small', type: roleTagMap[row.role] }, () => label)
-    }
-  },
-  {
-    title: () => renderHeaderTitle(t('page.users.columns.phone')),
-    key: 'contact_phone',
-    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.contact_phone || '')
-  },
-  {
-    title: () => renderHeaderTitle(t('page.users.columns.email')),
-    key: 'email',
-    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.email || '')
-  },
-  {
-    title: () => renderHeaderTitle(t('page.users.columns.company')),
-    key: 'company_info',
-    render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.company_info?.[0]?.name || t('page.users.unknown'))
-  },
-  {
-    title: () => renderHeaderTitle(t('page.users.columns.startDate')),
-    key: 'start_date',
-    render: (row: User) => h('span', { class: 'text-sm text-gray-500' }, row.start_date || '')
-  },
-  {
-    title: () => renderHeaderTitle(t('page.users.columns.status')),
-    key: 'status',
-    render: (row: any) => {
-      const label = userStatusRecord[row.status] || t('page.users.unknown');
-      return h(NTag, { class: 'text-sm', size:'small', type: userStatusMap[row.status] }, () => label)
-    }
-  },
-  {
-    title: () => renderHeaderTitle(t('page.users.columns.actions')),
-    key: 'actions',
-    align: 'center',
-    render: (row: User) => {
-      return isAdmin
-        ? h(
-            NButton,
-            {
-              type: 'info',
-              ghost: true,
-              class: 'text-sm',
-              size:'small',
-              onClick: () => handleOpenEdit(row)
-            },
-            { default: () => t('page.users.actions.edit') }
-          )
-        : null
-    }
-  }
-];
+const renderHeaderTitle = (text: string) => h('span', { class: 'management-column-title' }, text);
+const userFields = [
+  { key: 'real_name', label: 'realName', width: 130 },
+  { key: 'contact_phone', label: 'phone', width: 155 },
+  { key: 'email', label: 'email', width: 200 },
+  { key: 'start_date', label: 'startDate', width: 120 }
+] as const;
 
-// ---------------- 数据获取 ----------------
-const fetchData = async () => {
+const columns = computed<DataTableColumns<User>>(() => {
+  const result: DataTableColumns<User> = [
+    {
+      title: () => renderHeaderTitle(t('page.users.columns.username')),
+      key: 'username',
+      width: narrowLayout.value ? 122 : 166,
+      ellipsis: { tooltip: true },
+      render: row => h('span', { class: 'management-entity-name' }, row.username || '—')
+    },
+    {
+      title: () => renderHeaderTitle(t('page.users.columns.roleType')),
+      key: 'role',
+      width: narrowLayout.value ? 116 : 142,
+      render: row => h(NTag, {
+        class: 'management-status-tag', size: 'small', round: true, bordered: false, type: roleTagMap[row.role] || 'default'
+      }, () => roleRecord[row.role] || t('page.users.unknown'))
+    },
+    {
+      title: () => renderHeaderTitle(t('page.users.columns.status')),
+      key: 'status',
+      width: narrowLayout.value ? 92 : 105,
+      render: row => {
+        const status = userStatuses.find(item => item.value === row.status);
+        return h(NTag, {
+          class: 'management-status-tag', size: 'small', round: true, bordered: false, type: status ? userStatusMap[status.value] : 'default'
+        }, () => status ? t(`business.userStatus.${status.key}`) : t('page.users.unknown'));
+      }
+    },
+    {
+      title: () => renderHeaderTitle(t('page.users.modal.groupLabel')),
+      key: 'groups',
+      width: 165,
+      ellipsis: { tooltip: true },
+      render: row => row.groups?.map(group => group.name).filter(Boolean).join(', ') || '—'
+    },
+    {
+      title: () => renderHeaderTitle(t('page.users.columns.company')),
+      key: 'company_info',
+      width: 180,
+      ellipsis: { tooltip: true },
+      render: row => row.company_info?.map(company => company.name).filter(Boolean).join(', ') || row.company_name || '—'
+    },
+    ...userFields.map(field => ({
+      title: () => renderHeaderTitle(t(`page.users.columns.${field.label}`)),
+      key: field.key,
+      width: field.width,
+      ellipsis: { tooltip: true },
+      render: (row: User) => h('span', { class: 'management-contact' }, row[field.key] || '—')
+    }))
+  ];
+  if (isAdmin.value) {
+    result.push({
+      title: () => renderHeaderTitle(t('page.users.columns.actions')),
+      key: 'actions',
+      align: 'center',
+      fixed: narrowLayout.value ? undefined : 'right',
+      width: 86,
+      render: row => h(NButton, {
+        type: 'primary', quaternary: true, size: 'small', onClick: () => handleOpenEdit(row)
+      }, () => t('page.users.actions.edit'))
+    });
+  }
+  return result;
+});
+const tableWidth = computed(() => columns.value.reduce((width, column) => width + Number(column.width ?? 0), 0));
+
+let latestRequest = 0;
+async function fetchData() {
+  const request = ++latestRequest;
   loading.value = true;
-  const params: any = {
-    page: pagination.value.page,
-    page_size: pagination.value.pageSize,
-    // username: searchSerial.value || '',
-    // role:searchRole.value||undefined
-  };
-  if (searchSerial.value) params.real_name = searchSerial.value
-  if (searchRole.value) params.role = searchRole.value
-
-
   try {
-    const {data,error} = await fetchUser(params);
-    if(error==null){
-      tableData.value = data.list;
-      pagination.value.itemCount = data.pagination.total;
-      pagination.value.page =  data.pagination.page;
-      pagination.value.pageSize =  data.pagination.page_size;
-    }else{
-      message.error(t('page.users.loadFailed', { error }));
-    }
-  } catch (err) {
-    message.error(t('page.users.loadFailed', { error: err }));
+    const { data, error } = await fetchUser({
+      page: pagination.value.page,
+      page_size: pagination.value.pageSize,
+      real_name: searchFilter.value.trim() || undefined,
+      role: searchRole.value ?? undefined,
+      status: searchStatus.value ?? undefined
+    });
+    if (request !== latestRequest) return;
+    if (!data || error) throw error;
+    tableData.value = data.list ?? [];
+    matchingCount.value = Number(data.pagination.total) || 0;
+    pagination.value.itemCount = matchingCount.value;
+    pagination.value.page = data.pagination.page;
+    pagination.value.pageSize = data.pagination.page_size;
+  } catch (error) {
+    if (request !== latestRequest) return;
+    tableData.value = [];
+    matchingCount.value = undefined;
+    pagination.value.itemCount = 0;
+    message.error(t('page.users.loadFailed', { error }));
   } finally {
-    loading.value = false;
+    if (request === latestRequest) loading.value = false;
   }
-};
+}
 
-// ---------------- 数据获取 ----------------
 const getCompanys = async (role?: number) => {
   // 如果没有传入角色，使用当前表单中的角色
   const currentRole = role || editForm.value.role;
@@ -448,24 +473,10 @@ const getCompanys = async (role?: number) => {
 };
 
 
-onMounted(() => {
-  fetchData()
-  // 初始化赋值
-  modelOptions.value = Object.entries(roleRecord).map(([key, label]) => ({
-    label,                // 角色名称
-    value: Number(key)    // 角色 id（数字）
-  }))
-  statusOptions.value = Object.entries(userStatusRecord).map(([key, label]) => ({
-    label,                // 角色名称
-    value: Number(key)    // 角色 id（数字）
-  }))
-
-
-});
-watch([searchSerial,searchRole], () => {
-  tableData.value = [];
+onMounted(fetchData);
+watch([searchFilter, searchRole, searchStatus], () => {
   pagination.value.page = 1;
-  fetchData();
+  void fetchData();
 });
 
 // ---------------- 授权外部用户弹框 ----------------
@@ -587,33 +598,89 @@ const handleBindSave = async () => {
 </script>
 
 <template>
-  <div>
-    <!-- 查询框 -->
-    <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: space-between; margin-bottom: 16px">
-      <div style="display: flex; gap: 8px;">
-        <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenBind">{{ t('page.users.actions.bindUser') }}</NButton>
-        <NButton v-if="isAdmin" type="primary" ghost size="small" @click="handleOpenAdd">{{ t('page.users.actions.addUser') }}</NButton>
+  <div class="management-page users-page" :style="themeStyle">
+    <header class="management-heading">
+      <div class="management-heading__title">
+        <span class="management-heading__icon" aria-hidden="true"><UsersIcon /></span>
+        <h1>{{ t('route.users') }}</h1>
       </div>
+      <div class="management-heading__actions">
+        <NButton size="small" :loading="loading" @click="fetchData">
+          <template #icon><RefreshIcon /></template>
+          {{ t('common.refresh') }}
+        </NButton>
+        <NButton v-if="isAdmin" type="primary" secondary size="small" @click="handleOpenBind">
+          <template #icon><BindIcon /></template>
+          {{ t('page.users.actions.bindUser') }}
+        </NButton>
+        <NButton v-if="isAdmin" type="primary" size="small" @click="handleOpenAdd">
+          <template #icon><AddIcon /></template>
+          {{ t('page.users.actions.addUser') }}
+        </NButton>
+      </div>
+    </header>
 
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <NSelect v-model:value="searchRole" :options="modelOptions"  :placeholder="t('page.users.search.rolePlaceholder')" clearable />
-        <NInput v-model:value="searchSerial" @change="fetchData" :placeholder="t('page.users.search.namePlaceholder')" clearable style="width: 240px" />
-      </div>
+    <ManagementStatusSummary
+      :total="matchingCount"
+      :total-label="t('page.users.matchingUsers')"
+      :status-label="t('page.users.currentPageStatus')"
+      :statuses="statusSummary"
+      :loading="loading"
+    />
+
+    <div class="management-filters">
+      <NInput
+        v-model:value="searchName"
+        class="management-search"
+        size="small"
+        clearable
+        :placeholder="t('page.users.search.namePlaceholder')"
+        :input-props="{ 'aria-label': t('page.users.search.namePlaceholder') }"
+      >
+        <template #prefix><SearchIcon /></template>
+      </NInput>
+      <NSelect
+        v-model:value="searchRole"
+        class="management-select users-role-filter"
+        :options="modelOptions"
+        :placeholder="t('page.users.search.rolePlaceholder')"
+        size="small"
+        clearable
+      />
+      <NSelect
+        v-model:value="searchStatus"
+        class="management-select users-status-filter"
+        :options="statusOptions"
+        :placeholder="t('page.users.statusFilter')"
+        size="small"
+        clearable
+      />
     </div>
 
-    <!-- 表格 -->
-    <NDataTable :columns="columns" :data="tableData" :pagination="pagination" :loading="loading" remote />
+    <section class="management-table-panel" :aria-label="t('route.users')">
+      <NDataTable
+        class="management-table"
+        flex-height
+        remote
+        size="small"
+        :bordered="false"
+        :columns="columns"
+        :data="tableData"
+        :pagination="pagination"
+        :loading="loading"
+        :scroll-x="tableWidth"
+        :row-key="(row: User) => row.id ?? row.username"
+      />
+    </section>
 
-    <!-- 添加/编辑 弹框 -->
-     <!-- 添加/编辑 弹框 -->
 <NModal
   v-model:show="showModal"
-  style="width: 700px"
+  style="width: min(700px, calc(100vw - 24px))"
   preset="card"
   :title="dialogMode==='add' ? t('page.users.modal.addTitle') : t('page.users.modal.editTitle')"
 >
   <NForm :model="editForm" label-width="100">
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+    <div class="management-dialog-grid">
       <NFormItem :label="t('page.users.modal.usernameLabel')" required  v-if="dialogMode==='add'">
         <NInput v-model:value="editForm.username" :placeholder="t('page.users.modal.usernamePlaceholder')" />
       </NFormItem>
@@ -684,7 +751,7 @@ const handleBindSave = async () => {
   </NForm>
 
   <template #footer>
-    <NSpace>
+    <NSpace justify="end">
       <NButton size="medium" type="primary" @click="handleSave">{{ t('page.users.modal.save') }}</NButton>
       <NButton size="medium" @click="showModal = false">{{ t('page.users.modal.cancel') }}</NButton>
     </NSpace>
@@ -694,7 +761,7 @@ const handleBindSave = async () => {
 <!-- 授权外部用户弹框 -->
 <NModal
   v-model:show="showBindModal"
-  style="width: 500px"
+  style="width: min(500px, calc(100vw - 24px))"
   preset="card"
   :title="t('page.users.modal.bindTitle')"
 >
@@ -743,22 +810,7 @@ const handleBindSave = async () => {
     </NSpace>
   </template>
 </NModal>
-    <!-- <NModal v-model:show="showModal" style="width: 600px" preset="card" :title="dialogMode==='add' ? '添加用户' : '编辑用户'">
-      <NForm :model="editForm" label-width="100">
-        <NFormItem label="机型">
-          <NSelect v-model:value="editForm.Faults_type_id" :options="modelOptions" />
-        </NFormItem>
-        <NFormItem label="机器编号">
-          <NInput v-model:value="editForm.serial_number" />
-        </NFormItem>
-        <NFormItem label="状态">
-          <NSelect v-model:value="editForm.status_id" :options="statusOptions" />
-        </NFormItem>
-      </NForm>
-      <template #footer>
-        <NButton type="primary" @click="handleSave">保存</NButton>
-        <NButton @click="showModal = false">取消</NButton>
-      </template>
-    </NModal> -->
   </div>
 </template>
+
+<style src="@/styles/css/management-list.css"></style>

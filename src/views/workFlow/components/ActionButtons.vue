@@ -1,10 +1,10 @@
 <template>
   <div class="action-buttons">
-    <NButton v-if="!shouldShowDispatch && hasRole" type="info" ghost size="small" @click="emit('edit')" >{{ t('page.workflow.edit') }}</NButton>
-    <NButton type="success" ghost size="small" @click="emit('add-log')" v-if="hasRole">{{ t('page.workflow.log') }}</NButton>
-    <NButton type="info" ghost size="small" @click="emit('detail')">{{ t('page.workflow.historyLog') }}</NButton>
-    <!-- <NButton v-if="shouldShowDispatch" type="info" ghost size="small" @click="emit('dispatch')">{{ t('page.workflow.dispatch') }}</NButton> -->
-    <NButton v-if="shouldShowDispatch && hasRole" type="error" ghost size="small" @click="emit('return')">{{ t('page.workflow.revoke') }}</NButton>
+    <NButton v-if="!shouldShowDispatch && hasRole" type="info" quaternary size="small" @click="emit('edit')" >{{ t('page.workflow.edit') }}</NButton>
+    <NButton type="success" quaternary size="small" @click="emit('add-log')" v-if="hasRole">{{ t('page.workflow.log') }}</NButton>
+    <NButton type="info" quaternary size="small" @click="emit('detail')">{{ t('page.workflow.historyLog') }}</NButton>
+    <!-- <NButton v-if="shouldShowDispatch" type="info" quaternary size="small" @click="emit('dispatch')">{{ t('page.workflow.dispatch') }}</NButton> -->
+    <NButton v-if="shouldShowDispatch && hasRole" type="error" quaternary size="small" @click="emit('return')">{{ t('page.workflow.revoke') }}</NButton>
   </div>
 </template>
 
@@ -35,9 +35,10 @@ const shouldShowDispatch = computed(() => {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 2px;
 }
 .action-buttons :deep(.n-button){
+  padding-inline: 7px;
   font-size: 12px;
 }
 </style>

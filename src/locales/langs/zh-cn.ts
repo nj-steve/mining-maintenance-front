@@ -294,6 +294,11 @@ const local: App.I18n.Schema = {
       }
     },
     home: {
+      overview: '维修概览',
+      trend: '维修趋势',
+      comparison: '设备数量对比',
+      shareOfAssets: '占资产总数 {rate}',
+      loadFailed: '维修概览加载失败，请刷新重试。',
       section1Area: {
         pendingRepair: '待修数',
         removedToday: '今日下架',
@@ -339,6 +344,9 @@ const local: App.I18n.Schema = {
     },
     faults: {
       title: '故障机',
+      listTitle: '故障机列表',
+      batchTools: '批量操作',
+      copyOrderNo: '复制工单号',
       loadFailed: '加载失败',
       totalItems: '共 {count} 条',
       copySuccess: '复制成功',
@@ -741,6 +749,8 @@ const local: App.I18n.Schema = {
       batchLabelSiteId: '场地ID'
     },
     repairReport: {
+        "details": "查看明细",
+        "loadFailed": "维修报表加载失败，请重新查询。",
       "statisticalPeriod": "统计周期",
         "custom": "自定义",
         "quick": "快捷",
@@ -800,6 +810,7 @@ const local: App.I18n.Schema = {
       title: '维修明细',
       macAddress: 'MAC 地址',
       macAddressVerified: 'MAC 已核验',
+      macVerifiedBadge: '已核验',
       searchMacAddress: '输入 MAC 地址',
       verifiedMacOnly: '仅核验通过',
       pleaseEnterWorkOrderNo: '请输入工单号',
@@ -916,6 +927,12 @@ const local: App.I18n.Schema = {
       noData: '暂无数据'
     },
     repairStation: {
+      overviewTitle: '维修站点',
+      matchingStations: '匹配站点',
+      currentPageStatus: '本页认证状态',
+      authenticationInProgress: '认证中',
+      authenticationFailed: '认证失败',
+      unknownStatus: '状态未知',
       companyName: '公司名称',
       repairStationGroup: '组织',
       legalRepresentative: '法人代表',
@@ -936,7 +953,7 @@ const local: App.I18n.Schema = {
       deleteFailed: '删除失败',
       loadFailed: '加载失败: {error}',
       addStation: '添加维修站',
-      searchPlaceholder: '请输入维修站名称',
+      searchPlaceholder: '搜索站点名称或地址',
       paginationPrefix: '共 {count} 条',
       pleaseFillComplete: '请填写完整信息',
       addSuccess: '添加成功！',
@@ -957,6 +974,9 @@ const local: App.I18n.Schema = {
       save: '保存'
     },
     users: {
+      matchingUsers: '匹配用户',
+      currentPageStatus: '本页用户状态',
+      statusFilter: '状态筛选',
       addSuccess: '添加成功！',
       addFailed: '添加失败',
       editSuccess: '修改成功！',
@@ -994,8 +1014,8 @@ const local: App.I18n.Schema = {
 
       actions: {
         edit: '编辑',
-        bindUser: '+ 授权用户',
-        addUser: '+ 新增人员'
+        bindUser: '授权用户',
+        addUser: '新增人员'
       },
 
       search: {
@@ -1038,6 +1058,17 @@ const local: App.I18n.Schema = {
     },
     miningSite: {
       title: '矿场',
+      reportDate: '日报日期',
+      latestReport: '最新日报',
+      allFilterValues: '全部',
+      orderBinding: '工单绑定',
+      filteredSummary: '筛选结果汇总',
+      noReports: '当前条件下暂无日报',
+      reportUnavailable: '日报加载失败',
+      offShelfCount: '下架数',
+      offShelfCountHint: '日报记录中的下架整机台数',
+      onShelfCount: '上架数',
+      onShelfCountHint: '日报记录中的上架台数',
       editSiteInfo: '编辑场地信息',
       siteName: '场地名称',
       siteAddress: '场地地址',
@@ -1237,6 +1268,10 @@ const local: App.I18n.Schema = {
       board3SN: '板3 SN'
     },
     operationLogs: {
+      matchingLogs: '匹配日志',
+      currentPageStatus: '本页操作结果',
+      result: '结果',
+      details: '详情',
       title: '操作日志',
       status: {
         success: '成功',

@@ -1,6 +1,7 @@
 <template>
   <!-- 触发按钮 -->
   <NButton
+    v-if="props.showTrigger !== false"
     type="primary"
     ghost
     size="small"
@@ -112,6 +113,7 @@ interface Faults {
 
 interface Props {
   selectedRows: Faults[];
+  showTrigger?: boolean;
 }
 
 interface Emits {
@@ -158,6 +160,8 @@ const handleOpenModal = () => {
 
   visible.value = true;
 };
+
+defineExpose({ handleOpenModal });
 
 // 提交绑定
 const handleSubmit = async () => {

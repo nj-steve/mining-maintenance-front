@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, h, computed } from 'vue';
+import { onMounted, ref, watch, h, computed, useId } from 'vue';
+import { useMediaQuery } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
-import { NDataTable, useMessage, useDialog, NButton,NTag, NModal, NForm, NFormItem, NInput, NTooltip, NPopconfirm, NDropdown, NIcon } from 'naive-ui';
+import { NDataTable, useMessage, useDialog, NButton,NTag, NModal, NForm, NFormItem, NInput, NTooltip, NPopconfirm, NDropdown, NIcon, NEmpty, useThemeVars } from 'naive-ui';
+import ListIcon from '~icons/ant-design/hdd-outlined';
+import RefreshIcon from '~icons/ant-design/reload-outlined';
+import MatchedIcon from '~icons/ant-design/check-circle-filled';
+import CopyIcon from '~icons/ant-design/copy-outlined';
+import UploadIcon from '~icons/ant-design/upload-outlined';
+import ChevronIcon from '~icons/ant-design/down-outlined';
+import DeleteIcon from '~icons/ant-design/delete-outlined';
 import BatchStatusModal from './components/BatchStatusModal.vue';
 import UploadFileBathStatusModal from './components/UploadFileBathStatusModal.vue';
 import UploadWorkOrderExcel from './components/UploadWorkOrderExcel.vue';
@@ -30,6 +38,18 @@ import { Icon } from '@iconify/vue';
 
 const authStore = useAuthStore();
 const { t } = useI18n();
+const narrowLayout = useMediaQuery('(max-width: 760px)');
+const batchToolsOpen = ref(false);
+const batchToolsId = useId();
+const theme = useThemeVars();
+const panelStyle = computed(() => ({
+  '--fault-surface': theme.value.cardColor,
+  '--fault-line': theme.value.dividerColor,
+  '--fault-ink': theme.value.textColor1,
+  '--fault-muted': theme.value.textColor2,
+  '--fault-accent': theme.value.primaryColor,
+  '--fault-success': theme.value.successColor
+}));
 const hasRole=!authStore.userInfo.roles.includes('3')
 const isAdmin=authStore.userInfo.roles.includes('1') // 超管
 const isRead=authStore.userInfo.roles.includes('5') // 只读用户
@@ -60,6 +80,7 @@ interface Faults {
   site_id?:number;
   model?: string;
   order_id?: number;
+  order_no?: string;
   created_time?: string;
   on_shelf_time?: string;
   repair_count?: number;
@@ -82,7 +103,9 @@ const dialog = useDialog();
 const router = useRouter();
 
 const tableData = ref<Faults[]>([]);
-const loading = ref(false);
+const loading = ref(true);
+const loadFailed = ref(false);
+const exporting = ref(false);
 const faultSortFields = { date: 'down_time', created_time: 'created_at', repair_count: 'repair_count' } as const;
 const faultSort = ref<{ field: (typeof faultSortFields)[keyof typeof faultSortFields]; direction: 'asc' | 'desc' } | null>(null);
 const searchSerial = ref<string>('');
@@ -189,6 +212,7 @@ const fetchData = async () => {
   tableData.value = []
   selectedRows.value = [];
   loading.value = true;
+  loadFailed.value = false;
 
   let onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1
   const params: any = {
@@ -220,10 +244,12 @@ const fetchData = async () => {
         pagination.value.page =  data.pagination.page;
         pagination.value.pageSize =  data.pagination.page_size;
     }else{
+        loadFailed.value = true;
         message.error(`${t('page.faults.loadFailed')}: ${error}`);
     }
   } catch (error) {
     if (requestId !== faultListRequest) return;
+    loadFailed.value = true;
     message.error(t('page.faults.loadFailed'));
     console.error('加载失败:', error);
   } finally {
@@ -274,7 +300,6 @@ const pagination = ref<PaginationProps>({
 
 // ---------------- 数据获取 ----------------
 const fetchOrderStatusData = async (operate_type:"list"|"update") => {
-  loading.value = true;
   const params: any = {
    type:1,//故障机状态
    operate_type:operate_type,
@@ -294,8 +319,6 @@ const fetchOrderStatusData = async (operate_type:"list"|"update") => {
     }
   } catch (err) {
     message.error(`${t('page.faults.loadFailed')}${err}`);
-  } finally {
-    loading.value = false;
   }
 };
 
@@ -501,34 +524,87 @@ const abnormalColumns: DataTableColumns<FaultAbnormalLog> = [
 ];
 
 // ---------------- 表格列 ----------------
-const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
-const columns: DataTableColumns<Faults> = [
+const renderHeaderTitle = (label: string) => h('span', { class: 'fault-column-title' }, label);
+const columns = computed(() => {
+  const available: DataTableColumns<Faults> = [
   {
     type: 'selection',
     multiple: true,
-    width: 60
+    width: 42,
+    fixed: narrowLayout.value ? undefined : 'left'
   },
-  // { title: '序号', key: 'id', width: 80 },
-  { title: () => renderHeaderTitle(t('page.faults.snCode')), key: 'sn', width: 200,
-    render: (row: Faults) => {
-      const sn = row.sn || t('page.faults.unknown');
-      const abnormalCount = Number(row.abnormal_log_count ?? 0);
-      const hasAbnormal = abnormalCount > 0;
-      return h(NTooltip, null, {
-        trigger: () => h('div', { style: 'display:flex; align-items:center; gap:8px; max-width:200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;', onClick: () => { if (row.sn) showAbnormalLogs(row.sn); } }, [
-          h('span', { class: 'text-sm text-primary-600 hover:underline', style: 'flex:1; min-width:0;' }, sn),
-          hasAbnormal
-            ? h('span', { style: 'display:inline-flex; align-items:center; flex-shrink:0;' }, [
-                h(Icon, { icon: 'mdi:check-circle', width: 16, height: 16, class: 'text-emerald-500' })
-              ])
-            : h('span', { style: 'display:inline-flex; align-items:center; flex-shrink:0;' }, [
-                h(Icon, { icon: 'mdi:help-circle', width: 16, height: 16, class: 'text-gray-400' })
-              ])
+  {
+    title: () => renderHeaderTitle(t('page.faults.snCode')),
+    key: 'sn',
+    width: narrowLayout.value ? 160 : 206,
+    fixed: narrowLayout.value ? undefined : 'left',
+    render: row => {
+      if (!row.sn) return '—';
+      const matched = Number(row.abnormal_log_count ?? 0) > 0;
+      const matchLabel = t('page.faults.searchCard.hasAbnormalLogs');
+      return h(NTooltip, { placement: 'top' }, {
+        trigger: () => h('button', {
+          type: 'button',
+          class: 'fault-sn',
+          onClick: () => showAbnormalLogs(row.sn)
+        }, [
+          h('span', { class: 'fault-ellipsis' }, row.sn),
+          matched ? h(MatchedIcon, { class: 'fault-match-icon', 'aria-label': matchLabel, role: 'img' }) : null
         ]),
-        default: () => sn
+        default: () => matched ? `${row.sn} · ${matchLabel}` : row.sn
       });
     }
   },
+  {
+    title: () => renderHeaderTitle(t('page.faults.site')),
+    key: 'site_name',
+    width: narrowLayout.value ? 115 : 168,
+    render: row => {
+      const label = row.site_name || t('page.faults.unknown');
+      if (!row.site_id) return h('span', { class: 'fault-ellipsis', title: label }, label);
+      return h('button', {
+        type: 'button',
+        class: 'fault-cell-link fault-ellipsis',
+        title: label,
+        onClick: () => router.push(`/miningsite/${row.site_id}/info`)
+      }, label);
+    }
+  },
+  { title: () => renderHeaderTitle(t('page.faults.flowStatus')), key: 'status_text', width: 100,
+    render: (row: Faults) => {
+      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        [t('page.faults.onShelf')]: 'success',
+        [t('page.faults.inStock')]: 'success',
+        [t('page.faults.waitStock')]: 'warning',
+        [t('page.faults.logisticsOut')]: 'primary',
+        [t('page.faults.pending')]: 'primary',
+        [t('page.faults.logisticsIn')]: 'primary',
+        [t('page.faults.repairing')]: 'info',
+        [t('page.faults.repairCompleted')]: 'success',
+        [t('page.faults.waitShelf')]: 'warning',
+        [t('page.faults.newOffShelf')]: 'warning',
+      };
+      const label = row.status_value != null ? getTranslatedStatus(String(row.status_value)) : (row.status_text ? getTranslatedStatus(row.status_text) : t('page.faults.unknown'));
+      return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true, bordered: false }, () => label)
+    }
+  },
+  { title: () => renderHeaderTitle(t('page.faults.offShelfDate')), key: 'date', width: 114, align: 'right', sorter: true, render: (row: Faults) => h('span', { class: 'fault-time' }, row.date || '—') },
+  { title: () => renderHeaderTitle(t('page.faults.repairCount')), key: 'repair_count', width: 120, sorter: true, render: (row: Faults) => h('span', { class: 'fault-count' }, String(row.repair_count ?? '0')) },
+  { title: () => renderHeaderTitle(t('page.faults.importTime')), key: 'created_time', width: 160, sorter: true,
+    render: (row: Faults) => {
+      const s = row.created_time;
+      if (!s) return '';
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return String(s);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const da = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      return h('span', { class: 'fault-time' }, `${y}-${m}-${da} ${hh}:${mm}:${ss}`)
+    }
+   },
   { title: () => renderHeaderTitle(t('page.faults.type')), key: 'repair_type', width: 100,
     render: (row: Faults) => {
       const type = row.repair_type;
@@ -547,141 +623,33 @@ const columns: DataTableColumns<Faults> = [
       return h(NTag, { class: 'text-sm', type: tagType, size: 'small', round: true, bordered: false }, () => label);
     }
   },
-  { title: () => renderHeaderTitle(t('page.faults.site')), key: 'site_name', width: 150,
-    render: (row: Faults) => {
-       const siteName = row.site_name || t('page.faults.unknown');
-       const siteId = row.site_id || 0;
-
-       if (siteId) {
-         return h(
-           NTooltip,
-           null,
-           {
-             trigger: () => h(
-               'div',
-               { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' },
-               [
-                 h(
-                   NButton,
-                   {
-                     text: true,
-                     type: 'primary',
-                     onClick: () => {
-                       router.push(`/miningsite/${siteId}/info`);
-                     }
-                   },
-                   { default: () => h('span', { class: 'text-sm text-gray-500', style: 'display:inline-block; max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, siteName) }
-                 )
-               ]
-             ),
-             default: () => siteName
-           }
-         );
-       }
-
-       return h(
-         NTooltip,
-         null,
-         {
-           trigger: () => h('div', { class: 'text-sm text-gray-500', style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' }, siteName),
-           default: () => siteName
-         }
-       );
-     }
-  },
-  { title: () => renderHeaderTitle(t('page.faults.model')), key: 'model', width: 120, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.model || t('page.faults.unknown')) },
+  { title: () => renderHeaderTitle(t('page.faults.model')), key: 'model', width: 112, render: row => row.model || t('page.faults.unknown') },
   {
     title: () => renderHeaderTitle(t('page.faults.orderNo')),
     key: 'order_no',
-    width: 170,
-     render: (row: Faults) => {
-      // const full = row.order_no || '';
-      const full = (row as any).order_no || '';
-      const prefix = full.slice(0, 6);
-      const suffix = full.slice(-7);
-      const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
-      const onCopy = async () => {
+    width: 162,
+    render: row => {
+      const order = row.order_no;
+      if (!order) return '—';
+      const label = order.length > 14 ? `${order.slice(0, 6)}…${order.slice(-7)}` : order;
+      const openOrder = () => router.push({ name: 'workflowdetail', params: { id: row.order_id } });
+      const copyOrder = async () => {
         try {
-          await navigator.clipboard.writeText(full);
+          await navigator.clipboard.writeText(order);
           message.success(t('page.faults.orderNoCopied'));
-        } catch (e) {
+        } catch {
           message.error(t('page.faults.copyFailed'));
         }
       };
-      return  hasRole? h(
-        NTooltip,
-        null,
-        {
-          trigger: () => h(
-            'div',
-            {
-              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
-            },
-            [
-              h(
-                'span',
-                {
-                  class: 'text-sm text-gray-500', style: 'flex:1; min-width:0; cursor: pointer;',
-                  onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
-                },
-                truncated
-              ),
-              full!=="" ? h(
-                NButton,
-                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
-                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
-              ) : null,
-
-            ]
-          ),
-          default: () => full
-        }
-      ) : h(
-        NTooltip,
-        null,
-        {
-          trigger: () => h(
-            'div',
-            {
-              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
-            },
-            [
-              h(
-                'span',
-                {
-                  class: 'text-sm text-gray-500', style: 'flex:1; min-width:0; cursor: pointer;',
-                  // onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
-                },
-                truncated
-              ),
-              full!=="" ? h(
-                NButton,
-                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
-                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
-              ) : null
-            ]
-          ),
-          default: () => full
-        }
-      );
+      return h('div', { class: 'fault-order-cell' }, [
+        hasRole && row.order_id
+          ? h('button', { type: 'button', class: 'fault-cell-link fault-ellipsis', title: order, onClick: openOrder }, label)
+          : h('span', { class: 'fault-ellipsis', title: order }, label),
+        h(NButton, { size: 'tiny', quaternary: true, title: t('page.faults.copyOrderNo'), 'aria-label': t('page.faults.copyOrderNo'), onClick: copyOrder }, {
+          default: () => h(CopyIcon, { 'aria-hidden': true })
+        })
+      ]);
     }
-    // render: (row: Faults) => {
-    //   const text = (row as any).order_no || '';
-    //   return hasRole
-    //       ? h(
-    //     NTooltip,
-    //     null,
-    //     {
-    //       trigger: () => h('div',
-    //        { style: 'max-width:150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;' ,
-    //         onClick: () => router.push({ name: 'workflowdetail', params: { id: row.order_id } })
-    //        },
-    //        text),
-    //       default: () => text
-    //     }
-    //   )
-    //   : text;
-    // }
   },
   { title: () => renderHeaderTitle(t('page.faults.repairMethod')), key: 'repair_method_text', width: 100,
      render: (row: any ) => {
@@ -701,25 +669,7 @@ const columns: DataTableColumns<Faults> = [
       };
 
       const methodVal = row.repair_method;
-      return h(NTag, { class: 'text-sm', type: tagMap[String(methodVal)] || 'default', size:'small', round:true }, () => methodVal ? getRepairMethodLabel(methodVal) : t('page.faults.unknown'))
-    }
-  },
-  { title: () => renderHeaderTitle(t('page.faults.flowStatus')), key: 'status_text', width: 100,
-    render: (row: Faults) => {
-      const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        [t('page.faults.onShelf')]: 'success',
-        [t('page.faults.inStock')]: 'success',
-        [t('page.faults.waitStock')]: 'warning',
-        [t('page.faults.logisticsOut')]: 'primary',
-        [t('page.faults.pending')]: 'primary',
-        [t('page.faults.logisticsIn')]: 'primary',
-        [t('page.faults.repairing')]: 'info',
-        [t('page.faults.repairCompleted')]: 'success',
-        [t('page.faults.waitShelf')]: 'warning',
-        [t('page.faults.newOffShelf')]: 'warning',
-      };
-      const label = row.status_value != null ? getTranslatedStatus(String(row.status_value)) : (row.status_text ? getTranslatedStatus(row.status_text) : t('page.faults.unknown'));
-      return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true }, () => label)
+      return h(NTag, { class: 'text-sm', type: tagMap[String(methodVal)] || 'default', size:'small', round:true, bordered: false }, () => methodVal ? getRepairMethodLabel(methodVal) : t('page.faults.unknown'))
     }
   },
   { title: () => renderHeaderTitle(t('page.faults.repairStatus')), key: 'repair_result_text', width: 100,
@@ -731,10 +681,9 @@ const columns: DataTableColumns<Faults> = [
         [t('page.faults.waitRepair')]: 'warning',
       };
       const label = row.repair_result_text ? getTranslatedStatus(row.repair_result_text) : t('page.faults.unknown');
-      return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true }, () => label)
+      return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true, bordered: false }, () => label)
     }
   },
-  { title: () => renderHeaderTitle(t('page.faults.repairCount')), key: 'repair_count', width: 120, sorter: true, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, String(row.repair_count ?? '0')) },
   { title: () => renderHeaderTitle(t('page.faults.warranty')), key: 'warranty_status', width: 100,
     render: (row: Faults) => {
       const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
@@ -742,26 +691,10 @@ const columns: DataTableColumns<Faults> = [
         [t('page.faults.outOfWarranty')]: 'error',
       };
       const label = row.warranty_status_text ? getTranslatedStatus(row.warranty_status_text) : t('page.faults.none');
-      return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true}, () => label)
+      return h(NTag, { class: 'text-sm', type: tagMap[label] || 'default', size:'small', round:true, bordered: false}, () => label)
     }
   },
-  { title: () => renderHeaderTitle(t('page.faults.problemDescription')), key: 'description', width: 200, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.description || '-') },
-  { title: () => renderHeaderTitle(t('page.faults.offShelfDate')), key: 'date', width: 120, sorter: true, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.date || '-') },
-  { title: () => renderHeaderTitle(t('page.faults.importTime')), key: 'created_time', width: 160, sorter: true,
-    render: (row: Faults) => {
-      const s = row.created_time;
-      if (!s) return '';
-      const d = new Date(s);
-      if (isNaN(d.getTime())) return String(s);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const da = String(d.getDate()).padStart(2, '0');
-      const hh = String(d.getHours()).padStart(2, '0');
-      const mm = String(d.getMinutes()).padStart(2, '0');
-      const ss = String(d.getSeconds()).padStart(2, '0');
-      return h('span', { class: 'text-sm text-gray-500' }, `${y}-${m}-${da} ${hh}:${mm}:${ss}`)
-    }
-   },
+  { title: () => renderHeaderTitle(t('page.faults.problemDescription')), key: 'description', width: 200, render: (row: Faults) => h('span', { class: 'text-sm text-gray-500' }, row.description || '—') },
   { title: () => renderHeaderTitle(t('page.faults.onShelfOrInStockTime')), key: 'on_shelf_time', width: 160,
     render: (row: Faults) => {
       const s = row.on_shelf_time;
@@ -774,7 +707,7 @@ const columns: DataTableColumns<Faults> = [
       const hh = String(d.getHours()).padStart(2, '0');
       const mm = String(d.getMinutes()).padStart(2, '0');
       const ss = String(d.getSeconds()).padStart(2, '0');
-      return h('span', { class: 'text-sm text-gray-500' }, `${y}-${m}-${da} ${hh}:${mm}:${ss}`)
+      return h('span', { class: 'fault-time' }, `${y}-${m}-${da} ${hh}:${mm}:${ss}`)
     }
    },
   {
@@ -782,7 +715,7 @@ const columns: DataTableColumns<Faults> = [
     key: 'actions',
     align:'center',
     width: 120,
-    fixed: 'right',
+    fixed: narrowLayout.value ? undefined : 'right',
     render: (row: Faults) => {
       if(isRead){
         return []
@@ -818,8 +751,8 @@ const columns: DataTableColumns<Faults> = [
                 {
                   trigger: () => h(
                     NButton,
-                    { size: 'tiny', quaternary: true, type: 'error' },
-                    { default: () => h(Icon, { icon: 'ant-design:delete-outlined', width: 16, height: 16 }) }
+                    { size: 'tiny', quaternary: true, type: 'error', 'aria-label': t('common.delete') },
+                    { default: () => h(DeleteIcon, { width: 16, height: 16, 'aria-hidden': 'true' }) }
                   ),
                   default: () => t('page.faults.confirmDelete')
                 }
@@ -847,7 +780,11 @@ const columns: DataTableColumns<Faults> = [
       ]
     }
   }
-];
+  ];
+  return available.filter(column => !isRead || !('key' in column) || column.key !== 'actions');
+});
+const tableWidth = computed(() => columns.value.reduce((width, column) => width + Number(column.width || 0), 0));
+
 
 onMounted(() => {
   fetchData()
@@ -1060,7 +997,7 @@ const onOnlyMySiteChange = (v: boolean) => {
 
 // 通过 /api/faults/export 获取数据，按指定字段生成 CSV（Excel 可打开）
 const exportFaultsFile = async () => {
-  loading.value = true;
+  exporting.value = true;
   try {
     const onlyMySite = localStorage.getItem('onlyMySite') === 'true' ? -1 : 1;
     const params: Record<string, any> = {
@@ -1159,13 +1096,24 @@ const exportFaultsFile = async () => {
   } catch (err) {
     message.error(`${t('page.faults.exportFailed')}${err}`);
   } finally {
-    loading.value = false;
+    exporting.value = false;
   }
 };
 </script>
 
 <template>
-  <div class="flex  gap-16px flex-col-stretch  lt-sm:overflow-auto">
+  <div class="fault-list" :style="panelStyle">
+    <header class="fault-heading">
+      <div class="fault-heading-main">
+        <span class="fault-heading-icon" aria-hidden="true"><ListIcon /></span>
+        <h1>{{ t('page.faults.listTitle') }}</h1>
+      </div>
+      <NButton size="small" :loading="loading" @click="fetchData">
+        <template #icon><RefreshIcon aria-hidden="true" /></template>
+        {{ t('common.refresh') }}
+      </NButton>
+    </header>
+
     <FaultsSearchCard
       v-model:serial="searchSerial"
       v-model:workOrderNo="searchWorkOrderNo"
@@ -1183,20 +1131,18 @@ const exportFaultsFile = async () => {
       :hasRole="hasRole"
       @search="fetchData"
     />
-    <!-- 查询框 -->
-  <n-card size="small" class=" card-wrapper  flex flex-col gap-16px h-[calc(100vh-250px)]" style="padding-bottom: 50px;">
-    <div v-if="!isRead" class="mb-4 flex items-center gap-2 text-sm" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
-      <div class="text-sm" style="display: flex; align-items: center; gap: 12px;">
+    <section class="fault-table-panel" :aria-label="t('page.faults.listTitle')">
+      <div v-if="!isRead" class="fault-toolbar">
         <n-dropdown :options="importOptions" @select="handleImportSelect">
-          <n-button size="small" ghost type="primary">
+          <n-button size="small" type="primary">
             <template #icon>
               <n-icon>
-                <Icon icon="material-symbols:upload" />
+                <UploadIcon aria-hidden="true" />
               </n-icon>
             </template>
             {{ t('page.faults.import') }}
             <n-icon style="margin-left: 4px">
-              <Icon icon="ant-design:down-outlined" />
+              <ChevronIcon aria-hidden="true" />
             </n-icon>
           </n-button>
         </n-dropdown>
@@ -1211,13 +1157,13 @@ const exportFaultsFile = async () => {
           <NDropdown :options="createWorkOrderOptions" trigger="click" @select="handleCreateWorkOrderSelect">
             <NButton
               type="primary"
-              ghost
+              secondary
               size="small"
               class="text-sm"
             >
               {{ t('page.faults.createOrder') }}
               <template #icon>
-                 <Icon icon="ant-design:down-outlined" />
+                 <ChevronIcon aria-hidden="true" />
               </template>
             </NButton>
           </NDropdown>
@@ -1227,79 +1173,55 @@ const exportFaultsFile = async () => {
           <NDropdown :options="bindWorkOrderOptions" trigger="click" @select="handleBindWorkOrderSelect">
             <NButton
               type="primary"
-              ghost
+              secondary
               size="small"
               class="text-sm"
             >
               {{ t('page.faults.bindOrder') }}
               <template #icon>
-                 <Icon icon="ant-design:down-outlined" />
+                 <ChevronIcon aria-hidden="true" />
               </template>
             </NButton>
           </NDropdown>
 
-          <BindWorkOrderModal ref="bindWorkOrderRef" style="display: none" :selectedRows="selectedRows" @refresh="handleRefresh" />
+          <BindWorkOrderModal ref="bindWorkOrderRef" :show-trigger="false" :selectedRows="selectedRows" @refresh="handleRefresh" />
 
           <UploadBindWorkOrderExcel v-model:show="showImportBindWorkOrderModal" :site-options="siteOptions" @success="fetchData" />
 
-          <!-- 批量修改状态组件 -->
-          <BatchStatusModal
-            :status-options="hasRole ? statusOptions : statusUpdateOptions"
-            :selectedRows="selectedRows"
-            @refresh="handleRefresh"
-          />
-
-          <UploadFileBathStatusModal
-            :status-options="hasRole ? statusOptions : statusUpdateOptions"
-            @refresh="handleRefresh"
-          />
-
-          <UnbindWorkOrderModal :selectedRows="selectedRows" @refresh="handleRefresh" />
-
-       <NSwitch v-model:value="onlyMySite" size="small" class="text-sm" @update:value="onOnlyMySiteChange" />
-    <span class="text-sm text-gray-600" style="margin-left: 4px;">{{ t('page.faults.mySite') }}</span>
         </template>
-        <template v-if="!hasRole">
-  <!-- 批量修改状态组件 -->
-          <BatchStatusModal
-            :status-options=statusUpdateOptions
-            :selectedRows="selectedRows"
-            @refresh="handleRefresh"
-          />
-
-          <UploadFileBathStatusModal
-            :status-options=statusUpdateOptions
-            @refresh="handleRefresh"
-          />
-        </template>
-
-        <!-- 批量删除：仅售后管理员（2）与超管（1）可见 -->
-        <NButton
-          v-if="canBatchDelete"
-          type="error"
-          ghost
-          size="small"
-          class="text-sm"
-          :disabled="selectedRows.length === 0"
-          @click="handleBatchDelete"
-        >
-          <template #icon>
-            <Icon icon="ant-design:delete-outlined" />
-          </template>
-          {{ t('page.faults.batchDelete', { count: selectedRows.length }) }}
+        <NButton v-if="narrowLayout" size="small" :aria-controls="batchToolsId" :aria-expanded="batchToolsOpen" @click="batchToolsOpen = !batchToolsOpen">
+          {{ t('page.faults.batchTools') }}
+          <template #icon><ChevronIcon aria-hidden="true" /></template>
         </NButton>
-         <NButton circle size="small" ghost class="text-sm" @click="exportFaultsFile" :title="t('page.faults.exportExcel')">
+        <div v-show="!narrowLayout || batchToolsOpen" :id="batchToolsId" class="fault-batch-tools">
+          <BatchStatusModal
+            :status-options="hasRole ? statusOptions : statusUpdateOptions"
+            :selectedRows="selectedRows"
+            @refresh="handleRefresh"
+          />
+          <UploadFileBathStatusModal :status-options="hasRole ? statusOptions : statusUpdateOptions" @refresh="handleRefresh" />
+          <UnbindWorkOrderModal v-if="hasRole" :selectedRows="selectedRows" @refresh="handleRefresh" />
+          <NButton v-if="canBatchDelete" type="error" ghost size="small" :disabled="selectedRows.length === 0" @click="handleBatchDelete">
+            <template #icon><DeleteIcon aria-hidden="true" /></template>
+            {{ t('page.faults.batchDelete', { count: selectedRows.length }) }}
+          </NButton>
+        </div>
+        <label v-if="hasRole" class="fault-scope">
+          <NSwitch v-model:value="onlyMySite" size="small" :aria-label="t('page.faults.mySite')" @update:value="onOnlyMySiteChange" />
+          <span>{{ t('page.faults.mySite') }}</span>
+        </label>
+        <NButton class="fault-export" size="small" :loading="exporting" @click="exportFaultsFile">
           <template #icon>
             <icon-ant-design-download-outlined />
           </template>
+          {{ t('page.faults.exportExcel') }}
         </NButton>
-
-
       </div>
-    </div>
-    <!-- 表格 -->
+
       <NDataTable
+        class="fault-table"
         flex-height
+        size="small"
         :columns="columns"
         :data="tableData"
         :pagination="pagination"
@@ -1309,14 +1231,16 @@ const exportFaultsFile = async () => {
         :checked-row-keys="selectedRowKeys"
         @update:checked-row-keys="handleSelectionChange"
         @update:sorter="handleFaultSortChange"
-        :scroll-x="2000"
-        striped
-        class="sm:h-full"
-      />
-  </n-card>
+        :scroll-x="tableWidth"
+      >
+        <template v-if="!loading" #empty>
+          <NEmpty :description="loadFailed ? t('page.faults.loadFailed') : t('common.noData')" />
+        </template>
+      </NDataTable>
+    </section>
 
     <!-- 创建工单弹框 -->
-    <NModal v-model:show="showWorkOrderModal" style="width: 800px" preset="card" :title="t('page.faults.createOrder')" class="text-sm">
+    <NModal v-model:show="showWorkOrderModal" style="width: min(800px, calc(100vw - 32px))" preset="card" :title="t('page.faults.createOrder')" class="text-sm">
       <NForm :model="workOrderForm" label-width="120" size="small" class="text-sm">
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
           <NFormItem>
@@ -1370,7 +1294,7 @@ const exportFaultsFile = async () => {
     <NModal
       v-model:show="abnormalModalShow"
       preset="card"
-      style="width: 900px"
+      style="width: min(900px, calc(100vw - 32px))"
       :title="`${t('page.faults.abnormalLogs.title')} - ${abnormalSn}`"
     >
       <NSpace justify="space-between" align="center" class="mb-12px">
@@ -1393,19 +1317,79 @@ const exportFaultsFile = async () => {
   </div>
 </template>
 <style scoped>
-.site-select :deep(.n-base-selection-placeholder){
-  font-size: 12px !important;
+.fault-list {
+  --fault-tint: color-mix(in srgb, var(--fault-accent) 5%, var(--fault-surface));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 560px;
 }
-:deep(.n-base-selection .n-base-selection-placeholder){
-  font-size: 12px !important;
+
+.fault-heading, .fault-table-panel {
+  border: 1px solid var(--fault-line);
+  border-radius: 10px;
+  background: var(--fault-surface);
 }
-:deep(.n-base-selection-overlay){
-  font-size: 12px !important;
+
+.fault-heading {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  gap: 12px;
+  background: linear-gradient(100deg, var(--fault-tint), var(--fault-surface) 70%);
 }
-:deep(.n-button){
-  font-size: 12px !important;
+
+.fault-heading-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.fault-heading h1 { margin: 0; color: var(--fault-ink); font-size: clamp(20px, 2vw, 24px); font-weight: 700; line-height: 1.3; }
+.fault-heading-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--fault-accent);
+  background: color-mix(in srgb, var(--fault-accent) 12%, var(--fault-surface));
+  font-size: 19px;
 }
-:deep(.n-input-wrapper){
-  font-size: 12px !important;
+
+.fault-table-panel { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 330px; overflow: hidden; }
+.fault-toolbar { display: flex; flex: none; flex-wrap: wrap; align-items: center; gap: 7px; padding: 10px 12px; border-bottom: 1px solid var(--fault-line); }
+.fault-batch-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.fault-scope { display: inline-flex; align-items: center; gap: 6px; padding-inline: 5px; color: var(--fault-muted); font-size: 12px; white-space: nowrap; }
+.fault-export { margin-inline-start: auto; }
+.fault-table { flex: 1; min-height: 0; }
+.fault-table :deep(.n-data-table-th) { background: var(--fault-tint); }
+.fault-table :deep(.n-data-table__pagination) { flex-shrink: 0; flex-wrap: wrap; gap: 6px; margin: 0; padding: 9px 12px; border-top: 1px solid var(--fault-line); }
+.fault-table :deep(.fault-column-title) { color: var(--fault-muted); font-weight: 650; }
+.fault-table :deep(.fault-sn), .fault-table :deep(.fault-cell-link) {
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  color: var(--fault-ink);
+  background: none;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.fault-table :deep(.fault-sn) { display: inline-flex; align-items: center; gap: 7px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.fault-table :deep(.fault-sn:hover), .fault-table :deep(.fault-sn:focus-visible), .fault-table :deep(.fault-cell-link:hover), .fault-table :deep(.fault-cell-link:focus-visible) { color: var(--fault-accent); }
+.fault-table :deep(.fault-ellipsis) { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fault-table :deep(.fault-match-icon) { flex: none; color: var(--fault-success); font-size: 15px; }
+.fault-table :deep(.fault-order-cell) { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+.fault-table :deep(.fault-order-cell > :last-child) { flex: none; }
+.fault-table :deep(.fault-count) { color: var(--fault-ink); font-variant-numeric: tabular-nums; font-weight: 650; }
+
+.fault-table :deep(.fault-time) { color: var(--fault-muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .fault-list { min-height: 0; }
+  .fault-heading { padding: 10px 12px; }
+  .fault-table-panel { flex: none; height: 520px; }
+  .fault-batch-tools { flex: 1 1 100%; }
+  .fault-export { margin-inline-start: 0; }
 }
 </style>

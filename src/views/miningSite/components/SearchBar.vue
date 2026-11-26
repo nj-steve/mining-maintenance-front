@@ -1,76 +1,83 @@
 <template>
-  <div class="mb-4 flex items-center gap-2" style="display: flex; justify-content: flex-end; margin-bottom: 16px">
-    <!-- 日期选择 -->
-    <NDatePicker
-      v-model:formatted-value="dateModel"
-      value-format="yyyy-MM-dd"
-      type="date"
-      clearable
-      size="medium"
-      style="width: 160px"
-      @update:value="emit('search')"
-    />
+  <div class="report-filters">
+    <div class="report-filter report-filter--date">
+      <span class="report-filter-label">{{ t('page.miningSite.reportDate') }}</span>
+      <NDatePicker
+        v-model:formatted-value="dateModel"
+        value-format="yyyy-MM-dd"
+        type="date"
+        :placeholder="t('page.miningSite.latestReport')"
+        :aria-label="t('page.miningSite.reportDate')"
+        clearable
+        size="small"
+      />
+    </div>
 
-    <!-- 场地名称搜索 -->
-    <NInput
-      v-model:value="serialModel"
-      @change="emit('search')"
-      :placeholder="t('page.miningSite.searchBar.placeholder.siteName')"
-      clearable
-      style="width: 240px"
-      size="medium"
-    />
+    <div class="report-filter report-filter--site">
+      <span class="report-filter-label">{{ t('page.miningSite.siteName') }}</span>
+      <NInput
+        v-model:value="serialModel"
+        :placeholder="t('page.miningSite.searchBar.placeholder.siteName')"
+        :input-props="{ 'aria-label': t('page.miningSite.siteName') }"
+        clearable
+        size="small"
+      >
+        <template #prefix><SearchIcon aria-hidden="true" /></template>
+      </NInput>
+    </div>
 
-    <!-- 售后专员下拉搜索 -->
-    <NSelect
-      v-model:value="salerIdModel"
-      :options="salerOptions"
-      clearable
-      filterable
-      :placeholder="t('page.miningSite.searchBar.placeholder.afterSalesSpecialist')"
-      style="width: 130px"
-      size="medium"
-      @update:value="emit('search')"
-    />
+    <div class="report-filter">
+      <span class="report-filter-label">{{ t('page.miningSite.afterSalesSpecialist') }}</span>
+      <NSelect
+        v-model:value="salerIdModel"
+        :options="salerOptions"
+        :placeholder="t('page.miningSite.allFilterValues')"
+        :aria-label="t('page.miningSite.afterSalesSpecialist')"
+        clearable
+        filterable
+        size="small"
+      />
+    </div>
 
-    <!-- 站点状态下拉搜索 -->
-    <NSelect
-      v-model:value="siteStatusModel"
-      :options="siteStatusOptions"
-      clearable
-      filterable
-      :placeholder="t('page.miningSite.searchBar.placeholder.siteStatus')"
-      style="width: 130px"
-      size="medium"
-      @update:value="emit('search')"
-    />
+    <div class="report-filter">
+      <span class="report-filter-label">{{ t('page.miningSite.repairStatus') }}</span>
+      <NSelect
+        v-model:value="siteStatusModel"
+        :options="siteStatusOptions"
+        :placeholder="t('page.miningSite.allFilterValues')"
+        :aria-label="t('page.miningSite.repairStatus')"
+        clearable
+        filterable
+        size="small"
+      />
+    </div>
 
-    <!-- 绑定工单类型下拉搜索 -->
-    <NSelect
-      v-model:value="bindTypeModel"
-      :options="bindTypeOptions"
-      clearable
-      filterable
-      :placeholder="t('page.miningSite.searchBar.placeholder.bindType')"
-      style="width: 130px"
-      size="medium"
-      @update:value="emit('search')"
-    />
+    <div class="report-filter">
+      <span class="report-filter-label">{{ t('page.miningSite.orderBinding') }}</span>
+      <NSelect
+        v-model:value="bindTypeModel"
+        :options="bindTypeOptions"
+        :placeholder="t('page.miningSite.allFilterValues')"
+        :aria-label="t('page.miningSite.orderBinding')"
+        clearable
+        filterable
+        size="small"
+      />
+    </div>
 
-    <!-- 所有场地复选框 -->
-    <NCheckbox
-      v-model:checked="statusModel"
-      size="medium"
-      @update:checked="emit('search')"
-    >
-      {{ t('page.miningSite.searchBar.allSites') }}
-    </NCheckbox>
+    <div class="report-filter-scope">
+      <NCheckbox v-model:checked="statusModel" size="small">
+        {{ t('page.miningSite.searchBar.allSites') }}
+      </NCheckbox>
+      <slot name="scope" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { NInput, NSelect, NDatePicker, NCheckbox } from 'naive-ui';
+import SearchIcon from '~icons/ant-design/search-outlined';
 import type { SelectOption } from 'naive-ui';
 import { useI18n } from 'vue-i18n';
 
@@ -86,7 +93,6 @@ const props = withDefaults(defineProps<{
   salerOptions: SelectOption[];
   siteStatusOptions: SelectOption[];
   bindTypeOptions: SelectOption[];
-  borderBindTypeOptions: SelectOption[];
 }>(), {
   status: 'active'
 });
@@ -97,9 +103,7 @@ const emit = defineEmits<{
   (e: 'update:salerId', v: number | null): void;
   (e: 'update:siteStatus', v: number | null): void;
   (e: 'update:bindType', v: string | null): void;
-  (e: 'update:borderBindType', v: string | null): void;
   (e: 'update:status', v: string): void;
-  (e: 'search'): void;
 }>();
 
 const dateModel = computed({
@@ -134,4 +138,10 @@ const statusModel = computed({
 </script>
 
 <style scoped>
+.report-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; }
+.report-filter { flex: 1 1 112px; min-width: 112px; }
+.report-filter--date { flex: 1 1 142px; min-width: 142px; }
+.report-filter--site { flex: 2 1 172px; min-width: 160px; }
+.report-filter-label { display: block; margin: 0 0 4px; color: var(--report-secondary); font-size: 12px; font-weight: 600; }
+.report-filter-scope { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; min-height: 28px; color: var(--report-secondary); font-size: 12px; white-space: nowrap; }
 </style>

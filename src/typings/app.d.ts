@@ -533,6 +533,11 @@ declare namespace App {
           };
         };
         home: {
+          overview: string;
+          trend: string;
+          comparison: string;
+          shareOfAssets: string;
+          loadFailed: string;
           section1Area: {
             pendingRepair: string;
             removedToday: string;
@@ -571,6 +576,9 @@ declare namespace App {
           creativity: string;
         };
         faults: {
+          listTitle: string;
+          batchTools: string;
+          copyOrderNo: string;
         title: string;
         loadFailed: string;
         totalItems: string;
@@ -969,6 +977,8 @@ declare namespace App {
         batchLabelSiteId: string;
       };
       repairReport: {
+          details: string;
+          loadFailed: string;
           // title: string;
           statisticalPeriod: string;
           custom: string;
@@ -1025,6 +1035,7 @@ declare namespace App {
         title: string;
         macAddress: string;
         macAddressVerified: string;
+        macVerifiedBadge: string;
         searchMacAddress: string;
         verifiedMacOnly: string;
         pleaseEnterWorkOrderNo: string;
@@ -1174,6 +1185,12 @@ declare namespace App {
       board3SN: string;
     };
     repairStation: {
+      overviewTitle: string;
+      matchingStations: string;
+      currentPageStatus: string;
+      authenticationInProgress: string;
+      authenticationFailed: string;
+      unknownStatus: string;
       companyName: string;
       repairStationGroup: string;
       legalRepresentative: string;
@@ -1215,6 +1232,9 @@ declare namespace App {
       save: string;
     };
     users: {
+      matchingUsers: string;
+      currentPageStatus: string;
+      statusFilter: string;
       addSuccess: string;
       addFailed: string;
       editSuccess: string;
@@ -1296,6 +1316,17 @@ declare namespace App {
     };
     miningSite: {
           title: string;
+          reportDate: string;
+          latestReport: string;
+          allFilterValues: string;
+          orderBinding: string;
+          filteredSummary: string;
+          noReports: string;
+          reportUnavailable: string;
+          offShelfCount: string;
+          offShelfCountHint: string;
+          onShelfCount: string;
+          onShelfCountHint: string;
           editSiteInfo: string;
           siteName: string;
           siteAddress: string;
@@ -1462,6 +1493,10 @@ declare namespace App {
           operationAluminum: string;
         };
         operationLogs: {
+          matchingLogs: string;
+          currentPageStatus: string;
+          result: string;
+          details: string;
           title: string;
           status: {
             success: string;

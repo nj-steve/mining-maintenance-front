@@ -1,0 +1,271 @@
+.management-page {
+  --management-tint: color-mix(in srgb, var(--management-accent) 5%, var(--management-surface));
+
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.management-page :is(.management-heading, .management-filters, .management-summary__total, .management-summary__statuses, .management-table-panel) {
+  min-width: 0;
+  border: 1px solid var(--management-line);
+  border-radius: 10px;
+  background: var(--management-surface);
+}
+
+.management-page :is(.management-heading, .management-heading__title, .management-heading__actions, .management-filters, .management-summary__total h2) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.management-page :is(.management-heading, .management-heading__actions, .management-filters) {
+  flex: none;
+  flex-wrap: wrap;
+}
+
+.management-page .management-heading {
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: linear-gradient(100deg, var(--management-tint), var(--management-surface) 70%);
+}
+
+.management-page .management-heading h1 {
+  margin: 0;
+  color: var(--management-ink);
+  font-size: clamp(20px, 2vw, 24px);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.management-page :is(.management-heading__icon, .management-summary__total h2 > span) {
+  display: grid;
+  flex: none;
+  place-items: center;
+  background: color-mix(in srgb, var(--management-accent) 12%, var(--management-surface));
+  color: var(--management-accent);
+}
+
+.management-page .management-heading__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 18px;
+}
+
+.management-page .management-heading__actions {
+  justify-content: flex-end;
+}
+
+.management-page .management-filters {
+  padding: 9px 12px;
+}
+
+.management-page .management-search {
+  width: min(275px, 100%);
+}
+
+.management-page .management-select {
+  width: min(158px, 100%);
+}
+
+.management-page .management-summary {
+  display: grid;
+  flex: none;
+  grid-template-columns: minmax(150px, 1fr) minmax(0, 3fr);
+  gap: 12px;
+}
+
+.management-page .management-summary__total,
+.management-page .management-summary__statuses {
+  padding: 10px 12px;
+}
+
+.management-page .management-summary__total {
+  border-color: color-mix(in srgb, var(--management-accent) 22%, var(--management-line));
+  background: var(--management-tint);
+}
+
+.management-page .management-summary h2 {
+  margin: 0;
+  color: var(--management-muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.management-page .management-summary__total h2 > span {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.management-page .management-summary__total strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--management-ink);
+  font-size: clamp(24px, 2.25vw, 32px);
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.management-page .management-summary__placeholder {
+  margin-top: 6px;
+}
+
+.management-page .management-summary__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+  margin: 6px 0 0;
+}
+
+.management-page .management-summary__list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--status-tone) 10%, var(--management-surface));
+}
+
+.management-page .management-summary__list dt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--management-muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.management-page .management-summary__list dt > span {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--status-tone);
+}
+
+.management-page .management-summary__list dd {
+  margin: 0;
+  color: var(--management-ink);
+  font-size: 19px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.management-page .management-table-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 320px;
+  overflow: hidden;
+}
+
+.management-page .management-table {
+  flex: 1;
+  min-height: 0;
+}
+
+.management-page .management-table .n-data-table-th {
+  background: var(--management-tint);
+}
+
+.management-page .management-table .n-data-table__pagination {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 9px 12px;
+  border-top: 1px solid var(--management-line);
+}
+
+.management-page .management-table .n-pagination {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.management-page .management-column-title {
+  color: var(--management-muted);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.management-page .management-entity-name {
+  color: var(--management-ink);
+  font-weight: 650;
+}
+
+.management-page .management-contact {
+  color: var(--management-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.management-page .management-status-tag {
+  color: color-mix(in srgb, var(--n-text-color) 55%, var(--management-ink));
+}
+
+.management-page .management-row-actions {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.management-dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+}
+
+.management-dialog-wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+  .management-page .management-summary {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .management-page .management-summary__total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .management-page :is(.management-summary__total strong, .management-summary__placeholder) {
+    margin-top: 0;
+  }
+
+  .management-page .management-table-panel {
+    flex: none;
+    height: 480px;
+  }
+}
+
+@media (max-width: 520px) {
+  .management-page .management-summary__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .management-page .management-search {
+    width: 100%;
+  }
+
+  .management-page .management-select {
+    flex: 1;
+    min-width: 118px;
+  }
+
+  .management-dialog-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

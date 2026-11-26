@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, h, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { RouterLink } from 'vue-router';
+import { useMediaQuery } from '@vueuse/core';
 import dayjs from 'dayjs';
-import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip, NProgress } from 'naive-ui';
-import { Icon } from '@iconify/vue';
+import { NDataTable, useMessage, NButton, NTag, NModal, NForm, NFormItem, NInput, NSelect, NInputNumber, NDatePicker, NTooltip, NProgress, NSwitch, useThemeVars } from 'naive-ui';
+import CopyIcon from '~icons/ant-design/copy-outlined';
+import ListIcon from '~icons/ant-design/profile-outlined';
+import RefreshIcon from '~icons/ant-design/reload-outlined';
 import type { DataTableColumns, PaginationProps, DataTableRowKey } from 'naive-ui';
 import { fetchOrders, updateOrders, fetchOrdersDetail, dispatchOrders,fetchOrdersStatus } from '@/service/api/workflow';
 import {fetchOrdersSite,gobackOrders,fetchRepairStations} from '@/service/api';
@@ -20,7 +23,15 @@ defineOptions({
 });
 
 const { t } = useI18n();
-const router = useRouter();
+const narrowLayout = useMediaQuery('(max-width: 760px)');
+const theme = useThemeVars();
+const themeStyle = computed(() => ({
+  '--order-surface': theme.value.cardColor,
+  '--order-line': theme.value.dividerColor,
+  '--order-ink': theme.value.textColor1,
+  '--order-muted': theme.value.textColor2,
+  '--order-accent': theme.value.primaryColor
+}));
 interface Order {
   ID: number;                     // 工单ID
   OrderNo: string;                // 工单编号
@@ -359,22 +370,22 @@ const handleSaveEdit = async () => {
 };
 
 // ---------------- 表格列 ----------------
-const renderHeaderTitle = (text: string) => h('span', { class: 'text-xs font-medium text-gray-500' }, text)
-const columns: DataTableColumns<Order> = [
+const renderHeaderTitle = (text: string) => h('span', { class: 'order-column-title' }, text);
+const baseColumns: DataTableColumns<Order> = [
   {
     type: 'selection',
-    width: 50
+    width: 44
   },
   {
     title: () => renderHeaderTitle(t('page.workflow.orderNo')),
     key: 'OrderNo',
-    width: 220,
+    width: 194,
     fixed: 'left',
     render: (row: Order) => {
       const full = row.OrderNo || '';
-      const prefix = full.slice(0, 10);
+      const prefix = full.slice(0, 8);
       const suffix = full.slice(-5);
-      const truncated = full.length > 14 ? `${prefix}...${suffix}` : full;
+      const truncated = full.length > 14 ? `${prefix}…${suffix}` : full;
       const onCopy = async () => {
         try {
           await navigator.clipboard.writeText(full);
@@ -383,62 +394,71 @@ const columns: DataTableColumns<Order> = [
           message.error(t('page.workflow.copyFailed'));
         }
       };
-      return h(
-        NTooltip,
-        null,
-        {
-          trigger: () => h(
-            'div',
-            {
-              style: 'display:flex; align-items:center; gap:8px; max-width:220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'
-            },
-            [
-              h(
-                'span',
-                {
-                  class: 'text-sm text-gray-500 font-medium',
-                  style: 'flex:1; min-width:0; cursor: pointer;',
-                  onClick: () => router.push({ name: 'workflowdetail', params: { id: row.ID } })
-                },
-                truncated
-              ),
-              h(
-                NButton,
-                { size: 'tiny', quaternary: true, type: 'primary', onClick: onCopy },
-                { default: () => h(Icon, { icon: 'ant-design:copy-outlined', width: 16, height: 16 }) }
-              )
-            ]
-          ),
-          default: () => full
-        }
-      );
+      return h('div', { class: 'order-number-cell' }, [
+        h(RouterLink, {
+          class: 'order-number',
+          to: { name: 'workflowdetail', params: { id: row.ID } },
+          title: full
+        }, () => truncated || '—'),
+        full ? h(NButton, {
+          size: 'tiny',
+          quaternary: true,
+          type: 'primary',
+          class: 'order-copy',
+          title: t('page.faults.copyOrderNo'),
+          'aria-label': t('page.faults.copyOrderNo'),
+          onClick: onCopy
+        }, { default: () => h(CopyIcon) }) : null
+      ]);
     }
   },
-  { title: () => renderHeaderTitle(t('page.workflow.faultCount')), key: 'FaultCount', width: 200, render: (row: any ) => {
-    const total = Number(row.FaultCount ?? 0)
-    console.log('total', total);
-    const repaired = Number(row.RepairedCount ?? 0)+Number(row.evacuated_count ?? 0)
-    console.log('repaired', repaired);
-    const safeTotal = total > 0 ? total : 0
-    const safeRepaired = repaired > 0 ? Math.min(repaired, safeTotal || repaired) : 0
-    console.log('safeRepaired', safeRepaired);
-    console.log('safeTotal', safeTotal);
-    const percent = safeTotal > 0 ? Math.round((safeRepaired / safeTotal) * 100) : 0;
-    console.log('percent', percent);
-    return h(
-      'div',
-      { style: 'display:flex; align-items:center; gap:10px; min-width:180px;' },
-      [
+  { title: () => renderHeaderTitle(t('page.workflow.orderStatus')), key: 'OrderStatusText', width: 112,
+      render: (row: any) => {
+        const getTranslatedOrderStatus = (name: string | undefined | null) => {
+          if (!name) return '';
+          const map: Record<string, string> = {
+            '已完成': t('page.workflow.completed'),
+            '维修': t('page.workflow.repairing'),
+            '未解决': t('page.workflow.unresolved'),
+            '待处理': t('page.workflow.pending'),
+            '处理中': t('page.workflow.processing'),
+          };
+          return map[name] || name;
+        };
+
+        const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
+        [t('page.workflow.completed')]: 'success',
+        [t('page.workflow.repairing')]: 'primary',
+        [t('page.workflow.unresolved')]: 'error',
+        [t('page.workflow.pending')]: 'warning',
+        [t('page.workflow.processing')]: 'primary',
+        };
+        const translatedLabel = getTranslatedOrderStatus(row.OrderStatusText) || t('page.workflow.unknown');
+        return h(NTag, { class: 'text-xs', type: tagMap[translatedLabel] || 'default',size:'small', round:true, bordered: false }, () => translatedLabel)
+      }
+  },
+  {
+    title: () => renderHeaderTitle(t('page.workflow.faultCount')),
+    key: 'FaultCount',
+    width: 186,
+    render: (row: any) => {
+      const total = Math.max(0, Number(row.FaultCount ?? 0)) || 0;
+      const handled = Number(row.RepairedCount ?? 0) + Number(row.evacuated_count ?? 0);
+      const count = handled > 0 ? Math.min(handled, total || handled) : 0;
+      const percent = total > 0 ? Math.round((count / total) * 100) : 0;
+      return h('div', { class: 'order-progress' }, [
         h(NProgress, {
           type: 'line',
           percentage: percent,
-          indicatorPlacement: 'inside',
+          height: 5,
+          showIndicator: false,
           status: percent >= 100 ? 'success' : undefined
         }),
-        h('span', { class: 'text-xs text-gray-500', style: 'white-space: nowrap;' }, `${safeRepaired}/${safeTotal} (${percent}%)`)
-      ]
-    )
-  }},
+        h('span', { class: 'order-progress-count' }, `${count}/${total} (${percent}%)`)
+      ]);
+    }
+  },
+  { title: () => renderHeaderTitle(t('page.workflow.site')), key: 'SiteName', width: 156, render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SiteName || '') },
 //   {
 //   title: () => renderHeaderTitle(t('page.workflow.shortWarranty')),
 //   key: 'short_warranty_text',
@@ -463,7 +483,7 @@ const columns: DataTableColumns<Order> = [
     }, () => text);
   }
 },
-  { title: () => renderHeaderTitle(t('page.workflow.repairMethod')), key: 'RepairMethod',
+  { title: () => renderHeaderTitle(t('page.workflow.repairMethod')), key: 'RepairMethod', width: 142,
     render: (row: any) => {
       const getTranslatedRepairMethod = (method: number | undefined | null) => {
         if (!method) return '';
@@ -484,38 +504,13 @@ const columns: DataTableColumns<Order> = [
       const methodLabel = getTranslatedRepairMethod(row.RepairMethod) || t('page.workflow.unknown');
       // const groupLabel = row.group_name ? ` - ${row.group_name}` : '';
 
-      return h(NTag, { class: 'text-xs', type: tagMap[row.RepairMethod || '-'],size:'small', round:true }, () => methodLabel)
+      return h(NTag, { class: 'text-xs', type: tagMap[row.RepairMethod || '-'],size:'small', round:true, bordered: false }, () => methodLabel)
     }
   },
-  { title: () => renderHeaderTitle(t('page.workflow.groupName')), key: 'group_name', width: 200, render: (row: any ) => {
+  { title: () => renderHeaderTitle(t('page.workflow.groupName')), key: 'group_name', width: 148, render: (row: any ) => {
     return row.group_name || '-';
   }},
-  { title: () => renderHeaderTitle(t('page.workflow.orderStatus')), key: 'OrderStatusText',
-      render: (row: any) => {
-        const getTranslatedOrderStatus = (name: string | undefined | null) => {
-          if (!name) return '';
-          const map: Record<string, string> = {
-            '已完成': t('page.workflow.completed'),
-            '维修': t('page.workflow.repairing'),
-            '未解决': t('page.workflow.unresolved'),
-            '待处理': t('page.workflow.pending'),
-            '处理中': t('page.workflow.processing'),
-          };
-          return map[name] || name;
-        };
-
-        const tagMap: Record<string, "primary" | "info" | "success" | "warning" | "error" | "default"> = {
-        [t('page.workflow.completed')]: 'success',
-        [t('page.workflow.repairing')]: 'primary',
-        [t('page.workflow.unresolved')]: 'error',
-        [t('page.workflow.pending')]: 'warning',
-        [t('page.workflow.processing')]: 'primary',
-        };
-        const translatedLabel = getTranslatedOrderStatus(row.OrderStatusText) || t('page.workflow.unknown');
-        return h(NTag, { class: 'text-xs', type: tagMap[translatedLabel] || 'default',size:'small', round:true }, () => translatedLabel)
-      }
-  },
-   { title: () => renderHeaderTitle(t('page.workflow.createdAt')), key: 'CreatedAt',
+   { title: () => renderHeaderTitle(t('page.workflow.createdAt')), key: 'CreatedAt', width: 106,
       render: (row: any) => {
         if (!row.CreatedAt) {
           return '-';
@@ -533,7 +528,7 @@ const columns: DataTableColumns<Order> = [
   //   }
   //  },
   ...(hasRole ? [
-    { title: () => renderHeaderTitle(t('page.workflow.paymentStatus')), key: 'SettlementStatus',
+    { title: () => renderHeaderTitle(t('page.workflow.paymentStatus')), key: 'SettlementStatus', width: 114,
       render: (row: any ) => {
         if (row.SettlementStatusText === null || row.SettlementStatusText === undefined) {
           return null;
@@ -558,10 +553,10 @@ const columns: DataTableColumns<Order> = [
 
         const translatedLabel = getTranslatedPaymentStatus(row.SettlementStatusText) || t('page.workflow.unknown');
         // return <NTag type={tagMap[row.Status]}>{label}</NTag>;
-        return h(NTag, { class: 'text-sm', type: tagMap[translatedLabel] || 'default',size:'small', round:true }, () => translatedLabel)
+        return h(NTag, { class: 'text-sm', type: tagMap[translatedLabel] || 'default',size:'small', round:true, bordered: false }, () => translatedLabel)
       }
     },
-    { title: () => renderHeaderTitle(t('page.workflow.paymentDate')), key: 'PaymentDate',
+    { title: () => renderHeaderTitle(t('page.workflow.paymentDate')), key: 'PaymentDate', width: 118,
       render: (row: Order) => {
         if (!row.PaymentDate || row.PaymentDate === '0001-01-01T00:00:00Z') {
           return h('span', { class: 'text-sm text-gray-500' }, '-');
@@ -570,7 +565,7 @@ const columns: DataTableColumns<Order> = [
       }
     },
 
-      { title: () => renderHeaderTitle(t('page.workflow.createDate')), key: 'CreateDate',
+      { title: () => renderHeaderTitle(t('page.workflow.createDate')), key: 'CreateDate', width: 118,
       render: (row: Order) => {
         if (!row.CreatedAt || row.CreatedAt === '0001-01-01T00:00:00Z') {
           return h('span', { class: 'text-sm text-gray-500' }, '-');
@@ -579,7 +574,6 @@ const columns: DataTableColumns<Order> = [
       }
     },
   ] : []),
-  { title: () => renderHeaderTitle(t('page.workflow.site')), key: 'SiteName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SiteName || '') },
     {
     title: () => renderHeaderTitle(t('page.workflow.repairer')),
     key: 'StationName',
@@ -597,13 +591,14 @@ const columns: DataTableColumns<Order> = [
       );
     }
   },
-  ...(hasRole ? [{ title: () => renderHeaderTitle(t('page.workflow.afterSalesSpecialist')), key: 'SalerName', render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SalerName || '') }] : []),
+  ...(hasRole ? [{ title: () => renderHeaderTitle(t('page.workflow.afterSalesSpecialist')), key: 'SalerName', width: 150, render: (row: any) => h('span', { class: 'text-sm text-gray-500' }, row.SalerName || '') }] : []),
 
   // { title: '短保期开始', key: 'warranty_status_text' },
   // { title: '剩余短保期', key: 'warranty_status_text' },
   { title: () => renderHeaderTitle(t('page.workflow.operation')),
     key: 'actions',
     fixed: 'right',
+    width: hasRole ? 224 : 112,
     render: (row: Order) => {
       return h(ActionButtons, {
         row,
@@ -617,6 +612,16 @@ const columns: DataTableColumns<Order> = [
     }
   }
 ];
+const columns = computed(() => {
+  if (!narrowLayout.value) return baseColumns;
+  return baseColumns.map(column => {
+    if (!('key' in column)) return column;
+    if (column.key === 'OrderNo') return { ...column, width: 156, fixed: undefined };
+    if (column.key === 'actions') return { ...column, fixed: undefined };
+    return column;
+  });
+});
+const tableWidth = computed(() => columns.value.reduce((width, column) => width + Number(column.width ?? 0), 0));
 
 // ---------------- 数据获取 ----------------
 const fetchData = async () => {
@@ -797,64 +802,63 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
 </script>
 
 <template>
-  <div class="h-full flex gap-16px flex-col-stretch overflow-hidden lt-sm:overflow-auto">
- <!-- 第二行：筛选条件 -->
-    <SearchFilters
-        v-model:serial="searchSerial"
-        v-model:siteId="searchSiteId"
-        v-model:stationId="searchStationId"
-        v-model:startDate="searchStartDate"
-        v-model:endDate="searchEndDate"
-        v-model:orderStatus="searchOrderStatus"
-        v-model:salerId="searchSalerId"
-        :siteOptions="siteOptions"
-        :stationOptions="stationOptions"
-        :statusOptions="statusOptions"
-        :hasRole="hasRole"
-        @search="fetchData"
-        @reset="handleReset"
-      />
+  <div class="order-page" :style="themeStyle">
+    <header class="order-heading">
+      <div class="order-heading__title">
+        <span class="order-heading__icon" aria-hidden="true"><ListIcon /></span>
+        <h1>{{ t('route.workflow') }}</h1>
+      </div>
+      <NButton size="small" :loading="loading" @click="fetchData">
+        <template #icon><RefreshIcon /></template>
+        {{ t('common.refresh') }}
+      </NButton>
+    </header>
 
-    <div class="flex-1 flex-col-stretch gap-16px overflow-hidden lt-sm:overflow-auto">
-    <!-- 查询框和批量操作 -->
-    <div class="mb-4" style="margin-bottom: 16px; display: flex; justify-content: flex-end;">
-      <!-- 第一行：批量操作按钮 -->
-      <div class="flex items-center gap-2" v-if="hasRole">
-        <NButton
-          type="primary"
-          ghost
-          size="medium"
-          :disabled="!isBatchDispatchEnabled"
-          :class="{ 'batch-dispatch-disabled': !isBatchDispatchEnabled, 'batch-dispatch-enabled': isBatchDispatchEnabled }"
-          @click="handleBatchDispatch"
-        >
+    <SearchFilters
+      v-model:serial="searchSerial"
+      v-model:site-id="searchSiteId"
+      v-model:station-id="searchStationId"
+      v-model:start-date="searchStartDate"
+      v-model:end-date="searchEndDate"
+      v-model:order-status="searchOrderStatus"
+      v-model:saler-id="searchSalerId"
+      :site-options="siteOptions"
+      :station-options="stationOptions"
+      :status-options="statusOptions"
+      :has-role="hasRole"
+      :only-my-site="onlyMySite"
+      @search="fetchData"
+      @reset="handleReset"
+    />
+
+    <section class="order-table-panel" :aria-label="t('route.workflow')">
+      <div v-if="hasRole" class="order-table-toolbar">
+        <label class="order-site-scope">
+          <NSwitch v-model:value="onlyMySite" size="small" :aria-label="t('page.workflow.mySite')" />
+          <span>{{ t('page.workflow.mySite') }}</span>
+        </label>
+        <NButton type="primary" secondary size="small" :disabled="!isBatchDispatchEnabled" @click="handleBatchDispatch">
           {{ t('page.workflow.batchDispatch', { count: selectedOrders.length }) }}
         </NButton>
-      <div>
-     <NSwitch v-model:value="onlyMySite" size="medium" />
-    <span style="font-size: 12px; margin-left: 4px;">{{ t('page.workflow.mySite') }}</span>
-    </div>
       </div>
-    </div>
-    <!-- 表格 -->
-    <NDataTable
-      flex-height
-      :columns="columns"
-      :data="tableData"
-      :pagination="pagination"
-      :loading="loading"
-      :fixed="['actions']"
-      :row-key="(row: Order) => row.ID"
-      v-model:checked-row-keys="checkedRowKeys"
-      remote
-      :scroll-x="1800"
-      striped
-      class="sm:h-full"
-    />
-    </div>
+      <NDataTable
+        v-model:checked-row-keys="checkedRowKeys"
+        class="order-table"
+        flex-height
+        remote
+        size="small"
+        :bordered="false"
+        :columns="columns"
+        :data="tableData"
+        :pagination="pagination"
+        :loading="loading"
+        :row-key="(row: Order) => row.ID"
+        :scroll-x="tableWidth"
+      />
+    </section>
 
     <!-- 修改弹框 -->
-    <NModal v-model:show="showEditModal" style="width: 600px" preset="card" :title="t('page.workflow.modifyOrderInfo')">
+    <NModal v-model:show="showEditModal" style="width: min(600px, calc(100vw - 24px))" preset="card" :title="t('page.workflow.modifyOrderInfo')">
       <NForm :model="editForm" label-width="100">
         <!-- 工单编号 -->
     <NFormItem :label="t('page.workflow.orderNo')">
@@ -908,7 +912,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
     </NModal>
 
     <!-- 查看详情弹框 -->
-    <NModal v-model:show="showDetailModal" style="width: 600px" preset="card" :title="t('page.workflow.orderOperationLog')">
+    <NModal v-model:show="showDetailModal" style="width: min(600px, calc(100vw - 24px))" preset="card" :title="t('page.workflow.orderOperationLog')">
       <div v-if="operation_history.length > 0" class="detail-container">
         <h2>{{ t('page.workflow.orderNo') }}：{{ detailData?.order_no }}</h2>
         <div class="timeline">
@@ -936,7 +940,7 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
     </NModal>
 
     <!-- 派单弹框 -->
-    <NModal v-model:show="showDispatchModal" style="width: 600px" preset="card" :title="t('page.workflow.dispatch')">
+    <NModal v-model:show="showDispatchModal" style="width: min(600px, calc(100vw - 24px))" preset="card" :title="t('page.workflow.dispatch')">
       <NForm :model="dispatchForm" label-width="120">
         <!-- 选择故障机数量 -->
         <NFormItem :label="t('page.workflow.selectFaultCount')">
@@ -1004,19 +1008,6 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
 <style scoped>
 .detail-container {
   padding: 10px;
-}
-
-:deep(.n-base-selection .n-base-selection-placeholder){
-  font-size: 12px !important;
-}
-:deep(.n-base-selection-overlay){
-  font-size: 12px !important;
-}
-:deep(.n-input-wrapper){
-  font-size: 12px !important;
-}
-:deep(.n-button){
-  font-size: 12px !important;
 }
 
 .detail-container h2 {
@@ -1108,24 +1099,155 @@ watch([searchSerial, searchOrderStatus, searchSiteId, searchStationId, searchSal
   color: #666;
 }
 
-/* 批量派单按钮样式 */
-.batch-dispatch-disabled {
-  background-color: #d9d9d9 !important;
-  border-color: #d9d9d9 !important;
-  color: #999 !important;
-  cursor: not-allowed !important;
+.order-page {
+  --order-tint: color-mix(in srgb, var(--order-accent) 5%, var(--order-surface));
+
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  gap: 12px;
+  overflow: auto;
 }
 
-.batch-dispatch-enabled {
-  background-color: #1890ff !important;
-  border-color: #1890ff !important;
-  color: #fff !important;
-  cursor: pointer !important;
-  transition: all 0.3s ease;
+.order-heading,
+.order-table-panel {
+  border: 1px solid var(--order-line);
+  border-radius: 10px;
+  background: var(--order-surface);
 }
 
-.batch-dispatch-enabled:hover {
-  background-color: #40a9ff !important;
-  border-color: #40a9ff !important;
+.order-heading,
+.order-heading__title,
+.order-table-toolbar,
+.order-site-scope {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-heading {
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: linear-gradient(100deg, var(--order-tint), var(--order-surface) 70%);
+}
+
+.order-heading h1 {
+  margin: 0;
+  color: var(--order-ink);
+  font-size: clamp(20px, 2vw, 24px);
+  font-weight: 700;
+}
+
+.order-heading__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--order-accent);
+  background: color-mix(in srgb, var(--order-accent) 12%, var(--order-surface));
+  font-size: 18px;
+}
+
+.order-table-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 330px;
+  overflow: hidden;
+}
+
+.order-table-toolbar {
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--order-line);
+}
+
+.order-site-scope {
+  color: var(--order-muted);
+  font-size: 12px;
+}
+
+.order-table {
+  flex: 1;
+  min-height: 0;
+}
+
+.order-table :deep(.n-data-table-th) {
+  background: var(--order-tint);
+}
+
+.order-table :deep(.n-data-table__pagination) {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 9px 12px;
+  border-top: 1px solid var(--order-line);
+}
+
+.order-table :deep(.n-pagination) {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.order-table :deep(.order-column-title) {
+  color: var(--order-muted);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.order-table :deep(.order-number-cell),
+.order-table :deep(.order-progress) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.order-table :deep(.order-number) {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--order-accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-table :deep(.order-number:hover),
+.order-table :deep(.order-number:focus-visible) {
+  text-decoration: underline;
+}
+
+.order-table :deep(.order-copy) {
+  width: 22px;
+  flex: none;
+  padding-inline: 0;
+  font-size: 14px;
+}
+
+.order-table :deep(.order-progress .n-progress) {
+  flex: 1;
+  min-width: 0;
+}
+
+.order-table :deep(.order-progress-count) {
+  color: var(--order-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .order-table-panel {
+    flex: none;
+    height: 520px;
+  }
 }
 </style>

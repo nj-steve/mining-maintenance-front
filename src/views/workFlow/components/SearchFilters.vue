@@ -1,159 +1,18 @@
-<template>
-  <!-- <div class="mb-2"> -->
-  <NCard size="medium"  :bordered="false" class="faults-search-card text-sm text-gray-500">
-     <template #header>
-      <!-- 工单编号 -->
-       <div class="text-sm text-gray-500" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; align-items: center;">
-      <NInput
-        v-model:value="serialModel"
-        :placeholder="t('page.workflow.orderNo')"
-        clearable
-        size="small"
-        class="text-sm text-gray-500"
-        style="width: 95%;"
-      />
-      <!-- 场地筛选 -->
-       <div class="relative" style="width: 95%;">
-         <NButton
-         size="small" class="!rounded-button whitespace-nowrap w-full flex justify-between items-center" @click="showSiteFilter = !showSiteFilter">
-           <span class="truncate">{{ getSelectedSiteLabel() }}</span>
-           <Icon
-             v-if="siteIdModel"
-             icon="ant-design:close-circle-outlined"
-             class="ml-2 text-xs text-gray-400 hover:text-gray-600 z-10"
-             @click.stop="clearSiteSelection"
-           />
-           <Icon v-else icon="ant-design:down-outlined" class="ml-2 text-xs" />
-         </NButton>
-         <div v-if="showSiteFilter" class="site-filter-dropdown absolute left-0 mt-1 w-full bg-white rounded-lg shadow-lg z-10 border border-gray-200 p-4 min-w-[300px]">
-           <div class="font-medium text-gray-900 mb-3">{{ t('page.workflow.site') }}</div>
-           <NInput size="small" :placeholder="t('page.workflow.searchSite')" class="mb-3" v-model:value="siteNameFilter" />
-           <div class="max-h-60 overflow-y-auto">
-             <div
-               v-for="site in filteredSiteOptions"
-               :key="String(site.value)"
-               class="flex items-center py-2 hover:bg-gray-50 rounded px-2"
-             >
-               <input
-                 type="checkbox"
-                 :id="`site-${site.value}`"
-                 class="h-4 w-4 text-blue-600 rounded border-gray-300"
-                 :checked="isSiteSelected(Number(site.value))"
-                 @change="toggleSiteSelection(Number(site.value))"
-               />
-               <label :for="`site-${site.value}`" class="ml-2 text-gray-700 cursor-pointer flex-grow">{{ site.label }}</label>
-             </div>
-           </div>
-           <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200 gap-2">
-             <NButton size="small" @click="showSiteFilter = false">{{ t('page.workflow.cancel') }}</NButton>
-             <NButton size="small" type="primary" @click="applySiteFilter">{{ t('page.workflow.apply') }}</NButton>
-           </div>
-         </div>
-       </div>
-
-      <!-- 维修站筛选 -->
-      <NSelect
-        v-if="hasRole"
-        v-model:value="stationIdModel"
-        :options="stationOptions"
-        :placeholder="t('page.workflow.selectStation')"
-        clearable
-        filterable
-        size="small"
-        class="text-sm text-gray-500"
-        style="width: 95%;"
-      />
-        <NSelect
-        v-model:value="orderStatusModel"
-        :options="statusOptions"
-        :placeholder="t('page.workflow.orderStatus')"
-        size="small"
-        clearable
-        class="text-sm text-gray-500"
-        style="width: 90%;"
-      />
-      </div>
-     </template>
-    <div v-show="!collapsed" class="text-sm text-gray-500" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; align-items: center; margin-top: 8px;">
-      <NSelect
-        v-show="!onlyMySiteLocal && hasRole"
-        v-model:value="salerIdModel"
-        :options="salerOptions"
-        :placeholder="t('page.workflow.afterSalesSpecialist')"
-        size="small"
-        clearable
-        class="text-sm text-gray-500"
-        style="width: 90%;"
-      />
-      <!-- 开始时间 -->
-      <NDatePicker
-        v-model:value="startDateModel"
-        type="date"
-        :placeholder="t('page.workflow.startDate')"
-        clearable
-        size="small"
-        class="text-sm text-gray-500"
-        style="width: 100%;"
-      />
-      <!-- 结束时间 -->
-      <NDatePicker
-        v-model:value="endDateModel"
-        type="date"
-        size="small"
-        :placeholder="t('page.workflow.endDate')"
-        clearable
-        class="text-sm text-gray-500"
-        style="width: 100%;"
-      />
-      <!-- 工单状态 -->
-
-
-    </div>
-    <template #header-extra>
-      <div class="text-sm text-gray-500" style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
-        <!-- 查询按钮 -->
-      <NButton type="primary" size="small" class="text-sm text-white" @click="emit('search')">{{ t('page.workflow.search') }}</NButton>
-      <NButton size="small" class="text-sm text-gray-500" @click="emit('reset')">{{ t('page.workflow.reset') }}</NButton>
-       <NButton quaternary size="small" class="text-sm text-gray-500" @click="collapsed = !collapsed">
-        {{ collapsed ? t('page.workflow.expand') : t('page.workflow.collapse') }}
-      </NButton>
-      </div>
-    </template>
-  </NCard>
-
-</template>
-
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
-import { NCard, NInput, NSelect, NDatePicker, NButton } from 'naive-ui';
+import { NButton, NCheckbox, NDatePicker, NInput, NPopover, NSelect } from 'naive-ui';
+import DownIcon from '~icons/ant-design/down-outlined';
+import SearchIcon from '~icons/ant-design/search-outlined';
 import type { SelectOption } from 'naive-ui';
 import { fetchUser } from '@/service/api';
-import { Icon } from '@iconify/vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const salerMap = ref<Record<number, string>>({});
-// import { useAuthStore } from '@/stores/auth';
-
-// 原基于 localStorage 的 computed 不会在同页实时响应，注释并改用 ref + 监听
-// const onlyMySiteLocal = computed(() => {
-//   console.log("localStorage.getItem('onlyMySite')",localStorage.getItem('onlyMySite'))
-//   return localStorage.getItem('onlyMySite') === 'true';
-// });
-// watch(onlyMySiteLocal, (newVal) => {
-//   if (newVal) {
-//     salerIdModel.value = null;
-//   }
-// });
-
-// 使用 ref 保存状态，并实时同步 localStorage 的变化
-const onlyMySiteLocal = ref<boolean>(localStorage.getItem('onlyMySite') === 'true');
-
-// 场地筛选相关逻辑
 const showSiteFilter = ref(false);
 const siteNameFilter = ref('');
-const tempSelectedSiteId = ref<number | null>(null); // 临时选中的场地ID，目前只支持单选，若要多选需改为数组
+const tempSelectedSiteId = ref<number | null>(null);
 
 const filteredSiteOptions = computed(() => {
   if (!siteNameFilter.value) return props.siteOptions;
@@ -166,12 +25,6 @@ const getSelectedSiteLabel = () => {
   if (!siteIdModel.value) return t('page.workflow.siteFilter');
   const site = props.siteOptions.find(s => s.value === siteIdModel.value);
   return site ? String(site.label) : t('page.workflow.siteFilter');
-};
-
-const isSiteSelected = (id: number) => {
-  // 如果尚未应用，显示临时选择；否则显示当前生效的选择
-  const current = showSiteFilter.value ? (tempSelectedSiteId.value ?? siteIdModel.value) : siteIdModel.value;
-  return current === id;
 };
 
 const toggleSiteSelection = (id: number) => {
@@ -199,14 +52,6 @@ watch(showSiteFilter, (val) => {
     siteNameFilter.value = '';
   }
 });
-
-// 点击外部关闭下拉框 (简单实现，实际可能需要更复杂的点击监听)
-const closeSiteFilter = (e: MouseEvent) => {
-  const target = e.target as HTMLElement;
-  if (!target.closest('.relative')) {
-    // showSiteFilter.value = false; // 暂时注释，避免与内部点击冲突，需要更精确的判断或使用 vueuse/onClickOutside
-  }
-};
 
 onMounted(() => {
   fetchUsers();
@@ -263,18 +108,11 @@ const emit = defineEmits<{
   (e: 'update:startDate', v: number | null): void;
   (e: 'update:endDate', v: number | null): void;
   (e: 'update:orderStatus', v: number | undefined): void;
-  (e: 'update:onlyMySite', v: boolean): void;
   (e: 'search'): void;
   (e: 'reset'): void;
 }>();
 
-// 删除重复的 onlyMySite 计算属性
-// const onlyMySite = computed({
-//   get: () => props.onlyMySite ?? false,
-//   set: v => emit('update:onlyMySite', !!v)
-// });
 const collapsed = ref(true);
-// 初始化内部内存状态，并与 props 同步
 
 const serialModel = computed({
   get: () => props.serial,
@@ -306,8 +144,180 @@ const orderStatusModel = computed({
 });
 </script>
 
+<template>
+  <section class="order-filters">
+    <div class="order-filters__row">
+      <div class="order-filters__fields">
+        <NInput
+          v-model:value="serialModel"
+          :placeholder="t('page.workflow.orderNo')"
+          :input-props="{ 'aria-label': t('page.workflow.orderNo') }"
+          clearable
+          size="small"
+          @keydown.enter="emit('search')"
+        >
+          <template #prefix><SearchIcon /></template>
+        </NInput>
+        <NPopover v-model:show="showSiteFilter" trigger="click" placement="bottom-start">
+          <template #trigger>
+            <NButton class="order-site-trigger" size="small" :aria-expanded="showSiteFilter">
+              <span class="order-site-trigger__text" :title="getSelectedSiteLabel()">{{ getSelectedSiteLabel() }}</span>
+              <template #icon><DownIcon /></template>
+            </NButton>
+          </template>
+          <div class="order-site-popover">
+            <NInput v-model:value="siteNameFilter" size="small" :placeholder="t('page.workflow.searchSite')" />
+            <div class="order-site-popover__options">
+              <NCheckbox
+                v-for="site in filteredSiteOptions"
+                :key="String(site.value)"
+                :checked="tempSelectedSiteId === Number(site.value)"
+                @update:checked="toggleSiteSelection(Number(site.value))"
+              >
+                {{ site.label }}
+              </NCheckbox>
+            </div>
+            <div class="order-site-popover__actions">
+              <NButton v-if="tempSelectedSiteId !== null" size="small" quaternary @click="tempSelectedSiteId = null">
+                {{ t('page.workflow.reset') }}
+              </NButton>
+              <NButton size="small" @click="showSiteFilter = false">{{ t('page.workflow.cancel') }}</NButton>
+              <NButton size="small" type="primary" @click="applySiteFilter">{{ t('page.workflow.apply') }}</NButton>
+            </div>
+          </div>
+        </NPopover>
+        <NSelect
+          v-if="hasRole"
+          v-model:value="stationIdModel"
+          :options="stationOptions"
+          :placeholder="t('page.workflow.selectStation')"
+          clearable
+          filterable
+          size="small"
+        />
+        <NSelect
+          v-model:value="orderStatusModel"
+          :options="statusOptions"
+          :placeholder="t('page.workflow.orderStatus')"
+          size="small"
+          clearable
+        />
+      </div>
+      <div class="order-filters__actions">
+        <NButton type="primary" size="small" @click="emit('search')">{{ t('page.workflow.search') }}</NButton>
+        <NButton size="small" @click="emit('reset')">{{ t('page.workflow.reset') }}</NButton>
+        <NButton quaternary size="small" :aria-expanded="!collapsed" @click="collapsed = !collapsed">
+          {{ collapsed ? t('page.workflow.expand') : t('page.workflow.collapse') }}
+        </NButton>
+      </div>
+    </div>
+
+    <div v-show="!collapsed" class="order-filters__extended">
+      <NSelect
+        v-if="!onlyMySite && hasRole"
+        v-model:value="salerIdModel"
+        :options="salerOptions"
+        :placeholder="t('page.workflow.afterSalesSpecialist')"
+        size="small"
+        clearable
+      />
+      <NDatePicker
+        v-model:value="startDateModel"
+        type="date"
+        :placeholder="t('page.workflow.startDate')"
+        clearable
+        size="small"
+      />
+      <NDatePicker
+        v-model:value="endDateModel"
+        type="date"
+        :placeholder="t('page.workflow.endDate')"
+        clearable
+        size="small"
+      />
+    </div>
+  </section>
+</template>
+
 <style scoped>
-.faults-search-card :deep(.n-card-header__main){
-  width: calc(100% - 200px);
+.order-filters {
+  padding: 10px 12px;
+  border: 1px solid var(--order-line);
+  border-radius: 10px;
+  background: var(--order-surface);
+}
+
+.order-filters__row,
+.order-filters__actions,
+.order-site-popover__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-filters__row,
+.order-filters__actions {
+  flex-wrap: wrap;
+}
+
+.order-filters__fields,
+.order-filters__extended {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.order-filters__fields {
+  flex: 1 1 560px;
+}
+
+.order-filters__extended {
+  max-width: 600px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--order-line);
+}
+
+.order-site-trigger {
+  min-width: 0;
+  justify-content: space-between;
+  flex-direction: row-reverse;
+}
+
+.order-site-trigger :deep(.n-button__content),
+.order-site-trigger__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-site-trigger :deep(.n-button__icon) {
+  margin-inline: 8px 0;
+}
+
+.order-site-popover {
+  display: grid;
+  gap: 8px;
+  width: min(260px, calc(100vw - 48px));
+}
+
+.order-site-popover__options {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.order-site-popover__actions {
+  justify-content: flex-end;
+}
+
+@media (max-width: 700px) {
+  .order-filters__fields,
+  .order-filters__extended {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>
