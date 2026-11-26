@@ -1,0 +1,1 @@
+import{a9 as m,bA as s,a as t,bh as i}from"./index-D55EPgb4.js";function d(){const n=m(s,null);return t(()=>{if(n===null)return i;const{mergedThemeRef:{value:r},mergedThemeOverridesRef:{value:e}}=n,o=r?.common||i;return e?.common?Object.assign({},o,e.common):o})}export{d as u};
